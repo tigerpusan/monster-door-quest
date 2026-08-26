@@ -1,72 +1,172 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#05070b">
-<title>Monster Door Quest V0.1</title>
-<link rel="stylesheet" href="./src/styles.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#07101c">
+  <title>Monster Door Quest V0.2.0</title>
+  <link rel="stylesheet" href="./src/styles.css">
 </head>
 <body>
-<div class="app">
-  <section id="home" class="screen">
-    <div class="top">
-      <div class="brand" data-t="title">몬스터 문 열기</div>
-      <select id="lang" aria-label="Language"><option value="ko">한국어</option><option value="en">EN</option><option value="zh">中文</option></select>
+<div id="app" class="app">
+  <section id="opening" class="screen cinematic hidden">
+    <div class="storyGlow"></div>
+    <div class="storyCastle">🏰</div>
+    <div class="storySlides">
+      <div class="storyLine active">마왕이 공주를 납치했다.</div>
+      <div class="storyLine">공주에게 가는 길은<br>마법의 문으로 봉인되어 있다.</div>
+      <div class="storyLine">길은 단 한 번만 보인다.</div>
+      <div class="storyLine accent">기억하라.<br>문을 열어라.<br>공주를 구하라.</div>
     </div>
-    <div class="heroPanel homeScene">
-      <div class="moon">🌙</div>
-      <div class="castleEmoji">🏰</div>
+    <div class="openingLogo">MONSTER<br><b>DOOR QUEST</b></div>
+    <div class="openingActions">
+      <button id="skipOpening" class="ghostBtn">SKIP</button>
+      <button id="nextStory" class="primaryBtn">NEXT</button>
+    </div>
+  </section>
+
+  <section id="home" class="screen hidden">
+    <header class="topbar">
+      <div class="brand">몬스터 문 열기</div>
+      <select id="langSelect" class="pillSelect">
+        <option value="ko">한국어</option>
+        <option value="en">EN</option>
+        <option value="zh">中文</option>
+      </select>
+    </header>
+    <main class="homeCard">
+      <div class="moon"></div>
+      <div class="homeCastle">🏰</div>
+      <div class="heroBadge">⚔️</div>
       <h1>MONSTER<br>DOOR QUEST</h1>
-      <p data-t="subtitle">길을 기억하고 공주를 구하라</p>
-      <div id="homeBest" class="best">최고 기록 3 DOORS</div>
-    </div>
-    <button id="startGame" class="cta" data-t="start">GAME START</button>
+      <p id="homeSubtitle">몬스터 월드를 지나 공주를 구하라</p>
+      <div id="homeProgress" class="progressPill">MONSTER VILLAGE · STAGE 1</div>
+    </main>
+    <footer class="stack">
+      <button id="continueBtn" class="primaryBtn large">계속하기</button>
+      <button id="worldBtn" class="secondaryBtn">WORLD MAP</button>
+    </footer>
+  </section>
+
+  <section id="world" class="screen hidden">
+    <header class="topbar">
+      <button class="backBtn" data-back="home">←</button>
+      <div class="brand">MONSTER WORLD</div>
+      <div class="smallPill">WORLD 1</div>
+    </header>
+    <main class="worldPanel">
+      <div class="worldTitle">공주가 있는 마왕성까지 이동하세요</div>
+      <div id="worldRoute" class="worldRoute"></div>
+      <div class="princessMarker">👸</div>
+    </main>
+    <footer>
+      <button id="enterChapterBtn" class="primaryBtn large">몬스터 빌리지 입장</button>
+    </footer>
+  </section>
+
+  <section id="chapter" class="screen hidden">
+    <header class="topbar">
+      <button class="backBtn" data-back="world">←</button>
+      <div>
+        <div class="brand">MONSTER VILLAGE</div>
+        <div class="subbrand">CHAPTER 1 · 10 STAGES</div>
+      </div>
+      <div id="chapterDoorBadge" class="smallPill">3 DOORS</div>
+    </header>
+    <main class="chapterPanel">
+      <div class="villageSky">☁️　🌙　☁️</div>
+      <div class="villageHouses">🏚️　🏠　🏚️</div>
+      <div id="chapterPath" class="chapterPath"></div>
+      <div class="bossFort">👹<span>BOSS</span></div>
+    </main>
+    <footer class="stack">
+      <div id="chapterHint" class="hint">현재 위치: STAGE 1</div>
+      <button id="startStageBtn" class="primaryBtn large">STAGE 1 시작</button>
+    </footer>
   </section>
 
   <section id="memory" class="screen hidden">
-    <div class="top">
-      <div class="brand" data-t="title">몬스터 문 열기</div>
-      <div class="stageBadge"></div>
-    </div>
-    <div class="heroPanel memoryWrap">
-      <div class="title"><h2 id="memoryTitle">길을 기억하세요!</h2><p id="memoryHint"></p><div class="realmLabel"></div></div>
-      <div id="memoryRoute" class="memoryRoute"></div>
-      <div class="timer"><div class="track"><div id="memoryBar" class="bar"></div></div><div id="memorySeconds" class="seconds"></div></div>
-    </div>
-    <button id="memoryGo" class="cta" disabled>기억 완료 · 공주를 구하러 가기</button>
+    <header class="topbar">
+      <div class="brand">길을 기억하세요!</div>
+      <div id="memoryStage" class="smallPill">STAGE 1 · 3 DOORS</div>
+    </header>
+    <main class="memoryPanel">
+      <div class="memoryCopy">문 순서는 한 번만 보여집니다.</div>
+      <div id="routeList" class="routeList"></div>
+      <div class="timerRow">
+        <div class="timerTrack"><div id="timerBar" class="timerBar"></div></div>
+        <div id="timerText" class="timerText">5.0s</div>
+      </div>
+      <div class="memoryTip">기억했다면 기다리지 말고 바로 시작하세요.</div>
+    </main>
+    <footer>
+      <button id="memoryReadyBtn" class="primaryBtn large pulse">기억 완료 · 바로 시작</button>
+    </footer>
   </section>
 
   <section id="game" class="screen hidden">
-    <div class="top">
-      <div class="brand" data-t="title">몬스터 문 열기</div>
-      <div class="stageBadge"></div>
-    </div>
-    <div class="heroPanel gamePanel">
-      <div class="title"><h2 data-t="choose">기억한 문을 여세요!</h2><div class="realmLabel"></div></div>
-      <div><div id="progressDots" class="progressDots"></div><div style="text-align:center;font-weight:1000"><span id="stepCounter">1 / 3</span></div></div>
-      <div class="doors">
-        <button id="leftDoor" class="doorBtn"><span class="doorFrame"></span><span class="doorLabel left" data-t="left">왼쪽</span></button>
-        <button id="rightDoor" class="doorBtn"><span class="doorFrame"></span><span class="doorLabel right" data-t="right">오른쪽</span></button>
+    <header class="topbar">
+      <div class="brand">문을 여세요!</div>
+      <div id="gameStage" class="smallPill">STAGE 1</div>
+    </header>
+    <main class="gamePanel">
+      <div class="journeyStrip"><span>⚔️ 용사</span><span id="stepText">1 / 3</span><span>👸 공주</span></div>
+      <div id="gameDots" class="gameDots"></div>
+      <div class="doorArena">
+        <button id="leftDoor" class="doorChoice leftChoice">
+          <span class="doorGlow"></span><span class="door">🚪</span><b>← 왼쪽</b>
+        </button>
+        <button id="rightDoor" class="doorChoice rightChoice">
+          <span class="doorGlow"></span><span class="door">🚪</span><b>오른쪽 →</b>
+        </button>
       </div>
-      <div><div id="feedback" class="feedback"></div><div class="hero">🛡️🤴⚔️</div></div>
+      <div id="gameFeedback" class="feedback"></div>
+      <div class="heroStand">🛡️🤴⚔️</div>
+    </main>
+    <footer></footer>
+  </section>
+
+  <section id="fail" class="screen resultScreen failScene hidden">
+    <div class="resultMonster">👹</div>
+    <h2>MONSTER!</h2>
+    <p>잘못된 문입니다.<br>몬스터가 길을 막았습니다.</p>
+    <div id="failProgress" class="resultPill"></div>
+    <div class="stack resultActions">
+      <button id="retryBtn" class="primaryBtn large">다시 도전</button>
+      <button class="secondaryBtn" data-back="chapter">챕터 지도</button>
     </div>
-    <div></div>
   </section>
 
-  <section id="clear" class="screen overlay hidden">
-    <div class="big">🤴💖👸</div>
-    <h2 data-t="clear">STAGE CLEAR!</h2>
-    <p data-t="saved">공주를 구했습니다!</p>
-    <div class="actions"><button id="nextBtn" class="cta" data-t="next">NEXT STAGE</button><button id="clearHome" class="secondary">HOME</button></div>
+  <section id="clear" class="screen resultScreen clearScene hidden">
+    <div class="resultMonster">✨⚔️✨</div>
+    <h2>STAGE CLEAR!</h2>
+    <p>길을 돌파했습니다.<br>용사가 공주에게 한 걸음 더 가까워집니다.</p>
+    <button id="showMoveBtn" class="primaryBtn large">지도에서 이동 보기</button>
   </section>
 
-  <section id="fail" class="screen overlay failBg hidden">
-    <div class="big">👹</div>
-    <h2 data-t="fail">MONSTER!</h2>
-    <p data-t="captured">잘못된 문입니다. 몬스터가 공주를 잡아갔습니다.</p>
-    <div id="failAt" class="failAt"></div>
-    <div class="actions"><button id="retryBtn" class="cta" data-t="retry">다시 도전</button><button id="failHome" class="secondary">HOME</button></div>
+  <section id="mapmove" class="screen hidden">
+    <header class="topbar">
+      <div class="brand">JOURNEY</div>
+      <div id="moveStageBadge" class="smallPill"></div>
+    </header>
+    <main class="chapterPanel movement">
+      <div class="villageSky">☁️　🌙　☁️</div>
+      <div class="villageHouses">🏚️　🏠　🏚️</div>
+      <div id="movePath" class="chapterPath"></div>
+      <div id="movingHero" class="movingHero">🤴⚔️</div>
+      <div class="bossFort">👹<span>BOSS</span></div>
+    </main>
+    <footer>
+      <button id="nextStageBtn" class="primaryBtn large" disabled>다음 스테이지</button>
+    </footer>
+  </section>
+
+  <section id="chapterclear" class="screen resultScreen chapterClearScene hidden">
+    <div class="resultMonster">🏘️✨</div>
+    <h2>CHAPTER CLEAR!</h2>
+    <p>몬스터 빌리지를 돌파했습니다.</p>
+    <div class="unlockCard">🌲<b>NEW AREA</b><span>어둠의 숲</span></div>
+    <button id="chapterClearWorldBtn" class="primaryBtn large">MONSTER WORLD로 이동</button>
   </section>
 </div>
 <script type="module" src="./src/app.js"></script>

@@ -1,34 +1,25 @@
-# Monster Door Quest V0.1
+# Monster Door Quest V0.2.0
 
-GitHub 개발용 기초 패치 + 플레이 가능한 시안입니다.
+## 1차 앱 실행본
+V0.1의 단순 기억 게임을 Monster World → Chapter Map → Stage 구조로 확장한 첫 앱형 패치입니다.
 
-## 포함 내용
-- 모바일 100dvh UI
-- Stage 1 = 3 doors, 최대 15 doors
-- 기억 화면 → 좌/우 문 선택 → 성공/실패
-- route 단일 소스 판정
-- 한국어 / English / 中文
-- Node 게임 엔진 테스트
-- GitHub Pages workflow
-- Capacitor Android APK workflow 기반
+### 이번 버전에서 테스트할 것
+- 최초 실행 Opening Story
+- World Map
+- Monster Village 10 Stage Chapter Map
+- `기억 완료 · 바로 시작` 즉시 작동
+- 버튼을 누르지 않으면 타이머 종료 후 자동 시작
+- 좌/우 문 판정
+- 실패 Retry
+- Stage Clear 후 지도에서 용사 이동
+- Stage 10 Boss 및 Chapter Clear
+- 진행 저장
+- 별도 ALL/NORMAL/HARD 난이도 선택 없음
 
-## GitHub 업로드
-1. 새 GitHub repository 생성
-2. 이 ZIP의 **폴더 안 파일 전체**를 repository root에 업로드
-3. 기본 branch를 `main`으로 사용
-4. Settings → Pages → Source에서 **GitHub Actions** 선택
-5. Actions의 `Deploy GitHub Pages` 실행 확인
+## GitHub 적용
+기존 `monster-door-quest` 저장소 루트에 이 패치의 파일을 같은 경로로 덮어씁니다.
 
-## 로컬 테스트
-```bash
-npm test
-python -m http.server 8080
-```
-브라우저에서 `http://localhost:8080`
+GitHub Pages가 이미 연결되어 있다면 main에 Commit하는 즉시 새 버전이 자동 배포됩니다.
 
-## APK
-Actions → `Build Android APK` → Run workflow.
-완료 후 Artifact의 `monster-door-v0.1.0-apk`에서 debug APK를 받을 수 있도록 구성했습니다.
-
-## 다음 개발 순서
-V0.1 Core → 실제 이미지 자산 → 몬스터 종류 → 사운드/진동 → 오프닝 → 도감 → Toss/Play 출시 대응
+## 테스트 초기화
+이전 V0.2 진행을 초기화하려면 브라우저 개발자 도구에서 localStorage의 `mdq-v0.2-progress` 항목을 삭제합니다.

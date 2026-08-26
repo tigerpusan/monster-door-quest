@@ -1,220 +1,244 @@
-import { GameEngine, realmForDoors } from './game-engine.js';
+import { CHAPTERS, chapterOneDoorCount, memorySecondsForDoors, GameEngine, nextProgress, chapterOneStageLabel } from './game-model.js';
 
-const $ = (q) => document.querySelector(q);
-const $$ = (q) => [...document.querySelectorAll(q)];
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
 
+const STORAGE = 'mdq-v0.2-progress';
 const COPY = {
-  ko: {
-    title: '몬스터 문 열기',
-    subtitle: '길을 기억하고 공주를 구하라',
-    start: 'GAME START',
-    remember: '길을 기억하세요!',
-    memoryHint: '문 순서는 한 번만 보여집니다.',
-    ready: '기억 완료 · 공주를 구하러 가기',
-    choose: '기억한 문을 여세요!',
-    left: '왼쪽',
-    right: '오른쪽',
-    correct: '정답! 다음 문으로',
-    clear: 'STAGE CLEAR!',
-    saved: '공주를 구했습니다!',
-    next: 'NEXT STAGE',
-    fail: 'MONSTER!',
-    captured: '잘못된 문입니다. 몬스터가 공주를 잡아갔습니다.',
-    retry: '다시 도전',
-    best: '최고 기록',
-    human: '인간의 영역',
-    superhuman: '초인의 영역',
-    god: '신의 영역'
-  },
-  en: {
-    title: 'Monster Door Quest',
-    subtitle: 'Remember the path. Rescue the princess.',
-    start: 'GAME START',
-    remember: 'Remember the Path!',
-    memoryHint: 'The route is shown only once.',
-    ready: 'READY · RESCUE THE PRINCESS',
-    choose: 'Open the remembered door!',
-    left: 'LEFT',
-    right: 'RIGHT',
-    correct: 'Correct! Next door',
-    clear: 'STAGE CLEAR!',
-    saved: 'Princess rescued!',
-    next: 'NEXT STAGE',
-    fail: 'MONSTER!',
-    captured: 'Wrong door. The monster captured the princess.',
-    retry: 'TRY AGAIN',
-    best: 'BEST',
-    human: 'HUMAN REALM',
-    superhuman: 'SUPERHUMAN REALM',
-    god: 'GOD REALM'
-  },
-  zh: {
-    title: '怪物开门',
-    subtitle: '记住路线，救出公主',
-    start: '开始游戏',
-    remember: '记住路线！',
-    memoryHint: '路线只显示一次。',
-    ready: '记忆完成 · 去救公主',
-    choose: '打开你记住的门！',
-    left: '左边',
-    right: '右边',
-    correct: '正确！下一扇门',
-    clear: '闯关成功！',
-    saved: '成功救出公主！',
-    next: '下一关',
-    fail: '怪物出现！',
-    captured: '选错门了。怪物抓走了公主。',
-    retry: '再试一次',
-    best: '最高纪录',
-    human: '人类领域',
-    superhuman: '超人领域',
-    god: '神之领域'
-  }
+  ko: {continue:'계속하기', world:'WORLD MAP', enter:'몬스터 빌리지 입장', start:'시작', memory:'기억 완료 · 바로 시작', next:'다음 스테이지'},
+  en: {continue:'CONTINUE', world:'WORLD MAP', enter:'ENTER MONSTER VILLAGE', start:'START', memory:'READY · START NOW', next:'NEXT STAGE'},
+  zh: {continue:'继续', world:'世界地图', enter:'进入怪物村', start:'开始', memory:'记忆完成 · 立即开始', next:'下一关'}
 };
 
+let data = loadData();
 let lang = localStorage.getItem('mdq-lang') || 'ko';
-let stage = Number(localStorage.getItem('mdq-stage') || 1);
-let bestDoors = Number(localStorage.getItem('mdq-best') || 3);
-let engine;
-let memoryTimer;
+let engine = null;
+let timerId = null;
+let storyIndex = 0;
+let movingFromStage = 1;
 
-function t(key) { return COPY[lang][key] ?? key; }
-function realmLabel() { return t(realmForDoors(engine.doorCount)); }
+function defaultData(){
+  return {openingSeen:false,currentChapter:1,currentStage:1,bestStage:1,unlockedChapters:[1],clearedStages:[]};
+}
+function loadData(){
+  try { return {...defaultData(), ...JSON.parse(localStorage.getItem(STORAGE) || '{}')}; }
+  catch { return defaultData(); }
+}
+function saveData(){ localStorage.setItem(STORAGE, JSON.stringify(data)); }
+function show(id){
+  $$('.screen').forEach(x=>x.classList.add('hidden'));
+  $('#'+id).classList.remove('hidden');
+}
+function c(key){ return COPY[lang][key] || key; }
 
-function show(name) {
-  $$('.screen').forEach(el => el.classList.add('hidden'));
-  $('#' + name).classList.remove('hidden');
+function applyLang(){
+  $('#langSelect').value = lang;
+  $('#continueBtn').textContent = c('continue');
+  $('#worldBtn').textContent = c('world');
+  $('#enterChapterBtn').textContent = c('enter');
+  $('#memoryReadyBtn').textContent = c('memory');
+  $('#nextStageBtn').textContent = c('next');
 }
 
-function applyCopy() {
-  $$('[data-t]').forEach(el => el.textContent = t(el.dataset.t));
-  $('#lang').value = lang;
-  $('#homeBest').textContent = `${t('best')} ${bestDoors} DOORS`;
+function showOpening(reset=false){
+  storyIndex = 0;
+  $$('.storyLine').forEach((el,i)=>el.classList.toggle('active', i===0));
+  $('#nextStory').textContent = 'NEXT';
+  show('opening');
+  if(reset) data.openingSeen = false;
 }
-
-function newEngine() {
-  engine = new GameEngine({ stage });
-  updateHeader();
+function finishOpening(){
+  data.openingSeen = true; saveData(); renderHome(); show('home');
 }
+$('#nextStory').onclick = () => {
+  storyIndex++;
+  const lines = $$('.storyLine');
+  if(storyIndex >= lines.length){ finishOpening(); return; }
+  lines.forEach((el,i)=>el.classList.toggle('active',i===storyIndex));
+  $('#nextStory').textContent = storyIndex === lines.length-1 ? 'START' : 'NEXT';
+};
+$('#skipOpening').onclick = finishOpening;
 
-function updateHeader() {
-  $$('.stageBadge').forEach(el => el.textContent = `STAGE ${stage} · ${engine.doorCount} DOORS`);
-  $$('.realmLabel').forEach(el => el.textContent = realmLabel());
+function renderHome(){
+  const chapter = CHAPTERS[Math.max(0,data.currentChapter-1)] || CHAPTERS[0];
+  $('#homeProgress').textContent = data.currentChapter === 1
+    ? `${chapter.en.toUpperCase()} · ${chapterOneStageLabel(data.currentStage)}`
+    : `${chapter.en.toUpperCase()} · NEXT CHAPTER`;
+  $('#continueBtn').textContent = data.currentChapter === 1 ? c('continue') : c('world');
 }
+$('#continueBtn').onclick = () => {
+  if(data.currentChapter === 1){ renderChapter(); show('chapter'); }
+  else { renderWorld(); show('world'); }
+};
+$('#worldBtn').onclick = () => { renderWorld(); show('world'); };
+$('#langSelect').onchange = e => {lang=e.target.value;localStorage.setItem('mdq-lang',lang);applyLang();};
 
-function renderMemory() {
-  const route = $('#memoryRoute');
-  route.innerHTML = '';
-  engine.route.forEach((side, i) => {
-    const node = document.createElement('div');
-    node.className = 'routeStep';
-    node.innerHTML = `<span>${i + 1}</span><b class="${side === 'L' ? 'blueText' : 'goldText'}">${side === 'L' ? '← ' + t('left') : t('right') + ' →'}</b>`;
-    route.appendChild(node);
+function renderWorld(){
+  const box = $('#worldRoute'); box.innerHTML='';
+  CHAPTERS.forEach(ch=>{
+    const unlocked = data.unlockedChapters.includes(ch.id);
+    const current = ch.id===data.currentChapter;
+    const row=document.createElement('div');
+    row.className='worldNode '+(current?'current ':'')+(unlocked?'':'locked');
+    const name = lang==='ko'?ch.ko:lang==='zh'?ch.zh:ch.en;
+    row.innerHTML=`<div class="worldIcon">${ch.icon}</div><div class="worldName"><b>${name}</b><span>CHAPTER ${ch.id}</span></div><div class="worldHero">${current?'🤴⚔️':unlocked?'✓':'🔒'}</div>`;
+    box.appendChild(row);
   });
-  $('#memoryTitle').textContent = t('remember');
-  $('#memoryHint').textContent = t('memoryHint');
-  $('#memoryGo').textContent = t('ready');
-  $('#memoryGo').disabled = true;
-  $('#memoryBar').style.width = '100%';
-  let seconds = engine.doorCount <= 6 ? 5 : engine.doorCount <= 10 ? 3 : 2.5;
-  $('#memorySeconds').textContent = `${seconds.toFixed(seconds % 1 ? 1 : 0)}s`;
-  clearInterval(memoryTimer);
-  const start = performance.now();
-  const total = seconds * 1000;
-  memoryTimer = setInterval(() => {
-    const remain = Math.max(0, total - (performance.now() - start));
-    $('#memoryBar').style.width = `${(remain / total) * 100}%`;
-    $('#memorySeconds').textContent = `${(remain / 1000).toFixed(1)}s`;
-    if (remain <= 0) {
-      clearInterval(memoryTimer);
-      route.classList.add('blurred');
-      $('#memoryGo').disabled = false;
-      $('#memorySeconds').textContent = 'GO!';
-    }
-  }, 50);
+  $('#enterChapterBtn').disabled = data.currentChapter !== 1;
+  $('#enterChapterBtn').textContent = data.currentChapter===1 ? c('enter') : 'COMING NEXT PATCH';
 }
+$('#enterChapterBtn').onclick = ()=>{renderChapter();show('chapter');};
 
-function startStage() {
-  newEngine();
-  show('memory');
-  renderMemory();
+function nodePosition(stage){
+  const positions=[
+    [28,88],[68,80],[34,70],[66,61],[31,52],[69,43],[35,34],[65,25],[34,16],[70,8]
+  ];
+  return positions[Math.max(0,Math.min(9,stage-1))];
 }
-
-function beginPlay() {
-  engine.beginPlay();
-  $('#memoryRoute').classList.remove('blurred');
-  show('game');
-  renderProgress();
-  resetDoors();
-  $('#feedback').textContent = '';
-}
-
-function renderProgress() {
-  $('#stepCounter').textContent = `${engine.currentStep + 1} / ${engine.doorCount}`;
-  const dots = $('#progressDots');
-  dots.innerHTML = '';
-  for (let i = 0; i < engine.doorCount; i++) {
-    const d = document.createElement('span');
-    d.className = 'dot' + (i < engine.currentStep ? ' done' : i === engine.currentStep ? ' active' : '');
-    dots.appendChild(d);
+function fillChapterPath(container, currentStage, completedStage=currentStage-1, hero=true){
+  container.innerHTML='';
+  for(let s=1;s<=10;s++){
+    const [x,y]=nodePosition(s);
+    const node=document.createElement('div');
+    node.className='stageNode '+(s===10?'boss ':'')+(s<=completedStage?'done ':s===currentStage?'current ':'locked ');
+    node.style.left=x+'%'; node.style.top=y+'%';
+    node.textContent=s===10?'👹':s;
+    container.appendChild(node);
+  }
+  if(hero){
+    const [x,y]=nodePosition(currentStage);
+    const h=document.createElement('div');h.className='pathHero';h.textContent='🤴⚔️';h.style.left=x+'%';h.style.top=y+'%';container.appendChild(h);
   }
 }
-
-function resetDoors() {
-  $$('.doorBtn').forEach(b => b.classList.remove('open','correct','wrong'));
+function renderChapter(){
+  fillChapterPath($('#chapterPath'), data.currentStage, Math.max(0,data.currentStage-1), true);
+  const doors=chapterOneDoorCount(data.currentStage);
+  $('#chapterDoorBadge').textContent=`${doors} DOORS`;
+  $('#chapterHint').textContent=`현재 위치: ${chapterOneStageLabel(data.currentStage)}`;
+  $('#startStageBtn').textContent=`${chapterOneStageLabel(data.currentStage)} ${c('start')}`;
 }
+$('#startStageBtn').onclick = startMemory;
 
-function choose(side) {
-  if (engine.state !== 'playing') return;
-  const btn = side === 'L' ? $('#leftDoor') : $('#rightDoor');
+function startMemory(){
+  engine=new GameEngine({stage:data.currentStage});
+  show('memory');
+  $('#memoryStage').textContent=`${chapterOneStageLabel(data.currentStage)} · ${engine.doorCount} DOORS`;
+  renderRoute();
+  startMemoryTimer();
+}
+function renderRoute(){
+  const box=$('#routeList');box.innerHTML='';
+  engine.route.forEach((side,i)=>{
+    const row=document.createElement('div');row.className='routeItem';
+    row.innerHTML=`<span class="routeNum">${i+1}</span><b class="${side==='L'?'leftTxt':'rightTxt'}">${side==='L'?'← 왼쪽':'오른쪽 →'}</b>`;
+    box.appendChild(row);
+  });
+}
+function startMemoryTimer(){
+  clearInterval(timerId);
+  const total=memorySecondsForDoors(engine.doorCount)*1000;
+  const started=performance.now();
+  $('#timerBar').style.width='100%';
+  const tick=()=>{
+    const remain=Math.max(0,total-(performance.now()-started));
+    $('#timerBar').style.width=`${remain/total*100}%`;
+    $('#timerText').textContent=`${(remain/1000).toFixed(1)}s`;
+    if(remain<=0){clearInterval(timerId); beginGame('timeout');}
+  };
+  tick(); timerId=setInterval(tick,50);
+}
+function beginGame(reason){
+  if(!engine || engine.state!=='memory') return;
+  clearInterval(timerId);
+  engine.beginPlay();
+  show('game');
+  $('#gameStage').textContent=`${chapterOneStageLabel(data.currentStage)} · ${engine.doorCount} DOORS`;
+  renderGameProgress();
+  $('#gameFeedback').textContent=reason==='manual'?'기억 완료! 시작합니다.':'시간 종료! 자동 시작';
+  setTimeout(()=>$('#gameFeedback').textContent='',650);
+}
+$('#memoryReadyBtn').onclick=()=>beginGame('manual');
+
+function renderGameProgress(){
+  $('#stepText').textContent=`${Math.min(engine.currentStep+1,engine.doorCount)} / ${engine.doorCount}`;
+  const box=$('#gameDots');box.innerHTML='';
+  for(let i=0;i<engine.doorCount;i++){
+    const d=document.createElement('span');
+    d.className='gameDot '+(i<engine.currentStep?'done':i===engine.currentStep?'current':'');
+    box.appendChild(d);
+  }
+  $$('.doorChoice').forEach(b=>b.classList.remove('open','correct','wrong'));
+}
+function choose(side){
+  if(!engine || engine.state!=='playing') return;
+  const btn=side==='L'?$('#leftDoor'):$('#rightDoor');
   btn.classList.add('open');
-  const result = engine.choose(side);
-  if (result.status === 'fail') {
+  const res=engine.choose(side);
+  if(res.status==='fail'){
     btn.classList.add('wrong');
-    setTimeout(() => {
-      $('#failAt').textContent = `${engine.currentStep + 1} / ${engine.doorCount}`;
+    $('#gameFeedback').textContent='MONSTER!';
+    setTimeout(()=>{
+      $('#failProgress').textContent=`${engine.currentStep+1}번째 문에서 실패`;
       show('fail');
-    }, 360);
+    },420);
     return;
   }
   btn.classList.add('correct');
-  $('#feedback').textContent = t('correct');
-  if (result.status === 'clear') {
-    bestDoors = Math.max(bestDoors, engine.doorCount);
-    localStorage.setItem('mdq-best', String(bestDoors));
-    localStorage.setItem('mdq-stage', String(Math.min(13, stage + 1)));
-    setTimeout(() => show('clear'), 430);
+  if(res.status==='clear'){
+    $('#gameFeedback').textContent='CLEAR!';
+    movingFromStage=data.currentStage;
+    if(!data.clearedStages.includes(data.currentStage)) data.clearedStages.push(data.currentStage);
+    data.bestStage=Math.max(data.bestStage,data.currentStage);
+    saveData();
+    setTimeout(()=>show('clear'),460);
     return;
   }
-  setTimeout(() => {
-    resetDoors();
-    $('#feedback').textContent = '';
-    renderProgress();
-  }, 360);
+  $('#gameFeedback').textContent='정답!';
+  setTimeout(()=>{renderGameProgress();$('#gameFeedback').textContent='';},330);
 }
+$('#leftDoor').onclick=()=>choose('L');
+$('#rightDoor').onclick=()=>choose('R');
+$('#retryBtn').onclick=startMemory;
 
-function retry() { startStage(); }
-function nextStage() {
-  stage = Math.min(13, stage + 1);
-  localStorage.setItem('mdq-stage', String(stage));
-  startStage();
+function showMapMove(){
+  show('mapmove');
+  $('#moveStageBadge').textContent=`${chapterOneStageLabel(movingFromStage)} CLEAR`;
+  const next = nextProgress({chapter:1,stage:movingFromStage});
+  const visualNextStage = next.chapterClear ? 10 : next.stage;
+  fillChapterPath($('#movePath'), visualNextStage, movingFromStage, false);
+  const hero=$('#movingHero');
+  const [sx,sy]=nodePosition(movingFromStage);
+  const [ex,ey]=nodePosition(visualNextStage);
+  hero.style.left=sx+'%';hero.style.top=sy+'%';
+  $('#nextStageBtn').disabled=true;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    hero.style.left=ex+'%';hero.style.top=ey+'%';
+  }));
+  setTimeout(()=>{
+    if(next.chapterClear){
+      data.currentChapter=2;data.currentStage=1;
+      if(!data.unlockedChapters.includes(2)) data.unlockedChapters.push(2);
+      saveData();
+      show('chapterclear');
+    }else{
+      data.currentStage=next.stage;saveData();
+      $('#nextStageBtn').disabled=false;
+      $('#nextStageBtn').textContent=`${chapterOneStageLabel(data.currentStage)} ${c('next')}`;
+    }
+  },1450);
 }
-function goHome() { show('home'); applyCopy(); }
+$('#showMoveBtn').onclick=showMapMove;
+$('#nextStageBtn').onclick=()=>{renderChapter();show('chapter');};
+$('#chapterClearWorldBtn').onclick=()=>{renderWorld();show('world');};
 
-$('#startGame').addEventListener('click', startStage);
-$('#memoryGo').addEventListener('click', beginPlay);
-$('#leftDoor').addEventListener('click', () => choose('L'));
-$('#rightDoor').addEventListener('click', () => choose('R'));
-$('#retryBtn').addEventListener('click', retry);
-$('#nextBtn').addEventListener('click', nextStage);
-$('#clearHome').addEventListener('click', goHome);
-$('#failHome').addEventListener('click', goHome);
-$('#lang').addEventListener('change', e => {
-  lang = e.target.value;
-  localStorage.setItem('mdq-lang', lang);
-  applyCopy();
+$$('[data-back]').forEach(b=>b.onclick=()=>{
+  const target=b.dataset.back;
+  if(target==='home')renderHome();
+  if(target==='world')renderWorld();
+  if(target==='chapter')renderChapter();
+  show(target);
 });
 
-applyCopy();
-newEngine();
-show('home');
+applyLang();
+renderHome();
+if(data.openingSeen) show('home'); else showOpening();

@@ -1,12 +1,10 @@
 {
   "name": "monster-door-quest",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
-    "test": "node --test",
-    "dev": "python -m http.server 8080"
+    "test": "node --test"
   },
-  "devDependencies": {},
   "dependencies": {
     "@capacitor/android": "^8.0.0",
     "@capacitor/cli": "^8.0.0",
