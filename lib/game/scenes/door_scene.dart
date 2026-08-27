@@ -32,15 +32,15 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     hero=HeroComponent(); princess=PrincessComponent(); monster=MonsterComponent(); progress=RouteProgress(total:session.route.length);
     addAll([leftDoor,rightDoor,hero,princess,monster,progress]);
   }
-  @override void onGameResize(Vector2 s){
-    super.onGameResize(s); size=s;
-    final dw=s.x*.36, dh=s.y*.42;
-    leftDoor..size=Vector2(dw,dh)..position=Vector2(s.x*.08,s.y*.31);
-    rightDoor..size=Vector2(dw,dh)..position=Vector2(s.x*.56,s.y*.31);
-    hero..size=Vector2(82,120)..position=Vector2(s.x/2-41,s.y*.72);
-    princess..size=Vector2(62,90)..position=Vector2(s.x*.76,s.y*.14);
-    monster..size=Vector2(80,80)..position=Vector2(s.x/2-40,s.y*.43);
-    progress..size=Vector2(s.x*.76,34)..position=Vector2(s.x*.12,s.y*.19);
+  @override void onGameResize(Vector2 size){
+    super.onGameResize(size); this.size=size;
+    final dw=size.x*.36, dh=size.y*.42;
+    leftDoor..size=Vector2(dw,dh)..position=Vector2(size.x*.08,size.y*.31);
+    rightDoor..size=Vector2(dw,dh)..position=Vector2(size.x*.56,size.y*.31);
+    hero..size=Vector2(82,120)..position=Vector2(size.x/2-41,size.y*.72);
+    princess..size=Vector2(62,90)..position=Vector2(size.x*.76,size.y*.14);
+    monster..size=Vector2(80,80)..position=Vector2(size.x/2-40,size.y*.43);
+    progress..size=Vector2(size.x*.76,34)..position=Vector2(size.x*.12,size.y*.19);
   }
   Future<void> _choose(DoorSide side) async {
     if(session.phase!=SessionPhase.playing || _transitioning)return;

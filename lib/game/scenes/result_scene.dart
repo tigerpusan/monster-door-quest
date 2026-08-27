@@ -8,7 +8,7 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
   ResultScene({required this.clear,required this.stage});
   final bool clear; final int stage; late ActionButton primary;
   @override Future<void> onLoad() async { primary=ActionButton(label:clear?'다음 도전':'다시 도전',onPressed:clear?game.advanceAfterClear:game.retryCurrentStage); add(primary); }
-  @override void onGameResize(Vector2 s){ super.onGameResize(s); size=s; primary..size=Vector2(s.x-50,64)..position=Vector2(25,s.y*.72); }
+  @override void onGameResize(Vector2 size){ super.onGameResize(size); this.size=size; primary..size=Vector2(size.x-50,64)..position=Vector2(25,size.y*.72); }
   void _text(Canvas c,String t,double y,double fs,{Color color=const Color(0xFFFFFFFF),FontWeight w=FontWeight.w700}){ final tp=TextPainter(text:TextSpan(text:t,style:TextStyle(color:color,fontSize:fs,fontWeight:w)),textDirection:TextDirection.ltr)..layout(maxWidth:size.x-40); tp.paint(c,Offset((size.x-tp.width)/2,y)); }
   @override void render(Canvas canvas){
     super.render(canvas);

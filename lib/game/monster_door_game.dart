@@ -28,7 +28,7 @@ class MonsterDoorGame extends FlameGame {
   Future<void> _setScene(Component scene) async {
     _scene?.removeFromParent();
     _scene=scene;
-    await world.add(scene);
+    await camera.viewport.add(scene);
   }
 
   Future<void> startCurrentStage() async {

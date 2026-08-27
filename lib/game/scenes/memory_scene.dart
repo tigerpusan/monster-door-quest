@@ -18,7 +18,7 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     add(ready);
   }
   void _goDoor(){ if(_transitioned)return; _transitioned=true; game.showDoorScene(session); }
-  @override void onGameResize(Vector2 s){ super.onGameResize(s); size=s; ready.size=Vector2(s.x-40,62); ready.position=Vector2(20,s.y-86); }
+  @override void onGameResize(Vector2 size){ super.onGameResize(size); this.size=size; ready.size=Vector2(size.x-40,62); ready.position=Vector2(20,size.y-86); }
   @override void update(double dt){ super.update(dt); if(memorySeconds!=null && !_transitioned){ elapsed+=dt; if(elapsed>=memorySeconds! && isMounted){ _goDoor(); } } }
   void _text(Canvas c,String text,double y,double fs,{Color color=const Color(0xFFFFFFFF),FontWeight fw=FontWeight.w700}){
     final tp=TextPainter(text:TextSpan(text:text,style:TextStyle(color:color,fontSize:fs,fontWeight:fw)),textDirection:TextDirection.ltr)..layout(maxWidth:size.x-40);

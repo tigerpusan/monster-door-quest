@@ -1,7 +1,7 @@
 name: monster_door_quest
-description: Native Monster Door Quest V0.6
+description: Monster Door native game
 publish_to: "none"
-version: 0.6.0+6
+version: 0.6.1+61
 
 environment:
   sdk: ">=3.11.0 <4.0.0"

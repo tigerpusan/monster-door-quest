@@ -1,22 +1,39 @@
-# Monster Door Quest V0.6 Native
+# 몬스터door V0.6.1 — Layout / Identity Patch
 
-기존 HTML 데모를 **Flutter + Flame Android 게임 앱**으로 전환한 2차 패치입니다.
+## 이번 패치의 핵심 원인과 수정
 
-## Core Loop
-`시작 → Stage 3 기억 → 10초 문 열기 → 즉시 정답/오답 타격감 → 다음 도전`
+### 화면이 우측 하단 1/4처럼 잘린 원인
+V0.6.0의 씬들을 `world`에 추가했습니다. Flame의 world 좌표는 카메라 중심 좌표계를 거치므로,
+화면 전체 크기로 만든 UI 씬의 (0,0)이 실제 화면 좌상단이 아니라 카메라 월드 원점으로 취급되어
+사용자 기기에서 씬이 우측/하단으로 밀려 보였습니다.
 
-## Native Interaction
-- PointerDown 즉시 scale 반응
-- 문 개방 0.30초
-- 정답: green flash + correct SFX + hero dash
-- 오답: red flash + monster pop + boom/growl + screen shake
-- SFX preload
-- 게임 중 network call 없음
+V0.6.1에서는 모든 화면형 씬을 `camera.viewport`에 추가합니다. 게임 UI는 화면 좌표계에서
+좌상단 (0,0)부터 기기 viewport 전체를 사용합니다.
 
-## Audio
-실제 APK에서 바로 검증할 수 있도록 로컬 WAV 효과음/BGM을 포함했습니다. 최종 상용 오디오 자산으로 교체할 때 파일명과 AudioManager 인터페이스는 그대로 유지할 수 있습니다.
+### 앱 식별자 고정
+- 표시 이름: `몬스터door`
+- Android Application ID: `com.tigerpusan.monsterdoor`
+- 버전: `0.6.1+61`
+- APK 파일명: `MonsterDoor-v0.6.1-release.apk`
+- Artifact: `MonsterDoor-v0.6.1-release-apk`
 
-## Build
-GitHub Actions `Build Android APK V0.6` 실행 → Artifact `monster-door-v0.6.0-apk` 다운로드.
+### 아이콘
+기존 승인 포스터의 두 몬스터 문 + 용사 영역을 앱 아이콘 전용으로 재구성했습니다.
+기본 Flutter 아이콘을 사용하지 않습니다.
 
-기존 웹 프로토타입은 `legacy-web/`에 보존했습니다.
+### 화면 정책
+- 세로 화면 고정
+- SafeArea 내부에서 GameWidget이 전체 확장
+- Intro/Memory/Door/Result 씬은 screen-space(camera viewport) 렌더링
+
+## GitHub 반영 파일
+- `lib/main.dart`
+- `lib/game/monster_door_game.dart`
+- `lib/game/scenes/intro_scene.dart`
+- `lib/game/scenes/memory_scene.dart`
+- `lib/game/scenes/door_scene.dart`
+- `lib/game/scenes/result_scene.dart`
+- `pubspec.yaml`
+- `analysis_options.yaml`
+- `assets/app_icon/**`
+- `.github/workflows/build-android.yml`
