@@ -1,4 +1,4 @@
-name: Build Android APK V0.6
+name: Build MonsterDoor Android V0.6.1
 
 on:
   workflow_dispatch:
@@ -38,17 +38,35 @@ jobs:
       - name: Flutter version
         run: flutter --version
 
-      - name: Create Android platform scaffold
+      - name: Create unique MonsterDoor Android scaffold
         run: |
-          rm -rf /tmp/mdq_platform
+          rm -rf /tmp/monsterdoor_platform
           flutter create \
             --platforms=android \
-            --org com.monsterdoor \
-            --project-name monster_door_quest \
-            /tmp/mdq_platform
+            --org com.tigerpusan \
+            --project-name monsterdoor \
+            /tmp/monsterdoor_platform
 
           rm -rf android
-          cp -R /tmp/mdq_platform/android ./android
+          cp -R /tmp/monsterdoor_platform/android ./android
+
+      - name: Set Android app label to 몬스터door
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('android/app/src/main/AndroidManifest.xml')
+          s = p.read_text()
+          s = s.replace('android:label="monsterdoor"', 'android:label="몬스터door"')
+          p.write_text(s)
+          PY
+
+      - name: Apply MonsterDoor launcher icon
+        run: |
+          cp assets/app_icon/mdpi/ic_launcher.png android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+          cp assets/app_icon/hdpi/ic_launcher.png android/app/src/main/res/mipmap-hdpi/ic_launcher.png
+          cp assets/app_icon/xhdpi/ic_launcher.png android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          cp assets/app_icon/xxhdpi/ic_launcher.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          cp assets/app_icon/xxxhdpi/ic_launcher.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
 
       - name: Get dependencies
         run: flutter pub get
@@ -59,12 +77,16 @@ jobs:
       - name: Run tests
         run: flutter test
 
-      - name: Build debug APK
-        run: flutter build apk --debug
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Rename APK with app name and version
+        run: |
+          cp build/app/outputs/flutter-apk/app-release.apk MonsterDoor-v0.6.1-release.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: monster-door-v0.6.0-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: MonsterDoor-v0.6.1-release-apk
+          path: MonsterDoor-v0.6.1-release.apk
           if-no-files-found: error
