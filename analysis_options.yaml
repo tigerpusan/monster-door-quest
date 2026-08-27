@@ -1,1 +1,11 @@
 include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  exclude:
+    - legacy-web/**
+    - build/**
+    - android/**
+
+linter:
+  rules:
+    avoid_renaming_method_parameters: false
