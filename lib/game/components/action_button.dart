@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
-import 'package:flutter/material.dart' show TextPainter, TextSpan, TextStyle, TextDirection, FontWeight, LinearGradient, Alignment;
+import 'package:flutter/material.dart' show TextPainter, TextSpan, TextStyle, TextDirection, FontWeight, LinearGradient;
 
 class ActionButton extends PositionComponent with TapCallbacks {
   ActionButton({required this.label, required this.onPressed, this.green = true});

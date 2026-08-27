@@ -102,7 +102,7 @@ class DoorComponent extends PositionComponent with TapCallbacks {
     final auraColor = side == DoorSide.left ? const Color(0xFF4CC6FF) : const Color(0xFFF07CFF);
     final borderGlow = Paint()
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18)
-      ..color = auraColor.withOpacity(0.22 + (_highlight * 0.22));
+      ..color = auraColor.withValues(alpha: 0.22 + (_highlight * 0.22));
     canvas.drawPath(_archPath(outerRect.inflate(2)), borderGlow);
 
     final framePath = _archPath(outerRect);
@@ -148,7 +148,7 @@ class DoorComponent extends PositionComponent with TapCallbacks {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.6
       ..shader = RadialGradient(
-        colors: [auraColor.withOpacity(.6), const Color(0x00FFFFFF)],
+        colors: [auraColor.withValues(alpha: .6), const Color(0x00FFFFFF)],
       ).createShader(innerRect);
     canvas.drawPath(leafPath, innerGlow);
 
