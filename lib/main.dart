@@ -6,8 +6,8 @@ import 'game/audio/audio_manager.dart';
 import 'game/core/progress_store.dart';
 import 'game/monster_door_game.dart';
 
-const appDisplayName = '몬스터door';
-const appVersion = '0.6.1';
+const appDisplayName = 'MonsterDoor';
+const appVersion = '0.7.0';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -8,14 +8,27 @@ abstract class AudioBackend {
 }
 
 class FlameAudioBackend implements AudioBackend {
-  @override Future<void> preload(List<String> files) => FlameAudio.audioCache.loadAll(files);
-  @override Future<void> play(String file, {double volume = 1}) async { await FlameAudio.play(file, volume: volume); }
-  @override Future<void> startBgm(String file, {double volume = .25}) async { await FlameAudio.bgm.initialize(); await FlameAudio.bgm.play(file, volume: volume); }
-  @override Future<void> stopBgm() => FlameAudio.bgm.stop();
+  @override
+  Future<void> preload(List<String> files) => FlameAudio.audioCache.loadAll(files);
+
+  @override
+  Future<void> play(String file, {double volume = 1}) async {
+    await FlameAudio.play(file, volume: volume);
+  }
+
+  @override
+  Future<void> startBgm(String file, {double volume = .25}) async {
+    await FlameAudio.bgm.initialize();
+    await FlameAudio.bgm.play(file, volume: volume);
+  }
+
+  @override
+  Future<void> stopBgm() => FlameAudio.bgm.stop();
 }
 
 class AudioManager {
   AudioManager({AudioBackend? backend}) : backend = backend ?? FlameAudioBackend();
+
   final AudioBackend backend;
   bool isReady = false;
   bool bgmEnabled = true;
@@ -32,13 +45,39 @@ class AudioManager {
   static const milestone = 'sfx/milestone_fanfare.wav';
 
   Future<void> preload() async {
-    await backend.preload([doorTap, doorUnlock, doorOpen, correct, wrongBoom, monsterGrowl, clear, milestone, bgm]);
+    await backend.preload([
+      doorTap,
+      doorUnlock,
+      doorOpen,
+      correct,
+      wrongBoom,
+      monsterGrowl,
+      clear,
+      milestone,
+      bgm,
+    ]);
     isReady = true;
   }
-  Future<void> startBgm() async { if (bgmEnabled) await backend.startBgm(bgm, volume: .22); }
+
+  Future<void> startBgm() async {
+    if (bgmEnabled) {
+      await backend.startBgm(bgm, volume: .22);
+    }
+  }
+
   Future<void> playDoorTap() => sfxEnabled ? backend.play(doorTap, volume: .55) : Future.value();
+  Future<void> playDoorUnlock() => sfxEnabled ? backend.play(doorUnlock, volume: .55) : Future.value();
   Future<void> playDoorOpen() => sfxEnabled ? backend.play(doorOpen, volume: .72) : Future.value();
-  Future<void> playCorrect() => sfxEnabled ? backend.play(correct, volume: .8) : Future.value();
-  Future<void> playWrong() async { if (!sfxEnabled) return; await Future.wait([backend.play(wrongBoom, volume: .85), backend.play(monsterGrowl, volume: .72)]); }
-  Future<void> playClear({bool milestoneStage = false}) => sfxEnabled ? backend.play(milestoneStage ? milestone : clear, volume: .85) : Future.value();
+  Future<void> playCorrect() => sfxEnabled ? backend.play(correct, volume: .82) : Future.value();
+
+  Future<void> playWrong() async {
+    if (!sfxEnabled) return;
+    await Future.wait([
+      backend.play(wrongBoom, volume: .90),
+      backend.play(monsterGrowl, volume: .76),
+    ]);
+  }
+
+  Future<void> playClear({bool milestoneStage = false}) =>
+      sfxEnabled ? backend.play(milestoneStage ? milestone : clear, volume: .88) : Future.value();
 }

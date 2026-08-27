@@ -2,8 +2,7 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import '../monster_door_game.dart';
 
-class IntroScene extends SpriteComponent
-    with TapCallbacks, HasGameReference<MonsterDoorGame> {
+class IntroScene extends SpriteComponent with TapCallbacks, HasGameReference<MonsterDoorGame> {
   IntroScene({required super.sprite}) : super(anchor: Anchor.topLeft);
 
   @override
