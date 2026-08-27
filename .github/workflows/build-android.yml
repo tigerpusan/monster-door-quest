@@ -1,0 +1,57 @@
+name: Build Android APK V0.6
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "lib/**"
+      - "assets/**"
+      - "pubspec.yaml"
+      - "test/**"
+      - ".github/workflows/build-android.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Create Android platform scaffold
+        run: |
+          rm -rf /tmp/mdq_platform
+          flutter create --platforms=android --org com.monsterdoor --project-name monster_door_quest /tmp/mdq_platform
+          rm -rf android
+          cp -R /tmp/mdq_platform/android ./android
+
+      - name: Dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+      - name: Build debug APK
+        run: flutter build apk --debug
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: monster-door-v0.6.0-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: error
