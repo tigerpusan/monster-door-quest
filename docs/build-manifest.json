@@ -1,0 +1,252 @@
+[
+  {
+    "path": ".github/workflows/build-android.yml",
+    "bytes": 1255,
+    "sha256": "103b07cbd5317542c5d9986bfd9c2200a4b03504e9c6cc3fbee6f24414409cd0"
+  },
+  {
+    "path": ".github/workflows/flutter-check.yml",
+    "bytes": 346,
+    "sha256": "07c2ae9eed6d76abcc2b67bd63fe1d3a355d00cadda26d3bef6cf791f7b716ed"
+  },
+  {
+    "path": ".gitignore",
+    "bytes": 103,
+    "sha256": "e23a831d45c40ac77162641c97b445ac96379e72c35cda61d94eeb3dd09ebe35"
+  },
+  {
+    "path": "README.md",
+    "bytes": 902,
+    "sha256": "1bca10968394c01ba78fbfb36efc0e2ca8231c9ac44674d825974d5844db959a"
+  },
+  {
+    "path": "analysis_options.yaml",
+    "bytes": 44,
+    "sha256": "c1e9534c05acb3643e72a82ad3d92d56d2ba9b0df2add014c18f7e1d462f24e4"
+  },
+  {
+    "path": "assets/audio/bgm/door_tension_loop.wav",
+    "bytes": 458684,
+    "sha256": "fa667d7fde2dd18fcece9898fce3b589a09a24025277566ff53fcafe1f6a971a"
+  },
+  {
+    "path": "assets/audio/sfx/clear_fanfare.wav",
+    "bytes": 38852,
+    "sha256": "2bfd6bd6d125746e83986f59c37755ae5b4a42064e708942c6b6a390bb33cb6e"
+  },
+  {
+    "path": "assets/audio/sfx/correct.wav",
+    "bytes": 16802,
+    "sha256": "7525dbc6909cb84014f5ad1085323b2980d99c23c6aa91474f34e68c9bcd926a"
+  },
+  {
+    "path": "assets/audio/sfx/door_open.wav",
+    "bytes": 26504,
+    "sha256": "5cd935da0e6ca12db122e9128873e1a2d7f7325f1628a2834d6bd62ebfa2a9cf"
+  },
+  {
+    "path": "assets/audio/sfx/door_tap.wav",
+    "bytes": 7540,
+    "sha256": "d3859754a98d7643d83897a773a83d0d2e2ffd0e82a932ec60136c41e612c639"
+  },
+  {
+    "path": "assets/audio/sfx/door_unlock.wav",
+    "bytes": 11950,
+    "sha256": "8b076dc9d29e01acf06958f0836ab79d14ec75dc511badee61a6ed48f5cfde97"
+  },
+  {
+    "path": "assets/audio/sfx/milestone_fanfare.wav",
+    "bytes": 49436,
+    "sha256": "e46629619e41773b90e0c0d9234fa466b0cbffa12c78db59b41b152f879bf3ce"
+  },
+  {
+    "path": "assets/audio/sfx/monster_growl.wav",
+    "bytes": 33560,
+    "sha256": "cc49add2529c906c56836e852befd5d9512ac0c6c27df54473ac32aa3ee8f0c7"
+  },
+  {
+    "path": "assets/audio/sfx/wrong_boom.wav",
+    "bytes": 28268,
+    "sha256": "e5dda2197339d22cd14ff65c67688f63d88546f1c7f585843f0a0cf538441782"
+  },
+  {
+    "path": "assets/images/start_poster.png",
+    "bytes": 3310200,
+    "sha256": "ddaf5e79d07f4fb92d1aaa1ced02c256cd6b8435c786461794b5392a263e7e6e"
+  },
+  {
+    "path": "docs/GITHUB_SECOND_PATCH.md",
+    "bytes": 679,
+    "sha256": "571777470a748b412cadbc432acaa16102239de0459074478871144d82740a06"
+  },
+  {
+    "path": "docs/performance-checklist.md",
+    "bytes": 747,
+    "sha256": "2b0fada30cb8ef47dd8128ddf3558977ea6460d43d1dc8d5668e859037d82a70"
+  },
+  {
+    "path": "docs/superpowers/plans/2026-08-26-monster-door-v0.6-native.md",
+    "bytes": 5966,
+    "sha256": "c8391cf6ffe3b058246b6451fd828de2f1a1616cbc00749f4762f73e9076db9a"
+  },
+  {
+    "path": "docs/superpowers/specs/2026-08-26-monster-door-v0.6-native-design.md",
+    "bytes": 4309,
+    "sha256": "0d79db8c766d7d5b49370590c8b583867b34b2c0c7b8d89e7506766f4b9c7f70"
+  },
+  {
+    "path": "legacy-web/README.md",
+    "bytes": 540,
+    "sha256": "5f961466e715df7c28d1cd98e5f49e36b4794958256a491eccb53eaf4365f72d"
+  },
+  {
+    "path": "legacy-web/assets/game-scene.png",
+    "bytes": 2634618,
+    "sha256": "bee2e9ff6591e3dd2cb7c840f756d488c1c0cdabf9ad0051cdef0c3f744d3e00"
+  },
+  {
+    "path": "legacy-web/assets/map-scene.png",
+    "bytes": 2739721,
+    "sha256": "95a8ed695ccf021a863823ee86f7aae5f6ef1553b2d6f630b3f8dc8b1f0bd5d1"
+  },
+  {
+    "path": "legacy-web/assets/memory-scene.png",
+    "bytes": 2149749,
+    "sha256": "280fc52167814bd17a353d5c818b8ca688d13e2d90bf185ebeafa4cbd58405ab"
+  },
+  {
+    "path": "legacy-web/assets/start-hero.png",
+    "bytes": 3310200,
+    "sha256": "ddaf5e79d07f4fb92d1aaa1ced02c256cd6b8435c786461794b5392a263e7e6e"
+  },
+  {
+    "path": "legacy-web/index.html",
+    "bytes": 31253,
+    "sha256": "32569595908dd1239e83e2290bf5afc6b357188ff04e6c9a9016f7a081bdb84c"
+  },
+  {
+    "path": "lib/game/audio/audio_manager.dart",
+    "bytes": 2295,
+    "sha256": "60360aab3f6bd3e9a44ec207fcf8ec93ff40ae6d195f1964a863abef1ee0104c"
+  },
+  {
+    "path": "lib/game/components/action_button.dart",
+    "bytes": 1158,
+    "sha256": "7c22c6d22d11a4d0170855fd0da15a6b4014e4dd0e1cdd70f12b1fb6279cda56"
+  },
+  {
+    "path": "lib/game/components/door_component.dart",
+    "bytes": 3166,
+    "sha256": "540e86582f78c6a034b34459e3f897851c3e9cc56eb8bdb97b22dfde4f9fb0a8"
+  },
+  {
+    "path": "lib/game/components/hero_component.dart",
+    "bytes": 1184,
+    "sha256": "1babcbf22275126a69e99e2a91b0da936dc8ccff0452e5dd859df56f499259e0"
+  },
+  {
+    "path": "lib/game/components/monster_component.dart",
+    "bytes": 1112,
+    "sha256": "cb7a5935c747b518ebe045895f0269f87f1d998c03b4af6c4e458bbbb5996f56"
+  },
+  {
+    "path": "lib/game/components/princess_component.dart",
+    "bytes": 896,
+    "sha256": "10a4a1cccf6e972938a0fc41a921735059ac65a32581e9c8264eba2691e4fa04"
+  },
+  {
+    "path": "lib/game/components/route_progress.dart",
+    "bytes": 571,
+    "sha256": "0ad09f2f8f4e6efd585b92f4a28fdc8a85a9a8b7b1ab655e81c2b120b74ce93d"
+  },
+  {
+    "path": "lib/game/core/game_rules.dart",
+    "bytes": 1317,
+    "sha256": "6b755f8dac134c331f3d87d1f74c1015bc46386b2e3e03992e4afa1ce2c235c9"
+  },
+  {
+    "path": "lib/game/core/game_state.dart",
+    "bytes": 787,
+    "sha256": "95f57b81a1feb3646df83b445c4344755e1ae8f0bc62707db8bc1b29560e2ccc"
+  },
+  {
+    "path": "lib/game/core/progress_store.dart",
+    "bytes": 1051,
+    "sha256": "96b0629522be7e4aa8f6b851a8710d645cd45fbd10b1f6763561b0d781b04652"
+  },
+  {
+    "path": "lib/game/effects/hit_effects.dart",
+    "bytes": 670,
+    "sha256": "50c3d9374bd8f92d7154bed172a6c23c54f035d421d66aba3c6b4c6f184a468f"
+  },
+  {
+    "path": "lib/game/monster_door_game.dart",
+    "bytes": 1761,
+    "sha256": "4d50b817bddd20bf46bdf9ffab101f3ff0bbf469ce3ea08c9d523234d5aa8700"
+  },
+  {
+    "path": "lib/game/scenes/door_scene.dart",
+    "bytes": 5316,
+    "sha256": "a7937d66440341a684005002461f363558f48d4879d8822c6b2d7e6be29796d6"
+  },
+  {
+    "path": "lib/game/scenes/intro_scene.dart",
+    "bytes": 440,
+    "sha256": "315deee95dd3a6153077b48d6ba051b10e0317004aea9d4cac5804d0dfee3300"
+  },
+  {
+    "path": "lib/game/scenes/memory_scene.dart",
+    "bytes": 2681,
+    "sha256": "341ec8d993507c90e40547a03c5ad2fe4d2a66207862efaab5aacc404dfa9391"
+  },
+  {
+    "path": "lib/game/scenes/result_scene.dart",
+    "bytes": 2181,
+    "sha256": "1b2289676cd38611baed8bd98260ae69841c71fe464a639915eefe863a1aa6a0"
+  },
+  {
+    "path": "lib/main.dart",
+    "bytes": 677,
+    "sha256": "0b6935d0348ea84d4651b12159049ffb506088a6a25c7d37e03299784134a9bb"
+  },
+  {
+    "path": "pubspec.yaml",
+    "bytes": 450,
+    "sha256": "ac7fec474576c35173c1f3f4400d48fcecfff8aa214aaad00fec30034898f1be"
+  },
+  {
+    "path": "test/app_smoke_test.dart",
+    "bytes": 1226,
+    "sha256": "caccda9a6cefc83c173bbe3ea7ff65434ed329c30c9e20b9f4d5aa203f763f93"
+  },
+  {
+    "path": "test/audio_manager_test.dart",
+    "bytes": 1319,
+    "sha256": "acf875cdb5179e4b9a079c80e8860ee9d8de9634771e84c4b255060bb154a71c"
+  },
+  {
+    "path": "test/door_component_test.dart",
+    "bytes": 535,
+    "sha256": "fdd0d019dcfe575b89be188bf1c8a72739e63d47d8a3dff20fc64c11511f03af"
+  },
+  {
+    "path": "test/game_rules_test.dart",
+    "bytes": 1241,
+    "sha256": "34549876dc81fffe1c2619a71a00b38fbfe2c5872b379ca9cba4a0eb6f8f6143"
+  },
+  {
+    "path": "test/game_state_test.dart",
+    "bytes": 836,
+    "sha256": "7a82a2f9952ed123b1fda942b2c19c0d9b3e64b55fa4a5a6a8f8db9a4832f729"
+  },
+  {
+    "path": "test/hit_feedback_test.dart",
+    "bytes": 635,
+    "sha256": "82deddb969af28347767b605e900a742e403627e9b0c44d439d6e4613ed8c8e1"
+  },
+  {
+    "path": "test/progress_store_test.dart",
+    "bytes": 849,
+    "sha256": "c92923fe48cad02d09b9f5632cffa96133812ab9642a51e61ae9800984f43eb9"
+  }
+]

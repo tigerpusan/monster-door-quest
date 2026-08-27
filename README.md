@@ -1,25 +1,22 @@
-# Monster Door Quest V0.2.0
+# Monster Door Quest V0.6 Native
 
-## 1차 앱 실행본
-V0.1의 단순 기억 게임을 Monster World → Chapter Map → Stage 구조로 확장한 첫 앱형 패치입니다.
+기존 HTML 데모를 **Flutter + Flame Android 게임 앱**으로 전환한 2차 패치입니다.
 
-### 이번 버전에서 테스트할 것
-- 최초 실행 Opening Story
-- World Map
-- Monster Village 10 Stage Chapter Map
-- `기억 완료 · 바로 시작` 즉시 작동
-- 버튼을 누르지 않으면 타이머 종료 후 자동 시작
-- 좌/우 문 판정
-- 실패 Retry
-- Stage Clear 후 지도에서 용사 이동
-- Stage 10 Boss 및 Chapter Clear
-- 진행 저장
-- 별도 ALL/NORMAL/HARD 난이도 선택 없음
+## Core Loop
+`시작 → Stage 3 기억 → 10초 문 열기 → 즉시 정답/오답 타격감 → 다음 도전`
 
-## GitHub 적용
-기존 `monster-door-quest` 저장소 루트에 이 패치의 파일을 같은 경로로 덮어씁니다.
+## Native Interaction
+- PointerDown 즉시 scale 반응
+- 문 개방 0.30초
+- 정답: green flash + correct SFX + hero dash
+- 오답: red flash + monster pop + boom/growl + screen shake
+- SFX preload
+- 게임 중 network call 없음
 
-GitHub Pages가 이미 연결되어 있다면 main에 Commit하는 즉시 새 버전이 자동 배포됩니다.
+## Audio
+실제 APK에서 바로 검증할 수 있도록 로컬 WAV 효과음/BGM을 포함했습니다. 최종 상용 오디오 자산으로 교체할 때 파일명과 AudioManager 인터페이스는 그대로 유지할 수 있습니다.
 
-## 테스트 초기화
-이전 V0.2 진행을 초기화하려면 브라우저 개발자 도구에서 localStorage의 `mdq-v0.2-progress` 항목을 삭제합니다.
+## Build
+GitHub Actions `Build Android APK V0.6` 실행 → Artifact `monster-door-v0.6.0-apk` 다운로드.
+
+기존 웹 프로토타입은 `legacy-web/`에 보존했습니다.

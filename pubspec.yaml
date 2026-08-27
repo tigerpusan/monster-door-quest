@@ -1,0 +1,26 @@
+name: monster_door_quest
+description: Native Monster Door Quest V0.6
+publish_to: "none"
+version: 0.6.0+6
+
+environment:
+  sdk: ">=3.11.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flame: ^1.38.0
+  flame_audio: ^2.12.2
+  shared_preferences: ^2.5.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/audio/bgm/
+    - assets/audio/sfx/
