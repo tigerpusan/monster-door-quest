@@ -1,4 +1,4 @@
-name: Build & Release MonsterDoor APK V0.6.2
+name: Build & Release MonsterDoor APK V0.7.0
 
 on:
   workflow_dispatch:
@@ -43,18 +43,14 @@ jobs:
           p = Path("pubspec.yaml")
           s = p.read_text(encoding="utf-8")
           lines = s.splitlines()
-          found = False
           for i, line in enumerate(lines):
               if line.startswith("version:"):
-                  lines[i] = "version: 0.6.2+62"
-                  found = True
+                  lines[i] = "version: 0.7.0+70"
                   break
-          if not found:
-              lines.append("version: 0.6.2+62")
           p.write_text("\n".join(lines) + "\n", encoding="utf-8")
           PY
 
-      - name: Create unique MonsterDoor Android scaffold
+      - name: Create MonsterDoor Android scaffold
         shell: bash
         run: |
           rm -rf /tmp/monsterdoor_platform
@@ -74,7 +70,7 @@ jobs:
           from pathlib import Path
           p = Path("android/app/src/main/AndroidManifest.xml")
           s = p.read_text(encoding="utf-8")
-          s = s.replace('android:label="monsterdoor"', 'android:label="몬스터door"')
+          s = s.replace('android:label="monsterdoor"', 'android:label="MonsterDoor"')
           p.write_text(s, encoding="utf-8")
           PY
 
@@ -103,14 +99,14 @@ jobs:
         shell: bash
         run: |
           cp build/app/outputs/flutter-apk/app-release.apk \
-             MonsterDoor-v0.6.2-release.apk
-          ls -lh MonsterDoor-v0.6.2-release.apk
+             MonsterDoor-v0.7.0-release.apk
+          ls -lh MonsterDoor-v0.7.0-release.apk
 
       - name: Upload build artifact backup
         uses: actions/upload-artifact@v4
         with:
-          name: MonsterDoor-v0.6.2-release-apk-backup
-          path: MonsterDoor-v0.6.2-release.apk
+          name: MonsterDoor-v0.7.0-release-apk-backup
+          path: MonsterDoor-v0.7.0-release.apk
           if-no-files-found: error
 
       - name: Replace existing test release tag if needed
@@ -118,15 +114,15 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release delete v0.6.2-test --yes --cleanup-tag || true
+          gh release delete v0.7.0-test --yes --cleanup-tag || true
 
       - name: Create GitHub Release with direct APK download
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create v0.6.2-test \
-            MonsterDoor-v0.6.2-release.apk \
-            --title "MonsterDoor V0.6.2 Test Build" \
-            --notes "Android release APK test build. App: 몬스터door / Package: com.tigerpusan.monsterdoor / Version: 0.6.2 (62)" \
+          gh release create v0.7.0-test \
+            MonsterDoor-v0.7.0-release.apk \
+            --title "MonsterDoor V0.7.0 Test Build" \
+            --notes "Android release APK test build. App: MonsterDoor / Package: com.tigerpusan.monsterdoor / Version: 0.7.0 (70)" \
             --prerelease
