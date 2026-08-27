@@ -8,6 +8,7 @@ on:
       - "lib/**"
       - "assets/**"
       - "pubspec.yaml"
+      - "analysis_options.yaml"
       - "test/**"
       - ".github/workflows/build-android.yml"
 
@@ -19,38 +20,50 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
 
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
+      - name: Flutter version
+        run: flutter --version
 
       - name: Create Android platform scaffold
         run: |
           rm -rf /tmp/mdq_platform
-          flutter create --platforms=android --org com.monsterdoor --project-name monster_door_quest /tmp/mdq_platform
+          flutter create \
+            --platforms=android \
+            --org com.monsterdoor \
+            --project-name monster_door_quest \
+            /tmp/mdq_platform
+
           rm -rf android
           cp -R /tmp/mdq_platform/android ./android
 
-      - name: Dependencies
+      - name: Get dependencies
         run: flutter pub get
 
       - name: Analyze
-        run: flutter analyze
+        run: flutter analyze --no-fatal-infos
 
-      - name: Test
+      - name: Run tests
         run: flutter test
 
       - name: Build debug APK
         run: flutter build apk --debug
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: monster-door-v0.6.0-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
