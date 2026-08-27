@@ -1,4 +1,4 @@
-name: Build MonsterDoor Android V0.6.1
+name: Build & Release MonsterDoor APK V0.6.2
 
 on:
   workflow_dispatch:
@@ -13,10 +13,10 @@ on:
       - ".github/workflows/build-android.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  build:
+  build_release:
     runs-on: ubuntu-latest
 
     steps:
@@ -35,10 +35,27 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Flutter version
-        run: flutter --version
+      - name: Set MonsterDoor version
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("pubspec.yaml")
+          s = p.read_text(encoding="utf-8")
+          lines = s.splitlines()
+          found = False
+          for i, line in enumerate(lines):
+              if line.startswith("version:"):
+                  lines[i] = "version: 0.6.2+62"
+                  found = True
+                  break
+          if not found:
+              lines.append("version: 0.6.2+62")
+          p.write_text("\n".join(lines) + "\n", encoding="utf-8")
+          PY
 
       - name: Create unique MonsterDoor Android scaffold
+        shell: bash
         run: |
           rm -rf /tmp/monsterdoor_platform
           flutter create \
@@ -50,17 +67,19 @@ jobs:
           rm -rf android
           cp -R /tmp/monsterdoor_platform/android ./android
 
-      - name: Set Android app label to 몬스터door
+      - name: Set Android app label
+        shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          p = Path('android/app/src/main/AndroidManifest.xml')
-          s = p.read_text()
+          p = Path("android/app/src/main/AndroidManifest.xml")
+          s = p.read_text(encoding="utf-8")
           s = s.replace('android:label="monsterdoor"', 'android:label="몬스터door"')
-          p.write_text(s)
+          p.write_text(s, encoding="utf-8")
           PY
 
       - name: Apply MonsterDoor launcher icon
+        shell: bash
         run: |
           cp assets/app_icon/mdpi/ic_launcher.png android/app/src/main/res/mipmap-mdpi/ic_launcher.png
           cp assets/app_icon/hdpi/ic_launcher.png android/app/src/main/res/mipmap-hdpi/ic_launcher.png
@@ -74,19 +93,40 @@ jobs:
       - name: Analyze
         run: flutter analyze --no-fatal-infos
 
-      - name: Run tests
+      - name: Test
         run: flutter test
 
       - name: Build release APK
         run: flutter build apk --release
 
-      - name: Rename APK with app name and version
+      - name: Prepare named APK
+        shell: bash
         run: |
-          cp build/app/outputs/flutter-apk/app-release.apk MonsterDoor-v0.6.1-release.apk
+          cp build/app/outputs/flutter-apk/app-release.apk \
+             MonsterDoor-v0.6.2-release.apk
+          ls -lh MonsterDoor-v0.6.2-release.apk
 
-      - name: Upload APK
+      - name: Upload build artifact backup
         uses: actions/upload-artifact@v4
         with:
-          name: MonsterDoor-v0.6.1-release-apk
-          path: MonsterDoor-v0.6.1-release.apk
+          name: MonsterDoor-v0.6.2-release-apk-backup
+          path: MonsterDoor-v0.6.2-release.apk
           if-no-files-found: error
+
+      - name: Replace existing test release tag if needed
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete v0.6.2-test --yes --cleanup-tag || true
+
+      - name: Create GitHub Release with direct APK download
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create v0.6.2-test \
+            MonsterDoor-v0.6.2-release.apk \
+            --title "MonsterDoor V0.6.2 Test Build" \
+            --notes "Android release APK test build. App: 몬스터door / Package: com.tigerpusan.monsterdoor / Version: 0.6.2 (62)" \
+            --prerelease
