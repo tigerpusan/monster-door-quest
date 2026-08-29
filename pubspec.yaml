@@ -1,7 +1,7 @@
 name: monster_door_quest
 description: MonsterDoor cute fantasy memory game
 publish_to: "none"
-version: 7.1.6+716
+version: 7.1.7+717
 
 environment:
   sdk: ">=3.11.0 <4.0.0"

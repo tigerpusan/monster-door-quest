@@ -8,11 +8,7 @@ import '../monster_door_game.dart';
 
 class ResultScene extends PositionComponent
     with HasGameReference<MonsterDoorGame> {
-  ResultScene({
-    required this.clear,
-    required this.stage,
-    required this.elapsedSeconds,
-  });
+  ResultScene({required this.clear, required this.stage, required this.elapsedSeconds});
 
   final bool clear;
   final int stage;
@@ -43,24 +39,14 @@ class ResultScene extends PositionComponent
     super.onGameResize(size);
     this.size = size;
     _primary
-      ..size = Vector2(size.x * .82, clear ? size.y * .09 : size.y * .11)
-      ..position = Vector2(size.x * .09, clear ? size.y * .815 : size.y * .80)
+      ..size = Vector2(size.x * .78, clear ? size.y * .085 : size.y * .10)
+      ..position = Vector2(size.x * .11, clear ? size.y * .825 : size.y * .835)
       ..priority = 1000;
   }
 
-  void _center(
-    Canvas canvas,
-    String text,
-    double y,
-    double fs,
-    Color color,
-    FontWeight weight,
-  ) {
+  void _center(Canvas canvas, String text, double y, double fs, Color color, FontWeight weight) {
     final tp = TextPainter(
-      text: TextSpan(
-        text: text,
-        style: TextStyle(fontSize: fs, fontWeight: weight, color: color),
-      ),
+      text: TextSpan(text: text, style: TextStyle(fontSize: fs, fontWeight: weight, color: color)),
       textDirection: TextDirection.ltr,
     )..layout();
     tp.paint(canvas, Offset((size.x - tp.width) / 2, y));
@@ -71,19 +57,20 @@ class ResultScene extends PositionComponent
     _bg.render(canvas, size: size);
 
     if (clear) {
-      // Cover the baked English banner entirely. The Korean celebration title in the art remains,
-      // but the duplicate English line is removed for a cleaner result.
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(size.x * .18, size.y * .145, size.x * .64, size.y * .11),
-          const Radius.circular(24),
-        ),
-        Paint()..color = const Color(0xEE241047),
+      // Remove the baked English line completely, not by covering only part of it.
+      canvas.drawRect(
+        Rect.fromLTWH(0, size.y * .145, size.x, size.y * .13),
+        Paint()..color = const Color(0xFF1D0C40),
       );
 
-      // Replace the busy baked stats with one clean, simple card.
+      // Remove ALL baked stats/buttons from the source image.
+      canvas.drawRect(
+        Rect.fromLTWH(0, size.y * .57, size.x, size.y * .43),
+        Paint()..color = const Color(0xEF14082C),
+      );
+
       final info = RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .14, size.y * .59, size.x * .72, size.y * .14),
+        Rect.fromLTWH(size.x * .16, size.y * .635, size.x * .68, size.y * .115),
         const Radius.circular(28),
       );
       canvas.drawRRect(info, Paint()..color = const Color(0xFF2A1454));
@@ -94,28 +81,11 @@ class ResultScene extends PositionComponent
           ..strokeWidth = 2.5
           ..color = const Color(0xFFFFD86D),
       );
-      _center(
-        canvas,
-        '완료 시간  ${elapsedSeconds.toStringAsFixed(1)}초',
-        size.y * .642,
-        22,
-        const Color(0xFFFFE08A),
-        FontWeight.w900,
-      );
-
-      final fadeRect = Rect.fromLTWH(0, size.y * .90, size.x, size.y * .10);
-      canvas.drawRect(
-        fadeRect,
-        Paint()
-          ..shader = Gradient.linear(
-            fadeRect.topCenter,
-            fadeRect.bottomCenter,
-            const [Color(0xE814082C), Color(0xFF0F061F)],
-          ),
-      );
+      _center(canvas, '완료 시간  ${elapsedSeconds.toStringAsFixed(1)}초', size.y * .673, 22,
+          const Color(0xFFFFE08A), FontWeight.w900);
 
       final primary = RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .13, size.y * .815, size.x * .74, size.y * .085),
+        Rect.fromLTWH(size.x * .11, size.y * .825, size.x * .78, size.y * .085),
         const Radius.circular(30),
       );
       canvas.drawRRect(
@@ -131,39 +101,21 @@ class ResultScene extends PositionComponent
           ..strokeWidth = 3
           ..color = const Color(0xFFFFFFFF),
       );
-      _center(
-        canvas,
-        '다음 스테이지',
-        size.y * .837,
-        23,
-        const Color(0xFF13240B),
-        FontWeight.w900,
-      );
+      _center(canvas, '다음 스테이지', size.y * .846, 23,
+          const Color(0xFF13240B), FontWeight.w900);
     } else {
-      // Mask the busy lower copy from the background and redraw the retry area cleanly.
+      // Remove every baked lower caption and old retry button.
       canvas.drawRect(
-        Rect.fromLTWH(0, size.y * .66, size.x, size.y * .30),
-        Paint()..color = const Color(0xD9100724),
+        Rect.fromLTWH(0, size.y * .65, size.x, size.y * .35),
+        Paint()..color = const Color(0xF214082C),
       );
-      _center(
-        canvas,
-        '문 뒤에서 몬스터가 나타났습니다.',
-        size.y * .685,
-        17,
-        const Color(0xFFFFFFFF),
-        FontWeight.w900,
-      );
-      _center(
-        canvas,
-        '기억한 순서를 다시 확인하세요.',
-        size.y * .727,
-        15,
-        const Color(0xFFD8C4FF),
-        FontWeight.w800,
-      );
+      _center(canvas, '문 뒤에서 몬스터가 나타났습니다.', size.y * .695, 17,
+          const Color(0xFFFFFFFF), FontWeight.w900);
+      _center(canvas, '기억한 순서를 다시 확인하세요.', size.y * .738, 15,
+          const Color(0xFFD8C4FF), FontWeight.w800);
 
       final retry = RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .09, size.y * .80, size.x * .82, size.y * .11),
+        Rect.fromLTWH(size.x * .11, size.y * .835, size.x * .78, size.y * .10),
         const Radius.circular(32),
       );
       canvas.drawRRect(
@@ -179,14 +131,8 @@ class ResultScene extends PositionComponent
           ..strokeWidth = 3
           ..color = const Color(0xFFFFFFFF),
       );
-      _center(
-        canvas,
-        _handled ? '다시 시작 중...' : '다시 도전',
-        size.y * .832,
-        25,
-        const Color(0xFF13240B),
-        FontWeight.w900,
-      );
+      _center(canvas, _handled ? '다시 시작 중...' : '다시 도전', size.y * .864, 24,
+          const Color(0xFF13240B), FontWeight.w900);
     }
   }
 }

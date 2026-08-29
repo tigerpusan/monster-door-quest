@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flame_audio/flame_audio.dart';
 
 abstract class AudioBackend {
@@ -8,8 +9,58 @@ abstract class AudioBackend {
 }
 
 class FlameAudioBackend implements AudioBackend {
+  AudioPool? _doorPool;
+  AudioPool? _wrongPool;
+  AudioPool? _clearPool;
+
   @override
-  Future<void> preload(List<String> files) => FlameAudio.audioCache.loadAll(files);
+  Future<void> preload(List<String> files) async {
+    await FlameAudio.audioCache.loadAll(files);
+    // The door sound is the most latency-sensitive sound in the game.
+    // Keep multiple pre-warmed players available so rapid taps do not queue.
+    _doorPool = await FlameAudio.createPool(
+      AudioManager.doorOpen,
+      minPlayers: 4,
+      maxPlayers: 8,
+    );
+    _wrongPool = await FlameAudio.createPool(
+      AudioManager.wrongBoom,
+      minPlayers: 2,
+      maxPlayers: 3,
+    );
+    _clearPool = await FlameAudio.createPool(
+      AudioManager.clear,
+      minPlayers: 1,
+      maxPlayers: 2,
+    );
+  }
+
+  Future<void> playDoorPool({double volume = 1}) async {
+    final pool = _doorPool;
+    if (pool != null) {
+      await pool.start(volume: volume);
+      return;
+    }
+    await FlameAudio.play(AudioManager.doorOpen, volume: volume);
+  }
+
+  Future<void> playWrongPool({double volume = 1}) async {
+    final pool = _wrongPool;
+    if (pool != null) {
+      await pool.start(volume: volume);
+      return;
+    }
+    await FlameAudio.play(AudioManager.wrongBoom, volume: volume);
+  }
+
+  Future<void> playClearPool({double volume = 1}) async {
+    final pool = _clearPool;
+    if (pool != null) {
+      await pool.start(volume: volume);
+      return;
+    }
+    await FlameAudio.play(AudioManager.clear, volume: volume);
+  }
 
   @override
   Future<void> play(String file, {double volume = 1}) async {
@@ -63,7 +114,7 @@ class AudioManager {
   Future<void> startBgm() async {
     if (!bgmEnabled || !isReady || _bgmPlaying) return;
     _bgmPlaying = true;
-    await backend.startBgm(bgm, volume: .18);
+    await backend.startBgm(bgm, volume: .16);
   }
 
   Future<void> stopBgm() async {
@@ -72,19 +123,40 @@ class AudioManager {
     await backend.stopBgm();
   }
 
-  // V7.1.6 keeps the API stable, but gameplay now deliberately uses fewer
-  // overlapping calls per tap to reduce lag on fast stages.
-  Future<void> playDoorTap() => sfxEnabled ? backend.play(doorTap, volume: .48) : Future.value();
-  Future<void> playDoorUnlock() => sfxEnabled ? backend.play(doorUnlock, volume: .45) : Future.value();
-  Future<void> playDoorOpen() => sfxEnabled ? backend.play(doorOpen, volume: .62) : Future.value();
-  Future<void> playCorrect() => sfxEnabled ? backend.play(correct, volume: .68) : Future.value();
+  Future<void> playDoorOpen() async {
+    if (!sfxEnabled) return;
+    final b = backend;
+    if (b is FlameAudioBackend) {
+      await b.playDoorPool(volume: .70);
+    } else {
+      await b.play(doorOpen, volume: .70);
+    }
+  }
 
   Future<void> playWrong() async {
     if (!sfxEnabled) return;
-    await backend.play(wrongBoom, volume: .80);
-    await backend.play(monsterGrowl, volume: .54);
+    final b = backend;
+    if (b is FlameAudioBackend) {
+      await b.playWrongPool(volume: .82);
+    } else {
+      await b.play(wrongBoom, volume: .82);
+    }
+    // Do not stack a growl immediately on top of the error hit; that stacking was
+    // one of the causes of delayed audio on later stages.
   }
 
-  Future<void> playClear({bool milestoneStage = false}) =>
-      sfxEnabled ? backend.play(milestoneStage ? milestone : clear, volume: .80) : Future.value();
+  Future<void> playClear({bool milestoneStage = false}) async {
+    if (!sfxEnabled) return;
+    final b = backend;
+    if (!milestoneStage && b is FlameAudioBackend) {
+      await b.playClearPool(volume: .78);
+      return;
+    }
+    await b.play(milestoneStage ? milestone : clear, volume: .78);
+  }
+
+  // Kept for compatibility with existing tests / older callers.
+  Future<void> playDoorTap() => sfxEnabled ? backend.play(doorTap, volume: .45) : Future.value();
+  Future<void> playDoorUnlock() => sfxEnabled ? backend.play(doorUnlock, volume: .45) : Future.value();
+  Future<void> playCorrect() => sfxEnabled ? backend.play(correct, volume: .60) : Future.value();
 }

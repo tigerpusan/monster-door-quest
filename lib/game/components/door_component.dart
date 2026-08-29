@@ -6,10 +6,10 @@ import '../core/game_rules.dart';
 
 typedef DoorSelected = void Function(DoorSide side);
 
-/// V7.1.6
-/// - Keeps the quick arched opening animation.
-/// - Removes the mismatched fluorescent outline.
-/// - Shows a clear O / X style success mark in the center of the door instead.
+/// Verified V7.1.7 door feedback:
+/// - NO fluorescent outline at all.
+/// - The existing arched opening animation remains.
+/// - O / X is drawn in the door center only.
 class DoorComponent extends PositionComponent with TapCallbacks {
   DoorComponent({required this.side, required this.onSelected})
       : super(anchor: Anchor.topLeft);
@@ -17,48 +17,28 @@ class DoorComponent extends PositionComponent with TapCallbacks {
   final DoorSide side;
   final DoorSelected onSelected;
 
-  final double openDuration = 0.18;
-  final double visualDuration = 0.38;
-
+  final double visualDuration = 0.34;
   bool isPressed = false;
   bool isOpening = false;
   bool? correct;
   double openProgress = 0;
   double _visualElapsed = 0;
   double _resultTimer = 0;
-  double _pressFlash = 0;
   bool _firedThisTap = false;
-
-  void pressDown() {
-    isPressed = true;
-    _pressFlash = 1;
-  }
 
   void open({required bool correct}) {
     this.correct = correct;
     isOpening = true;
     _visualElapsed = 0;
     openProgress = 0;
-    _resultTimer = .30;
-    _pressFlash = 1;
-  }
-
-  void resetDoor() {
-    isPressed = false;
-    isOpening = false;
-    correct = null;
-    openProgress = 0;
-    _visualElapsed = 0;
-    _resultTimer = 0;
-    _pressFlash = 0;
-    _firedThisTap = false;
+    _resultTimer = .28;
   }
 
   @override
   void onTapDown(TapDownEvent event) {
     if (_firedThisTap) return;
     _firedThisTap = true;
-    pressDown();
+    isPressed = true;
     onSelected(side);
   }
 
@@ -80,12 +60,12 @@ class DoorComponent extends PositionComponent with TapCallbacks {
     if (isOpening) {
       _visualElapsed += dt;
       final t = (_visualElapsed / visualDuration).clamp(0.0, 1.0);
-      if (t < .58) {
-        openProgress = (t / .58).clamp(0.0, 1.0);
-      } else if (t < .72) {
+      if (t < .60) {
+        openProgress = (t / .60).clamp(0.0, 1.0);
+      } else if (t < .75) {
         openProgress = 1;
       } else {
-        openProgress = (1 - ((t - .72) / .28)).clamp(0.0, 1.0);
+        openProgress = (1 - ((t - .75) / .25)).clamp(0.0, 1.0);
       }
       if (t >= 1) {
         isOpening = false;
@@ -96,21 +76,16 @@ class DoorComponent extends PositionComponent with TapCallbacks {
       _resultTimer = (_resultTimer - dt).clamp(0, 1).toDouble();
       if (_resultTimer <= 0) correct = null;
     }
-    if (_pressFlash > 0) {
-      _pressFlash = (_pressFlash - dt * 5).clamp(0, 1).toDouble();
-    }
   }
 
   double _easeOutCubic(double x) => 1 - math.pow(1 - x, 3).toDouble();
 
-  Rect _leafBounds() {
-    return Rect.fromLTWH(
-      size.x * .105,
-      size.y * .145,
-      size.x * .79,
-      size.y * .80,
-    );
-  }
+  Rect _leafBounds() => Rect.fromLTWH(
+        size.x * .105,
+        size.y * .145,
+        size.x * .79,
+        size.y * .80,
+      );
 
   Path _archPath(Rect r) {
     final radius = r.width * .5;
@@ -128,36 +103,28 @@ class DoorComponent extends PositionComponent with TapCallbacks {
       ..close();
   }
 
-  void _drawCorrectMark(Canvas canvas, Rect leafBounds) {
-    final center = Offset(leafBounds.center.dx, leafBounds.top + leafBounds.height * .54);
-    final radius = leafBounds.width * .15;
+  void _drawO(Canvas canvas, Rect r) {
+    final c = Offset(r.center.dx, r.top + r.height * .54);
     canvas.drawCircle(
-      center,
-      radius,
+      c,
+      r.width * .15,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 7
+        ..strokeWidth = 8
+        ..strokeCap = StrokeCap.round
         ..color = const Color(0xFF8DFF9E),
     );
   }
 
-  void _drawWrongMark(Canvas canvas, Rect leafBounds) {
-    final center = Offset(leafBounds.center.dx, leafBounds.top + leafBounds.height * .54);
-    final half = leafBounds.width * .12;
-    final paint = Paint()
+  void _drawX(Canvas canvas, Rect r) {
+    final c = Offset(r.center.dx, r.top + r.height * .54);
+    final half = r.width * .13;
+    final p = Paint()
       ..color = const Color(0xFFFF647E)
-      ..strokeWidth = 8
+      ..strokeWidth = 9
       ..strokeCap = StrokeCap.round;
-    canvas.drawLine(
-      Offset(center.dx - half, center.dy - half),
-      Offset(center.dx + half, center.dy + half),
-      paint,
-    );
-    canvas.drawLine(
-      Offset(center.dx + half, center.dy - half),
-      Offset(center.dx - half, center.dy + half),
-      paint,
-    );
+    canvas.drawLine(Offset(c.dx - half, c.dy - half), Offset(c.dx + half, c.dy + half), p);
+    canvas.drawLine(Offset(c.dx + half, c.dy - half), Offset(c.dx - half, c.dy + half), p);
   }
 
   @override
@@ -170,91 +137,55 @@ class DoorComponent extends PositionComponent with TapCallbacks {
         ? const Color(0xFF1439A5)
         : const Color(0xFF8B1E88);
 
-    final leafBounds = _leafBounds();
-    final arch = _archPath(leafBounds);
+    final leaf = _leafBounds();
+    final arch = _archPath(leaf);
 
-    if (isPressed || _pressFlash > 0) {
-      canvas.drawPath(
-        arch,
-        Paint()..color = const Color(0x18FFFFFF),
-      );
-    }
-
+    // Important: there is intentionally NO stroke/glow when pressed.
     if (openProgress > 0) {
       final p = _easeOutCubic(openProgress);
-
       canvas.drawPath(
         arch,
         Paint()
           ..shader = Gradient.radial(
-            leafBounds.center,
-            leafBounds.width * .8,
+            leaf.center,
+            leaf.width * .8,
             const [Color(0xFF4A2287), Color(0xFF12051F), Color(0xFF020106)],
             const [0.0, .55, 1.0],
           ),
       );
-      canvas.drawPath(
-        arch,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 4
-          ..color = const Color(0xFFFFD975),
-      );
 
       final scaleX = (1 - p * .90).clamp(.10, 1.0).toDouble();
-      final hingeX = side == DoorSide.left ? leafBounds.left : leafBounds.right;
+      final hingeX = side == DoorSide.left ? leaf.left : leaf.right;
       canvas.save();
       canvas.translate(hingeX, 0);
       canvas.scale(scaleX, 1);
       canvas.translate(-hingeX, 0);
-
       canvas.drawPath(
         arch,
         Paint()
-          ..shader = Gradient.linear(
-            leafBounds.topLeft,
-            leafBounds.bottomRight,
-            [accent, deep],
-          ),
-      );
-      canvas.drawPath(
-        arch,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 4 / scaleX
-          ..color = const Color(0xFFFFD66B),
+          ..shader = Gradient.linear(leaf.topLeft, leaf.bottomRight, [accent, deep]),
       );
       canvas.restore();
 
+      // narrow inner light only; no external fluorescent outline
       final edgeX = side == DoorSide.left
-          ? leafBounds.left + leafBounds.width * scaleX
-          : leafBounds.right - leafBounds.width * scaleX;
+          ? leaf.left + leaf.width * scaleX
+          : leaf.right - leaf.width * scaleX;
       canvas.drawLine(
-        Offset(edgeX, leafBounds.top + leafBounds.height * .22),
-        Offset(edgeX, leafBounds.bottom - 10),
+        Offset(edgeX, leaf.top + leaf.height * .25),
+        Offset(edgeX, leaf.bottom - 12),
         Paint()
           ..color = const Color(0xFFFFF1B5)
-          ..strokeWidth = 4
+          ..strokeWidth = 3
           ..strokeCap = StrokeCap.round,
       );
-
-      for (var i = 0; i < 7; i++) {
-        final a = (i + 1) / 8;
-        final x = leafBounds.left + leafBounds.width * a;
-        final y = leafBounds.top + leafBounds.height * (.28 + .08 * ((i * 3) % 7));
-        canvas.drawCircle(
-          Offset(x, y),
-          1.8 + 3.0 * p,
-          Paint()..color = const Color(0xFFFFE891).withValues(alpha: .18 + .58 * p),
-        );
-      }
     }
 
     if (correct != null) {
       if (correct!) {
-        _drawCorrectMark(canvas, leafBounds);
+        _drawO(canvas, leaf);
       } else {
-        _drawWrongMark(canvas, leafBounds);
+        _drawX(canvas, leaf);
       }
     }
   }

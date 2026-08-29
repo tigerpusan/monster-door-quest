@@ -59,36 +59,42 @@ class DoorScene extends PositionComponent
       return;
     }
 
-    // Keep only one short gate against accidental double-fires while preserving fast rhythm.
-    _inputCooldown = .026;
+    // 16 ms protects against accidental duplicate callbacks but still allows
+    // rapid alternating taps at frame speed.
+    _inputCooldown = .016;
 
     final result = session.choose(side);
     final door = side == DoorSide.left ? leftDoor : rightDoor;
     door.open(correct: result != ChoiceResult.wrong);
 
-    // Single immediate feedback path per tap keeps sound and vibration synced even on fast stages.
+    // Audio and haptic fire at input time, never after animation completion.
     unawaited(game.audioManager.playDoorOpen());
+    if (result == ChoiceResult.wrong) {
+      unawaited(HapticFeedback.heavyImpact());
+    } else {
+      // selectionClick is shorter/lower latency than lightImpact and does not
+      // build a long vibration queue during stage 7+ rapid input.
+      unawaited(HapticFeedback.selectionClick());
+    }
 
     if (result == ChoiceResult.wrong) {
-      _feedbackText = '몬스터 출현!';
-      _feedbackTimer = .72;
+      _feedbackText = 'X';
+      _feedbackTimer = .55;
       feedback.playWrong();
-      unawaited(HapticFeedback.heavyImpact());
       unawaited(game.audioManager.playWrong());
       _transitioning = true;
-      transitionDelay = .48;
+      transitionDelay = .44;
       return;
     }
 
     feedback.playCorrect();
     progress.setCurrent(session.step);
-    _feedbackText = result == ChoiceResult.clear ? '클리어!' : '정답!';
-    _feedbackTimer = result == ChoiceResult.clear ? .45 : .22;
-    unawaited(HapticFeedback.lightImpact());
+    _feedbackText = 'O';
+    _feedbackTimer = .20;
 
     if (result == ChoiceResult.clear) {
       _transitioning = true;
-      transitionDelay = .38;
+      transitionDelay = .34;
       unawaited(
         game.audioManager.playClear(
           milestoneStage: [5, 10, 15, 20].contains(session.stage),
@@ -113,30 +119,22 @@ class DoorScene extends PositionComponent
         elapsed >= GameRules.playSeconds &&
         !_transitioning) {
       session.phase = SessionPhase.failed;
-      _feedbackText = '시간 종료!';
-      _feedbackTimer = .8;
+      _feedbackText = 'X';
+      _feedbackTimer = .6;
       feedback.playWrong();
       unawaited(HapticFeedback.heavyImpact());
       unawaited(game.audioManager.playWrong());
       _transitioning = true;
-      transitionDelay = .48;
+      transitionDelay = .44;
     }
 
     if (_transitioning) {
       transitionDelay -= dt;
       if (transitionDelay <= 0) {
         if (session.phase == SessionPhase.cleared) {
-          game.showResult(
-            clear: true,
-            stage: session.stage,
-            elapsedSeconds: elapsed,
-          );
+          game.showResult(clear: true, stage: session.stage, elapsedSeconds: elapsed);
         } else if (session.phase == SessionPhase.failed) {
-          game.showResult(
-            clear: false,
-            stage: session.stage,
-            elapsedSeconds: elapsed,
-          );
+          game.showResult(clear: false, stage: session.stage, elapsedSeconds: elapsed);
         }
       }
     }
@@ -162,7 +160,7 @@ class DoorScene extends PositionComponent
 
   @override
   void render(Canvas canvas) {
-    final shake = feedback.shakeActive ? sin(elapsed * 170) * 5 : 0.0;
+    final shake = feedback.shakeActive ? sin(elapsed * 170) * 4 : 0.0;
     canvas.save();
     canvas.translate(shake, 0);
     _bg.render(
@@ -171,22 +169,21 @@ class DoorScene extends PositionComponent
       size: Vector2(size.x, size.y * 1.035),
     );
 
-    // Hide the baked top title completely so the live HUD never overlaps it.
+    // Fully cover all baked title/progress/timer content in the top part of the source art.
     canvas.drawRect(
-      Rect.fromLTWH(0, 0, size.x, size.y * .14),
-      Paint()..color = const Color(0xFF150830),
+      Rect.fromLTWH(0, 0, size.x, size.y * .31),
+      Paint()..color = const Color(0xFF15082F),
     );
-
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .08, size.y * .06, size.x * .84, size.y * .255),
+        Rect.fromLTWH(size.x * .08, size.y * .055, size.x * .84, size.y * .245),
         const Radius.circular(24),
       ),
-      Paint()..color = const Color(0xF21A0D39),
+      Paint()..color = const Color(0xFF1B0C3A),
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .10, size.y * .08, size.x * .80, size.y * .215),
+        Rect.fromLTWH(size.x * .10, size.y * .073, size.x * .80, size.y * .205),
         const Radius.circular(20),
       ),
       Paint()
@@ -194,18 +191,12 @@ class DoorScene extends PositionComponent
         ..strokeWidth = 2
         ..color = const Color(0x88FFD96A),
     );
-    _center(
-      canvas,
-      '기억의 문을 여세요!',
-      size.y * .108,
-      27,
-      const Color(0xFFFFD96A),
-      FontWeight.w900,
-    );
+    _center(canvas, '기억의 문을 여세요!', size.y * .100, 26,
+        const Color(0xFFFFD96A), FontWeight.w900);
     _center(
       canvas,
       'STAGE ${session.stage}   ${min(session.step + 1, session.route.length)} / ${session.route.length}',
-      size.y * .158,
+      size.y * .151,
       14,
       const Color(0xFFFFFFFF),
       FontWeight.w800,
@@ -214,38 +205,30 @@ class DoorScene extends PositionComponent
     _center(
       canvas,
       '${remain.toStringAsFixed(1)}초',
-      size.y * .205,
+      size.y * .200,
       29,
       remain < 2.5 ? const Color(0xFFFF7777) : const Color(0xFFFFE08B),
       FontWeight.w900,
     );
 
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .33, size.y * .285, size.x * .34, size.y * .06),
-        const Radius.circular(18),
-      ),
-      Paint()..color = const Color(0xF51A0D39),
-    );
-
     if (_feedbackTimer > 0) {
       final rr = RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .32, size.y * .315, size.x * .36, 40),
-        const Radius.circular(20),
+        Rect.fromLTWH(size.x * .43, size.y * .305, size.x * .14, 44),
+        const Radius.circular(22),
       );
-      canvas.drawRRect(rr, Paint()..color = const Color(0xF01B0E38));
+      canvas.drawRRect(rr, Paint()..color = const Color(0xD91B0E38));
       _center(
         canvas,
         _feedbackText,
-        size.y * .323,
-        17,
-        const Color(0xFFFFFFFF),
+        size.y * .311,
+        24,
+        _feedbackText == 'O' ? const Color(0xFF8DFF9E) : const Color(0xFFFF6D86),
         FontWeight.w900,
       );
     }
 
     if (feedback.flashKind != FlashKind.none) {
-      final alpha = (60 * (1 - feedback.elapsed / .28).clamp(0, 1)).round();
+      final alpha = (42 * (1 - feedback.elapsed / .25).clamp(0, 1)).round();
       canvas.drawRect(
         size.toRect(),
         Paint()
