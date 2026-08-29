@@ -1,30 +1,16 @@
-# MonsterDoor V7.1.2 Final Polish Playtest Patch
+# MonsterDoor V7.1.4 Door Shape & Overlay Fix
 
-V7.1.1 실기 테스트 피드백을 한 번에 반영한 통합 완성도 패치입니다.
+Final visual cleanup patch following V7.1.3 mobile playtest.
 
-## 핵심 수정
-- 문이 실제로 열리는 것처럼 보이는 고속 스윙/포털 애니메이션
-- 문 애니메이션과 입력 판정 분리: 빠른 연속 입력 유지
-- 기억/실행/인트로 HUD를 불투명 패널로 재구성해 이미지 속 글자와 실시간 글자 중첩 제거
-- 실패 화면 `다시 도전`, 시작/기억완료 버튼을 tap-down 즉시 반응하도록 변경
-- 첫 화면에 짧은 스토리 + 3단계 사용법 추가
-- BGM을 24초 마법 모험 루프로 교체, OGG 약 156KB로 용량 억제
-- 기존 앱 lifecycle BGM 정지/재개 로직 유지
-- 앱 버전 7.1.2+712
-- APK: MonsterDoor-v7.1.2-release.apk
+## Changes
+- Arched door-leaf animation now matches the actual illustrated doors.
+- Large rectangular opening effect removed.
+- Gameplay heading: `기억의 문을 여세요!`.
+- Remaining baked text ghosting around gameplay/memory HUD masked.
+- Clear-screen duplicated `STAGE ... COMPLETE` removed.
+- Clear stats replaced with one opaque dynamic card.
+- Decorative/nonfunctional `다시 보기` baked button hidden.
+- Single CTA on clear: `다음 스테이지`.
+- Fast tap-down input and existing hit feel retained.
 
-## 테스트 포인트
-1. 문 터치 시 외곽선만이 아니라 실제 문짝이 접히며 포털이 드러나는지
-2. 다음 문을 빠르게 연속 터치해도 입력이 막히지 않는지
-3. 모든 화면의 제목/스테이지/타이머 글자가 배경 글자와 겹치지 않는지
-4. `다시 도전`을 누르는 순간 즉시 다음 화면으로 넘어가는지
-5. 앱을 백그라운드로 보내면 BGM이 멈추고 복귀 시 다시 재생되는지
-6. BGM이 이전보다 판타지 모험 분위기로 자연스러운지
-
-
-## V7.1.3 visible-door + layout cleanup
-- Door input fires on touch-down for immediate response.
-- Door now performs a clear open/hold/close visual cycle with portal reveal.
-- Intro button changed to `시작`; approved hero background is shifted upward so the hero is not cut off.
-- Memory screen uses a clean opaque panel over the forest background to eliminate baked-text/button ghosting.
-- Door scene input cooldown reduced while keeping animation independent from scoring.
+Version: `7.1.4+714`

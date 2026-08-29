@@ -75,6 +75,13 @@ class MemoryScene extends PositionComponent
       size: Vector2(size.x, size.y * 1.045),
     );
 
+    // Hide all baked-in top copy from the source illustration before placing
+    // the real memory UI. This removes the last visible text ghosting.
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.x, size.y * .12),
+      Paint()..color = const Color(0xFF16082F),
+    );
+
     // Solid content panel removes every baked-in title/list from the mockup.
     canvas.drawRRect(
       RRect.fromRectAndRadius(

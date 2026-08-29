@@ -6,8 +6,10 @@ import '../core/game_rules.dart';
 
 typedef DoorSelected = void Function(DoorSide side);
 
-/// V7.1.3: immediate input + a clearly visible open/hold/close visual cycle.
-/// The visual animation never blocks the next answer.
+/// V7.1.4
+/// - Keeps a generous tap target, but the rendered animation is clipped to the
+///   actual ARCHED door leaf area so it no longer looks like a large rectangle.
+/// - Input fires on tap-down and the animation never blocks the next answer.
 class DoorComponent extends PositionComponent with TapCallbacks {
   DoorComponent({required this.side, required this.onSelected})
       : super(anchor: Anchor.topLeft);
@@ -15,7 +17,6 @@ class DoorComponent extends PositionComponent with TapCallbacks {
   final DoorSide side;
   final DoorSelected onSelected;
 
-  /// Kept short for tests/feel. Total visual cycle includes hold + close.
   final double openDuration = 0.18;
   final double visualDuration = 0.38;
 
@@ -58,7 +59,6 @@ class DoorComponent extends PositionComponent with TapCallbacks {
     if (_firedThisTap) return;
     _firedThisTap = true;
     pressDown();
-    // Fire on DOWN, not UP. This removes the perceived delay on rapid play.
     onSelected(side);
   }
 
@@ -80,8 +80,6 @@ class DoorComponent extends PositionComponent with TapCallbacks {
     if (isOpening) {
       _visualElapsed += dt;
       final t = (_visualElapsed / visualDuration).clamp(0.0, 1.0);
-
-      // 0-58% open, 58-72% hold, 72-100% close.
       if (t < .58) {
         openProgress = (t / .58).clamp(0.0, 1.0);
       } else if (t < .72) {
@@ -89,7 +87,6 @@ class DoorComponent extends PositionComponent with TapCallbacks {
       } else {
         openProgress = (1 - ((t - .72) / .28)).clamp(0.0, 1.0);
       }
-
       if (t >= 1) {
         isOpening = false;
         openProgress = 0;
@@ -106,155 +103,151 @@ class DoorComponent extends PositionComponent with TapCallbacks {
 
   double _easeOutCubic(double x) => 1 - math.pow(1 - x, 3).toDouble();
 
+  Rect _leafBounds() {
+    // The component itself is the easy-to-hit arch/frame region.
+    // The animated leaf occupies only the inset inner door panel.
+    return Rect.fromLTWH(
+      size.x * .105,
+      size.y * .145,
+      size.x * .79,
+      size.y * .80,
+    );
+  }
+
+  Path _archPath(Rect r) {
+    final radius = r.width * .5;
+    final springY = r.top + radius;
+    return Path()
+      ..moveTo(r.left, r.bottom)
+      ..lineTo(r.left, springY)
+      ..arcTo(
+        Rect.fromCircle(center: Offset(r.center.dx, springY), radius: radius),
+        math.pi,
+        math.pi,
+        false,
+      )
+      ..lineTo(r.right, r.bottom)
+      ..close();
+  }
+
   @override
   void render(Canvas canvas) {
     super.render(canvas);
     final accent = side == DoorSide.left
-        ? const Color(0xFF53C9FF)
-        : const Color(0xFFFF72D4);
+        ? const Color(0xFF55CFFF)
+        : const Color(0xFFFF72D7);
     final deep = side == DoorSide.left
         ? const Color(0xFF1439A5)
         : const Color(0xFF8B1E88);
-    final frame = RRect.fromRectAndRadius(
-      size.toRect().deflate(2),
-      Radius.circular(size.x * .14),
-    );
 
-    // Tap response: quick glow + inward press.
+    final leafBounds = _leafBounds();
+    final arch = _archPath(leafBounds);
+
     if (isPressed || _highlight > 0) {
-      canvas.drawRRect(
-        frame,
+      canvas.drawPath(
+        arch,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 6 + 4 * _highlight
-          ..color = accent.withValues(alpha: .45 + .35 * _highlight)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 9),
+          ..strokeWidth = 5 + 3 * _highlight
+          ..color = accent.withValues(alpha: .35 + .35 * _highlight)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
       );
     }
 
     if (openProgress > 0) {
       final p = _easeOutCubic(openProgress);
-      final inner = Rect.fromLTWH(
-        size.x * .055,
-        size.y * .035,
-        size.x * .89,
-        size.y * .93,
-      );
 
-      // Strong black/purple portal fully hides the static painted door beneath.
-      final portal = RRect.fromRectAndRadius(inner, Radius.circular(size.x * .095));
-      canvas.drawRRect(
-        portal,
+      // Portal exactly matches the arched door leaf. This completely masks the
+      // static baked-in door during the opening cycle without covering the frame.
+      canvas.drawPath(
+        arch,
         Paint()
           ..shader = Gradient.radial(
-            inner.center,
-            inner.width * .75,
-            const [Color(0xFF3D1A75), Color(0xFF12051F), Color(0xFF020106)],
-            const [0.0, .52, 1.0],
+            leafBounds.center,
+            leafBounds.width * .8,
+            const [Color(0xFF4A2287), Color(0xFF12051F), Color(0xFF020106)],
+            const [0.0, .55, 1.0],
           ),
       );
-      canvas.drawRRect(
-        portal,
+      canvas.drawPath(
+        arch,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 7
-          ..color = const Color(0xFFFFDB74),
+          ..strokeWidth = 4
+          ..color = const Color(0xFFFFD975),
       );
 
-      // Door leaf collapses toward its OUTER hinge. This is deliberately high
-      // contrast so the player can see the door swing even during fast taps.
-      final widthFactor = (1 - p * .91).clamp(.09, 1.0).toDouble();
-      final movingWidth = inner.width * widthFactor;
-      final hingeX = side == DoorSide.left ? inner.left : inner.right;
-      final leafRect = side == DoorSide.left
-          ? Rect.fromLTWH(hingeX, inner.top, movingWidth, inner.height)
-          : Rect.fromLTWH(hingeX - movingWidth, inner.top, movingWidth, inner.height);
+      // Draw an arched door leaf compressed toward its outside hinge. The whole
+      // painted shape is scaled, so its arch remains an arch rather than turning
+      // into the oversized rounded rectangle seen in V7.1.3.
+      final scaleX = (1 - p * .90).clamp(.10, 1.0).toDouble();
+      final hingeX = side == DoorSide.left ? leafBounds.left : leafBounds.right;
+      canvas.save();
+      canvas.translate(hingeX, 0);
+      canvas.scale(scaleX, 1);
+      canvas.translate(-hingeX, 0);
 
-      // Cast shadow behind the moving leaf.
-      final shadowX = side == DoorSide.left ? leafRect.right : leafRect.left;
-      canvas.drawRect(
-        Rect.fromLTWH(shadowX - 13, inner.top + 8, 26, inner.height - 16),
-        Paint()
-          ..color = const Color(0xCC000000)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 13),
-      );
-
-      final leaf = RRect.fromRectAndRadius(
-        leafRect,
-        Radius.circular(math.max(4, size.x * .085 * widthFactor)),
-      );
-      canvas.drawRRect(
-        leaf,
+      canvas.drawPath(
+        arch,
         Paint()
           ..shader = Gradient.linear(
-            leafRect.topLeft,
-            leafRect.bottomRight,
+            leafBounds.topLeft,
+            leafBounds.bottomRight,
             [accent, deep],
           ),
       );
-      canvas.drawRRect(
-        leaf,
+      canvas.drawPath(
+        arch,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 6
+          ..strokeWidth = 4 / scaleX
           ..color = const Color(0xFFFFD66B),
       );
+      canvas.restore();
 
-      // Bright inner edge behaves like a 3D door thickness.
-      final innerEdgeX = side == DoorSide.left ? leafRect.right : leafRect.left;
-      canvas.drawRect(
-        Rect.fromLTWH(innerEdgeX - 5, inner.top + 8, 10, inner.height - 16),
-        Paint()..color = const Color(0xFFFFF1B5),
-      );
-
-      // Flash from the doorway makes the action unmistakable.
-      final flashAlpha = (1 - (p - .72).abs() / .72).clamp(0.0, 1.0);
-      canvas.drawRRect(
-        portal,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 12
-          ..color = accent.withValues(alpha: .18 + .42 * flashAlpha)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12),
-      );
-
-      for (var i = 0; i < 9; i++) {
-        final a = (i + 1) / 10;
-        final x = inner.left + inner.width * a;
-        final y = inner.top + inner.height * (.12 + .095 * ((i * 5) % 8));
-        canvas.drawCircle(
-          Offset(x, y),
-          2.0 + 4.0 * p,
-          Paint()..color = const Color(0xFFFFE891).withValues(alpha: .22 + .65 * p),
-        );
-      }
-
-      // A speed slash in the opening direction adds a tactile hit feeling.
-      final slashY = inner.center.dy;
-      final slashStart = side == DoorSide.left
-          ? Offset(inner.right - 8, slashY)
-          : Offset(inner.left + 8, slashY);
-      final slashEnd = side == DoorSide.left
-          ? Offset(inner.left + 20, slashY - 18)
-          : Offset(inner.right - 20, slashY - 18);
+      // Thin bright edge where the door separates from the portal.
+      final edgeX = side == DoorSide.left
+          ? leafBounds.left + leafBounds.width * scaleX
+          : leafBounds.right - leafBounds.width * scaleX;
       canvas.drawLine(
-        slashStart,
-        slashEnd,
+        Offset(edgeX, leafBounds.top + leafBounds.height * .22),
+        Offset(edgeX, leafBounds.bottom - 10),
         Paint()
-          ..color = const Color(0xAAFFFFFF)
+          ..color = const Color(0xFFFFF1B5)
           ..strokeWidth = 4
           ..strokeCap = StrokeCap.round,
       );
+
+      final flashAlpha = (1 - (p - .72).abs() / .72).clamp(0.0, 1.0);
+      canvas.drawPath(
+        arch,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 9
+          ..color = accent.withValues(alpha: .12 + .38 * flashAlpha)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+      );
+
+      for (var i = 0; i < 7; i++) {
+        final a = (i + 1) / 8;
+        final x = leafBounds.left + leafBounds.width * a;
+        final y = leafBounds.top + leafBounds.height * (.28 + .08 * ((i * 3) % 7));
+        canvas.drawCircle(
+          Offset(x, y),
+          1.8 + 3.0 * p,
+          Paint()..color = const Color(0xFFFFE891).withValues(alpha: .18 + .58 * p),
+        );
+      }
     }
 
     if (correct != null) {
       final c = correct! ? const Color(0xFF77FF9C) : const Color(0xFFFF5576);
-      canvas.drawRRect(
-        frame,
+      canvas.drawPath(
+        arch,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 5
-          ..color = c.withValues(alpha: .95),
+          ..strokeWidth = 4
+          ..color = c.withValues(alpha: .92),
       );
     }
   }

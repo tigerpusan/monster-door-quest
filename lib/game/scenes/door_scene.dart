@@ -44,11 +44,11 @@ class DoorScene extends PositionComponent
     super.onGameResize(size);
     this.size = size;
     leftDoor
-      ..size = Vector2(size.x * .37, size.y * .455)
-      ..position = Vector2(size.x * .065, size.y * .345);
+      ..size = Vector2(size.x * .335, size.y * .405)
+      ..position = Vector2(size.x * .105, size.y * .385);
     rightDoor
-      ..size = Vector2(size.x * .37, size.y * .455)
-      ..position = Vector2(size.x * .565, size.y * .345);
+      ..size = Vector2(size.x * .335, size.y * .405)
+      ..position = Vector2(size.x * .56, size.y * .385);
     progress
       ..size = Vector2(size.x * .68, 42)
       ..position = Vector2(size.x * .16, size.y * .255);
@@ -179,14 +179,14 @@ class DoorScene extends PositionComponent
     // through and fixes the text-on-text overlap seen in V7.1.1.
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .12, size.y * .075, size.x * .76, size.y * .225),
+        Rect.fromLTWH(size.x * .08, size.y * .045, size.x * .84, size.y * .275),
         const Radius.circular(24),
       ),
       Paint()..color = const Color(0xF21A0D39),
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .135, size.y * .09, size.x * .73, size.y * .195),
+        Rect.fromLTWH(size.x * .10, size.y * .065, size.x * .80, size.y * .225),
         const Radius.circular(20),
       ),
       Paint()
@@ -196,8 +196,8 @@ class DoorScene extends PositionComponent
     );
     _center(
       canvas,
-      '문을 여세요!',
-      size.y * .105,
+      '기억의 문을 여세요!',
+      size.y * .092,
       27,
       const Color(0xFFFFD96A),
       FontWeight.w900,
@@ -205,7 +205,7 @@ class DoorScene extends PositionComponent
     _center(
       canvas,
       'STAGE ${session.stage}   ${min(session.step + 1, session.route.length)} / ${session.route.length}',
-      size.y * .153,
+      size.y * .145,
       14,
       const Color(0xFFFFFFFF),
       FontWeight.w800,
@@ -214,10 +214,19 @@ class DoorScene extends PositionComponent
     _center(
       canvas,
       '${remain.toStringAsFixed(1)}초',
-      size.y * .193,
+      size.y * .195,
       29,
       remain < 2.5 ? const Color(0xFFFF7777) : const Color(0xFFFFE08B),
       FontWeight.w900,
+    );
+
+    // Hide the baked-in timer/text from the original artwork below the HUD.
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(size.x * .33, size.y * .285, size.x * .34, size.y * .06),
+        const Radius.circular(18),
+      ),
+      Paint()..color = const Color(0xF51A0D39),
     );
 
     if (_feedbackTimer > 0) {
