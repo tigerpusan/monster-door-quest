@@ -1,26 +1,22 @@
-# MonsterDoor V7.1.1 Cute Full Playtest Patch
+# MonsterDoor V7.1.2 Final Polish Playtest Patch
 
-바로 GitHub에 덮어써서 Android APK를 다시 빌드하기 위한 **실사용 완성형 테스트 패치**입니다.
+V7.1.1 실기 테스트 피드백을 한 번에 반영한 통합 완성도 패치입니다.
 
-## 이번 패치에 실제 반영된 내용
-- 승인한 귀여운 판타지 시안 4종을 WebP로 최적화해 실제 앱 화면에 사용
-- 게임 화면: 귀여운 마법의 두 문/용사/공주 시안 적용
-- 기억 화면: 시안 배경 + 실제 랜덤 루트를 동적으로 다시 그림
-- 실패 화면: 완성형 귀여운 몬스터 어택 시안 적용
-- 성공 화면: 완성형 스테이지 클리어 시안 적용 + 현재 스테이지/시간 동적 표시
-- 문 입력 지연 축소: 문 열림 0.14초 / 다음 입력 대기 약 0.09초
-- BGM 교체: 짧고 가벼운 magical ambient OGG
-- 앱이 background/inactive 상태가 되면 BGM 즉시 stop, 복귀 시 재생
-- 기존 대용량 start poster와 구형 WAV BGM 제거
-- 신규 UI 4장 WebP 총 용량 약 0.55MB 수준
-- GitHub Actions: `MonsterDoor-v7.1.1-release.apk` 직접 Release 생성
+## 핵심 수정
+- 문이 실제로 열리는 것처럼 보이는 고속 스윙/포털 애니메이션
+- 문 애니메이션과 입력 판정 분리: 빠른 연속 입력 유지
+- 기억/실행/인트로 HUD를 불투명 패널로 재구성해 이미지 속 글자와 실시간 글자 중첩 제거
+- 실패 화면 `다시 도전`, 시작/기억완료 버튼을 tap-down 즉시 반응하도록 변경
+- 첫 화면에 짧은 스토리 + 3단계 사용법 추가
+- BGM을 24초 마법 모험 루프로 교체, OGG 약 156KB로 용량 억제
+- 기존 앱 lifecycle BGM 정지/재개 로직 유지
+- 앱 버전 7.1.2+712
+- APK: MonsterDoor-v7.1.2-release.apk
 
-## GitHub 업로드
-이 ZIP의 **내용 전체를 저장소 루트에 덮어쓰기** 하세요.
-
-권장 커밋 메시지:
-`MonsterDoor V7.1.1 cute full playtest patch`
-
-## 빌드 성공 후
-GitHub → Releases → `MonsterDoor V7.1.1 Cute Full Playtest` →
-`MonsterDoor-v7.1.1-release.apk` 다운로드 후 설치합니다.
+## 테스트 포인트
+1. 문 터치 시 외곽선만이 아니라 실제 문짝이 접히며 포털이 드러나는지
+2. 다음 문을 빠르게 연속 터치해도 입력이 막히지 않는지
+3. 모든 화면의 제목/스테이지/타이머 글자가 배경 글자와 겹치지 않는지
+4. `다시 도전`을 누르는 순간 즉시 다음 화면으로 넘어가는지
+5. 앱을 백그라운드로 보내면 BGM이 멈추고 복귀 시 다시 재생되는지
+6. BGM이 이전보다 판타지 모험 분위기로 자연스러운지

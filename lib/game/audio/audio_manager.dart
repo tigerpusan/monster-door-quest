@@ -63,7 +63,7 @@ class AudioManager {
   Future<void> startBgm() async {
     if (!bgmEnabled || !isReady || _bgmPlaying) return;
     _bgmPlaying = true;
-    await backend.startBgm(bgm, volume: .13);
+    await backend.startBgm(bgm, volume: .18);
   }
 
   Future<void> stopBgm() async {

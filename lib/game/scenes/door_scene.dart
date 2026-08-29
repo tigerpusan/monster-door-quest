@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 import 'package:flame/components.dart';
-import 'package:flutter/material.dart' show FontWeight, TextDirection, TextPainter, TextSpan, TextStyle;
+import 'package:flutter/material.dart'
+    show FontWeight, TextDirection, TextPainter, TextSpan, TextStyle;
 import 'package:flutter/services.dart';
 import '../components/door_component.dart';
 import '../components/route_progress.dart';
@@ -11,7 +12,8 @@ import '../core/game_state.dart';
 import '../effects/hit_effects.dart';
 import '../monster_door_game.dart';
 
-class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame> {
+class DoorScene extends PositionComponent
+    with HasGameReference<MonsterDoorGame> {
   DoorScene(this.session);
 
   final GameSessionState session;
@@ -23,7 +25,6 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
   double elapsed = 0;
   double transitionDelay = -1;
   bool _transitioning = false;
-  bool _roundResetOnly = false;
   double _inputCooldown = 0;
   String _feedbackText = '';
   double _feedbackTimer = 0;
@@ -50,12 +51,16 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
       ..position = Vector2(size.x * .565, size.y * .39);
     progress
       ..size = Vector2(size.x * .68, 42)
-      ..position = Vector2(size.x * .14, size.y * .245);
+      ..position = Vector2(size.x * .16, size.y * .255);
   }
 
   Future<void> _choose(DoorSide side) async {
-    if (session.phase != SessionPhase.playing || _transitioning || _inputCooldown > 0) return;
-    _inputCooldown = .05;
+    if (session.phase != SessionPhase.playing || _transitioning || _inputCooldown > 0) {
+      return;
+    }
+    // Only a tiny anti-double-fire cooldown. The door animation does not block
+    // the next answer, which preserves the fast rhythm players liked.
+    _inputCooldown = .045;
     unawaited(game.audioManager.playDoorTap());
     unawaited(HapticFeedback.selectionClick());
 
@@ -66,31 +71,34 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
 
     if (result == ChoiceResult.wrong) {
       _feedbackText = '몬스터 출현!';
-      _feedbackTimer = .7;
+      _feedbackTimer = .72;
       feedback.playWrong();
       unawaited(HapticFeedback.heavyImpact());
       unawaited(game.audioManager.playWrong());
       _transitioning = true;
-      _roundResetOnly = false;
-      transitionDelay = .58;
-    } else {
-      feedback.playCorrect();
-      progress.setCurrent(session.step);
-      _feedbackText = result == ChoiceResult.clear ? '클리어!' : '정답!';
-      _feedbackTimer = .34;
-      unawaited(HapticFeedback.lightImpact());
-      unawaited(game.audioManager.playCorrect());
-      if (result == ChoiceResult.clear) {
-        _transitioning = true;
-        _roundResetOnly = false;
-        transitionDelay = .42;
-        unawaited(game.audioManager.playClear(milestoneStage: [5, 10, 15, 20].contains(session.stage)));
-      } else {
-        _transitioning = true;
-        _roundResetOnly = true;
-        transitionDelay = .09;
-      }
+      transitionDelay = .48;
+      return;
     }
+
+    feedback.playCorrect();
+    progress.setCurrent(session.step);
+    _feedbackText = result == ChoiceResult.clear ? '클리어!' : '정답!';
+    _feedbackTimer = result == ChoiceResult.clear ? .45 : .24;
+    unawaited(HapticFeedback.lightImpact());
+    unawaited(game.audioManager.playCorrect());
+
+    if (result == ChoiceResult.clear) {
+      _transitioning = true;
+      transitionDelay = .38;
+      unawaited(
+        game.audioManager.playClear(
+          milestoneStage: [5, 10, 15, 20].contains(session.stage),
+        ),
+      );
+    }
+    // Correct non-final answers deliberately do NOT enter a transition state.
+    // The next answer can be entered almost immediately while the swing effect
+    // is still finishing.
   }
 
   @override
@@ -98,10 +106,16 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     super.update(dt);
     elapsed += dt;
     feedback.update(dt);
-    if (_inputCooldown > 0) _inputCooldown = (_inputCooldown - dt).clamp(0, 1).toDouble();
-    if (_feedbackTimer > 0) _feedbackTimer = (_feedbackTimer - dt).clamp(0, 1).toDouble();
+    if (_inputCooldown > 0) {
+      _inputCooldown = (_inputCooldown - dt).clamp(0, 1).toDouble();
+    }
+    if (_feedbackTimer > 0) {
+      _feedbackTimer = (_feedbackTimer - dt).clamp(0, 1).toDouble();
+    }
 
-    if (session.phase == SessionPhase.playing && elapsed >= GameRules.playSeconds && !_transitioning) {
+    if (session.phase == SessionPhase.playing &&
+        elapsed >= GameRules.playSeconds &&
+        !_transitioning) {
       session.phase = SessionPhase.failed;
       _feedbackText = '시간 종료!';
       _feedbackTimer = .8;
@@ -109,32 +123,44 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
       unawaited(HapticFeedback.heavyImpact());
       unawaited(game.audioManager.playWrong());
       _transitioning = true;
-      _roundResetOnly = false;
-      transitionDelay = .58;
+      transitionDelay = .48;
     }
 
     if (_transitioning) {
       transitionDelay -= dt;
       if (transitionDelay <= 0) {
-        if (_roundResetOnly && session.phase == SessionPhase.playing) {
-          leftDoor.resetDoor();
-          rightDoor.resetDoor();
-          _transitioning = false;
-          _roundResetOnly = false;
-          transitionDelay = -1;
-          return;
-        }
         if (session.phase == SessionPhase.cleared) {
-          game.showResult(clear: true, stage: session.stage, elapsedSeconds: elapsed);
+          game.showResult(
+            clear: true,
+            stage: session.stage,
+            elapsedSeconds: elapsed,
+          );
         } else if (session.phase == SessionPhase.failed) {
-          game.showResult(clear: false, stage: session.stage, elapsedSeconds: elapsed);
+          game.showResult(
+            clear: false,
+            stage: session.stage,
+            elapsedSeconds: elapsed,
+          );
         }
       }
     }
   }
 
-  void _center(Canvas canvas, String text, double y, double fs, Color color, FontWeight weight) {
-    final tp = TextPainter(text: TextSpan(text: text, style: TextStyle(fontSize: fs, fontWeight: weight, color: color)), textDirection: TextDirection.ltr)..layout();
+  void _center(
+    Canvas canvas,
+    String text,
+    double y,
+    double fs,
+    Color color,
+    FontWeight weight,
+  ) {
+    final tp = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(fontSize: fs, fontWeight: weight, color: color),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
     tp.paint(canvas, Offset((size.x - tp.width) / 2, y));
   }
 
@@ -145,25 +171,77 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     canvas.translate(shake, 0);
     _bg.render(canvas, size: size);
 
-    // Cover fixed mockup UI and redraw live stage/timer/progress.
+    // Fully opaque HUD card prevents the original mockup text from showing
+    // through and fixes the text-on-text overlap seen in V7.1.1.
     canvas.drawRRect(
-      RRect.fromRectAndRadius(Rect.fromLTWH(size.x * .16, size.y * .10, size.x * .68, size.y * .19), const Radius.circular(22)),
-      Paint()..color = const Color(0xD91A0D39),
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(size.x * .12, size.y * .075, size.x * .76, size.y * .225),
+        const Radius.circular(24),
+      ),
+      Paint()..color = const Color(0xF21A0D39),
     );
-    _center(canvas, '문을 여세요!', size.y * .115, 28, const Color(0xFFFFD96A), FontWeight.w900);
-    _center(canvas, 'STAGE ${session.stage}   ${min(session.step + 1, session.route.length)} / ${session.route.length}', size.y * .158, 15, const Color(0xFFFFFFFF), FontWeight.w800);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(size.x * .135, size.y * .09, size.x * .73, size.y * .195),
+        const Radius.circular(20),
+      ),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2
+        ..color = const Color(0x88FFD96A),
+    );
+    _center(
+      canvas,
+      '문을 여세요!',
+      size.y * .105,
+      27,
+      const Color(0xFFFFD96A),
+      FontWeight.w900,
+    );
+    _center(
+      canvas,
+      'STAGE ${session.stage}   ${min(session.step + 1, session.route.length)} / ${session.route.length}',
+      size.y * .153,
+      14,
+      const Color(0xFFFFFFFF),
+      FontWeight.w800,
+    );
     final remain = (GameRules.playSeconds - elapsed).clamp(0.0, GameRules.playSeconds);
-    _center(canvas, '${remain.toStringAsFixed(1)}초', size.y * .196, 30, remain < 2.5 ? const Color(0xFFFF7777) : const Color(0xFFFFE08B), FontWeight.w900);
+    _center(
+      canvas,
+      '${remain.toStringAsFixed(1)}초',
+      size.y * .193,
+      29,
+      remain < 2.5 ? const Color(0xFFFF7777) : const Color(0xFFFFE08B),
+      FontWeight.w900,
+    );
 
     if (_feedbackTimer > 0) {
-      final rr = RRect.fromRectAndRadius(Rect.fromLTWH(size.x * .30, size.y * .31, size.x * .40, 42), const Radius.circular(21));
-      canvas.drawRRect(rr, Paint()..color = const Color(0xD91B0E38));
-      _center(canvas, _feedbackText, size.y * .319, 18, const Color(0xFFFFFFFF), FontWeight.w900);
+      final rr = RRect.fromRectAndRadius(
+        Rect.fromLTWH(size.x * .32, size.y * .315, size.x * .36, 40),
+        const Radius.circular(20),
+      );
+      canvas.drawRRect(rr, Paint()..color = const Color(0xF01B0E38));
+      _center(
+        canvas,
+        _feedbackText,
+        size.y * .323,
+        17,
+        const Color(0xFFFFFFFF),
+        FontWeight.w900,
+      );
     }
 
     if (feedback.flashKind != FlashKind.none) {
-      final alpha = (70 * (1 - feedback.elapsed / .28).clamp(0, 1)).round();
-      canvas.drawRect(size.toRect(), Paint()..color = (feedback.flashKind == FlashKind.correct ? const Color(0xFF6FFF98) : const Color(0xFFFF4C6E)).withAlpha(alpha));
+      final alpha = (60 * (1 - feedback.elapsed / .28).clamp(0, 1)).round();
+      canvas.drawRect(
+        size.toRect(),
+        Paint()
+          ..color = (feedback.flashKind == FlashKind.correct
+                  ? const Color(0xFF6FFF98)
+                  : const Color(0xFFFF4C6E))
+              .withAlpha(alpha),
+      );
     }
     canvas.restore();
     super.render(canvas);
