@@ -173,6 +173,13 @@ class MemoryScene extends PositionComponent
       FontWeight.w900,
     );
 
+    // Hide the hero fragment from the underlying gameplay illustration.
+    // The memory screen should read as a clean information screen only.
+    canvas.drawRect(
+      Rect.fromLTWH(0, size.y * .82, size.x, size.y * .075),
+      Paint()..color = const Color(0xFF16082F),
+    );
+
     final btn = RRect.fromRectAndRadius(
       Rect.fromLTWH(size.x * .13, size.y * .895, size.x * .74, size.y * .065),
       const Radius.circular(25),

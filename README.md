@@ -14,3 +14,12 @@ Final visual cleanup patch following V7.1.3 mobile playtest.
 - Fast tap-down input and existing hit feel retained.
 
 Version: `7.1.4+714`
+
+
+## V7.1.5 Layout & Retry Fix
+- 기억 화면 하단에 비치던 용사 몸 제거
+- 인트로 설명 문장 줄바꿈/간격 조정으로 글자 중첩 제거
+- 용사와 시작 버튼 시각적 분리
+- Monster Attack의 다시 도전 버튼을 실제 터치 영역과 동일한 크기로 재구성
+- 실패 화면 재도전은 Tap Down 즉시 반응
+- 앱 버전 7.1.5+715

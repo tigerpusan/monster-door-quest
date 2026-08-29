@@ -43,8 +43,9 @@ class ResultScene extends PositionComponent
     super.onGameResize(size);
     this.size = size;
     _primary
-      ..size = Vector2(size.x * .74, size.y * .085)
-      ..position = Vector2(size.x * .13, clear ? size.y * .815 : size.y * .73);
+      ..size = Vector2(size.x * .82, clear ? size.y * .09 : size.y * .11)
+      ..position = Vector2(size.x * .09, clear ? size.y * .815 : size.y * .79)
+      ..priority = 1000;
   }
 
   void _center(
@@ -171,13 +172,37 @@ class ResultScene extends PositionComponent
         const Color(0xFF13240B),
         FontWeight.w900,
       );
-    } else if (_primary.pressed || _handled) {
+    } else {
+      // The source illustration contains a baked retry button. Cover that area
+      // and draw one real button whose visual bounds exactly match its tap zone.
+      canvas.drawRect(
+        Rect.fromLTWH(0, size.y * .745, size.x, size.y * .19),
+        Paint()..color = const Color(0xD90F061F),
+      );
+      final retry = RRect.fromRectAndRadius(
+        Rect.fromLTWH(size.x * .09, size.y * .79, size.x * .82, size.y * .11),
+        const Radius.circular(32),
+      );
       canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(size.x * .14, size.y * .73, size.x * .72, size.y * .085),
-          const Radius.circular(28),
-        ),
-        Paint()..color = const Color(0x442B1400),
+        retry,
+        Paint()..color = _primary.pressed || _handled
+            ? const Color(0xFF4FCF27)
+            : const Color(0xFF78EA3F),
+      );
+      canvas.drawRRect(
+        retry,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3
+          ..color = const Color(0xFFFFFFFF),
+      );
+      _center(
+        canvas,
+        _handled ? '다시 시작 중...' : '다시 도전',
+        size.y * .822,
+        25,
+        const Color(0xFF13240B),
+        FontWeight.w900,
       );
     }
   }
