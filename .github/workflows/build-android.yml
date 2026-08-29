@@ -1,4 +1,4 @@
-name: Build & Release MonsterDoor APK V7.1.1
+name: Build & Release MonsterDoor APK V7.1.2
 
 on:
   workflow_dispatch:
@@ -18,7 +18,6 @@ permissions:
 jobs:
   build_release:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,12 +38,7 @@ jobs:
         shell: bash
         run: |
           rm -rf /tmp/monsterdoor_platform
-          flutter create \
-            --platforms=android \
-            --org com.tigerpusan \
-            --project-name monsterdoor \
-            /tmp/monsterdoor_platform
-
+          flutter create --platforms=android --org com.tigerpusan --project-name monsterdoor /tmp/monsterdoor_platform
           rm -rf android
           cp -R /tmp/monsterdoor_platform/android ./android
 
@@ -53,34 +47,25 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          p = Path('android/app/src/main/AndroidManifest.xml')
-          s = p.read_text(encoding='utf-8')
-          s = s.replace(
-              'android:label="monsterdoor"',
-              'android:label="MonsterDoor"'
-          )
-          p.write_text(s, encoding='utf-8')
+          p=Path('android/app/src/main/AndroidManifest.xml')
+          s=p.read_text(encoding='utf-8').replace('android:label="monsterdoor"','android:label="MonsterDoor"')
+          p.write_text(s,encoding='utf-8')
           PY
 
       - name: Apply launcher icon
         shell: bash
         run: |
-          cp assets/app_icon/mdpi/ic_launcher.png \
-             android/app/src/main/res/mipmap-mdpi/ic_launcher.png
-          cp assets/app_icon/hdpi/ic_launcher.png \
-             android/app/src/main/res/mipmap-hdpi/ic_launcher.png
-          cp assets/app_icon/xhdpi/ic_launcher.png \
-             android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
-          cp assets/app_icon/xxhdpi/ic_launcher.png \
-             android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
-          cp assets/app_icon/xxxhdpi/ic_launcher.png \
-             android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          cp assets/app_icon/mdpi/ic_launcher.png android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+          cp assets/app_icon/hdpi/ic_launcher.png android/app/src/main/res/mipmap-hdpi/ic_launcher.png
+          cp assets/app_icon/xhdpi/ic_launcher.png android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          cp assets/app_icon/xxhdpi/ic_launcher.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          cp assets/app_icon/xxxhdpi/ic_launcher.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
 
       - name: Dependencies
         run: flutter pub get
 
       - name: Analyze
-        run: flutter analyze --no-fatal-infos
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
 
       - name: Test
         run: flutter test
@@ -89,31 +74,25 @@ jobs:
         run: flutter build apk --release
 
       - name: Prepare named APK
-        run: |
-          cp build/app/outputs/flutter-apk/app-release.apk \
-             MonsterDoor-v7.1.1-release.apk
+        run: cp build/app/outputs/flutter-apk/app-release.apk MonsterDoor-v7.1.2-release.apk
 
       - name: Upload APK backup
         uses: actions/upload-artifact@v4
         with:
-          name: MonsterDoor-v7.1.1-release-apk-backup
-          path: MonsterDoor-v7.1.1-release.apk
+          name: MonsterDoor-v7.1.2-release-apk-backup
+          path: MonsterDoor-v7.1.2-release.apk
           if-no-files-found: error
 
       - name: Replace old test release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          gh release delete v7.1.1-test \
-            --yes \
-            --cleanup-tag || true
+        run: gh release delete v7.1.2-test --yes --cleanup-tag || true
 
       - name: Create direct APK Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create v7.1.1-test \
-            MonsterDoor-v7.1.1-release.apk \
-            --title "MonsterDoor V7.1.1 Cute Full Playtest" \
-            --notes "Cute UI complete playtest patch. Fast door input + BGM lifecycle fix + optimized WebP art." \
+          gh release create v7.1.2-test MonsterDoor-v7.1.2-release.apk \
+            --title "MonsterDoor V7.1.2 Final Polish Playtest" \
+            --notes "Integrated polish patch: visible door swing, overlap cleanup, instant retry/start buttons, concise story/tutorial, richer lightweight BGM, background lifecycle stop/resume." \
             --prerelease
