@@ -1,7 +1,7 @@
 name: monster_door_quest
-description: Monster Door native game
+description: MonsterDoor cute fantasy memory game
 publish_to: "none"
-version: 0.7.0+70
+version: 7.1.1+711
 
 environment:
   sdk: ">=3.11.0 <4.0.0"
@@ -22,5 +22,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/images/ui/
     - assets/audio/bgm/
     - assets/audio/sfx/
