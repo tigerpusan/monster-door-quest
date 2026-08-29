@@ -1,0 +1,50 @@
+{
+  "version": "v7.1.0",
+  "title": "MonsterDoor Cute UI Redesign Pack",
+  "recommended_repo_paths": {
+    "preview_html": "preview/index.html",
+    "mockups_png": "assets/mockups/png/",
+    "mockups_webp": "assets/mockups/webp/"
+  },
+  "screens": {
+    "gameplay_doors": {
+      "png": "assets/mockups/png/gameplay_doors.png",
+      "webp": "assets/mockups/webp/gameplay_doors.webp",
+      "size": [
+        941,
+        1672
+      ]
+    },
+    "memory_stage7": {
+      "png": "assets/mockups/png/memory_stage7.png",
+      "webp": "assets/mockups/webp/memory_stage7.webp",
+      "size": [
+        941,
+        1672
+      ]
+    },
+    "monster_attack": {
+      "png": "assets/mockups/png/monster_attack.png",
+      "webp": "assets/mockups/webp/monster_attack.webp",
+      "size": [
+        941,
+        1672
+      ]
+    },
+    "stage_clear": {
+      "png": "assets/mockups/png/stage_clear.png",
+      "webp": "assets/mockups/webp/stage_clear.webp",
+      "size": [
+        941,
+        1672
+      ]
+    }
+  },
+  "priority_tasks": [
+    "Replace simple door UI with cute fantasy double-door style",
+    "Replace result/monster placeholder visuals with approved art direction",
+    "Fix BGM continuing after app is backgrounded or screen is closed",
+    "Keep fast door input responsiveness without adding input lag",
+    "Prefer WebP assets to keep package size low"
+  ]
+}

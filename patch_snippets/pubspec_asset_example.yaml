@@ -1,0 +1,7 @@
+# pubspec_asset_example.yaml
+flutter:
+  assets:
+    - assets/mockups/webp/gameplay_doors.webp
+    - assets/mockups/webp/memory_stage7.webp
+    - assets/mockups/webp/monster_attack.webp
+    - assets/mockups/webp/stage_clear.webp

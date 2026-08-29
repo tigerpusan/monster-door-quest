@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MonsterDoor V7.1.0 Cute UI Redesign Preview</title>
+  <style>
+    :root{
+      --bg:#120926; --panel:#1b1034; --card:#231246; --line:#3b2a67;
+      --text:#f6edff; --muted:#cabbe8; --accent:#ffda68; --accent2:#8dfc52;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;background:radial-gradient(circle at top,#2a1450,#120926 60%);color:var(--text)}
+    header{padding:28px 20px 10px;max-width:1200px;margin:0 auto}
+    h1{margin:0;font-size:34px;color:var(--accent)}
+    p{line-height:1.6}
+    .sub{color:var(--muted);margin-top:8px}
+    .wrap{max-width:1200px;margin:0 auto;padding:20px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
+    .card{background:rgba(35,18,70,.92);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+    .card h2{font-size:20px;margin:0 0 10px;color:#ffd98f}
+    .card ul{margin:10px 0 0 18px;padding:0;color:var(--muted)}
+    .shot{width:100%;border-radius:24px;display:block;border:1px solid rgba(255,255,255,.08)}
+    .meta{display:flex;flex-wrap:wrap;gap:12px;margin:8px 0 0;color:var(--muted);font-size:14px}
+    .callout{margin-top:24px;background:#180d30;border:1px solid #4c3789;border-radius:18px;padding:18px}
+    code{background:#24124a;padding:2px 6px;border-radius:6px;color:#ffeaa2}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MonsterDoor V7.1.0 Cute UI Redesign</h1>
+    <p class="sub">승인된 귀여운 콘셉트 시안을 기준으로 한 HTML 미리보기 및 구현 참고 페이지</p>
+  </header>
+  <div class="wrap">
+    <div class="grid">
+      <section class="card">
+        <h2>1. 게임 플레이 화면</h2>
+        <img class="shot" src="../assets/mockups/png/gameplay_doors.png" alt="gameplay doors" />
+        <div class="meta"><span>핵심: 귀여운 판타지 세계관</span><span>양문 구조</span><span>좌/우 라벨 명확화</span></div>
+        <ul>
+          <li>문 디자인을 보석/금장식 느낌으로 고급화</li>
+          <li>용사/공주를 chibi 스타일로 통일</li>
+          <li>상단 진행 UI와 타이머 가독성 강화</li>
+        </ul>
+      </section>
+      <section class="card">
+        <h2>2. 기억 화면</h2>
+        <img class="shot" src="../assets/mockups/png/memory_stage7.png" alt="memory stage7" />
+        <div class="meta"><span>핵심: 순서 가독성</span><span>컬러 구분</span><span>버튼 CTA 강화</span></div>
+        <ul>
+          <li>사용자가 빠르게 좌/우 순서를 외울 수 있게 배열</li>
+          <li>보랏빛 배경 유지 + 밝은 텍스트 대비 강화</li>
+          <li>하단 액션 버튼을 크게 유지</li>
+        </ul>
+      </section>
+      <section class="card">
+        <h2>3. 몬스터 어택 화면</h2>
+        <img class="shot" src="../assets/mockups/png/monster_attack.png" alt="monster attack" />
+        <div class="meta"><span>핵심: 귀여운 몬스터</span><span>경고성 유지</span><span>과도한 중첩 제거</span></div>
+        <ul>
+          <li>동그라미 placeholder 제거</li>
+          <li>몬스터 캐릭터를 완성형 일러스트로 노출</li>
+          <li>텍스트와 캐릭터가 겹치지 않도록 배치</li>
+        </ul>
+      </section>
+      <section class="card">
+        <h2>4. 스테이지 클리어 화면</h2>
+        <img class="shot" src="../assets/mockups/png/stage_clear.png" alt="stage clear" />
+        <div class="meta"><span>핵심: 보상감</span><span>승리 피드백</span><span>다음 진행 유도</span></div>
+        <ul>
+          <li>공주와 용사의 감정 표현 강화</li>
+          <li>리워드와 다음 진행 버튼 시각 강조</li>
+          <li>너무 무거운 연출 대신 가벼운 파티클 사용</li>
+        </ul>
+      </section>
+    </div>
+
+    <section class="callout">
+      <h2>구현 우선순위</h2>
+      <p>1) 시안 에셋 반영 → 2) 오디오 lifecycle 수정 → 3) 터치 반응성 유지 → 4) 빌드 및 용량 최적화 → 5) APK 재빌드</p>
+      <p>권장 에셋 사용 형식: <code>assets/mockups/webp/*.webp</code></p>
+    </section>
+  </div>
+</body>
+</html>
