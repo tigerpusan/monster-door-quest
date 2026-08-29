@@ -1,4 +1,4 @@
-name: Build & Release MonsterDoor APK V7.1.3
+name: Build & Release MonsterDoor APK V7.1.4
 
 on:
   workflow_dispatch:
@@ -74,25 +74,25 @@ jobs:
         run: flutter build apk --release
 
       - name: Prepare named APK
-        run: cp build/app/outputs/flutter-apk/app-release.apk MonsterDoor-v7.1.3-release.apk
+        run: cp build/app/outputs/flutter-apk/app-release.apk MonsterDoor-v7.1.4-release.apk
 
       - name: Upload APK backup
         uses: actions/upload-artifact@v4
         with:
-          name: MonsterDoor-v7.1.3-release-apk-backup
-          path: MonsterDoor-v7.1.3-release.apk
+          name: MonsterDoor-v7.1.4-release-apk-backup
+          path: MonsterDoor-v7.1.4-release.apk
           if-no-files-found: error
 
       - name: Replace old test release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release delete v7.1.3-test --yes --cleanup-tag || true
+        run: gh release delete v7.1.4-test --yes --cleanup-tag || true
 
       - name: Create direct APK Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create v7.1.3-test MonsterDoor-v7.1.3-release.apk \
-            --title "MonsterDoor V7.1.3 Final Polish Playtest" \
-            --notes "Integrated polish patch: visible door swing, overlap cleanup, instant retry/start buttons, concise story/tutorial, richer lightweight BGM, background lifecycle stop/resume." \
+          gh release create v7.1.4-test MonsterDoor-v7.1.4-release.apk \
+            --title "MonsterDoor V7.1.4 Door Shape & Overlay Fix" \
+            --notes "Door-shape animation matched to arched doors, HUD/background overlap cleanup, result screen duplicate-text removal, and removal of baked replay button." \
             --prerelease
