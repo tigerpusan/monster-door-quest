@@ -22,8 +22,8 @@ class IntroScene extends PositionComponent
     super.onGameResize(size);
     this.size = size;
     _start
-      ..size = Vector2(size.x * .82, size.y * .09)
-      ..position = Vector2(size.x * .09, size.y * .84);
+      ..size = Vector2(size.x * .76, size.y * .065)
+      ..position = Vector2(size.x * .12, size.y * .905);
   }
 
   void _centerText(
@@ -47,7 +47,13 @@ class IntroScene extends PositionComponent
 
   @override
   void render(Canvas canvas) {
-    _bg.render(canvas, size: size);
+    // Shift the approved background slightly upward so the hero is visible
+    // between the doors instead of being hidden behind the start button.
+    _bg.render(
+      canvas,
+      position: Vector2(0, -size.y * .055),
+      size: Vector2(size.x, size.y * 1.055),
+    );
 
     // V7.1.2: fully cover the baked-in mockup text so no ghosted overlap remains.
     canvas.drawRRect(
@@ -55,7 +61,7 @@ class IntroScene extends PositionComponent
         Rect.fromLTWH(size.x * .045, size.y * .055, size.x * .91, size.y * .315),
         const Radius.circular(30),
       ),
-      Paint()..color = const Color(0xF31A0C38),
+      Paint()..color = const Color(0xFF1A0C38),
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
@@ -110,7 +116,7 @@ class IntroScene extends PositionComponent
     );
 
     final btn = RRect.fromRectAndRadius(
-      Rect.fromLTWH(size.x * .09, size.y * .84, size.x * .82, size.y * .09),
+      Rect.fromLTWH(size.x * .12, size.y * .905, size.x * .76, size.y * .065),
       const Radius.circular(28),
     );
     canvas.drawRRect(
@@ -126,9 +132,9 @@ class IntroScene extends PositionComponent
     );
     _centerText(
       canvas,
-      _start.pressed ? '시작!' : '✨ 바로 시작 ✨',
-      size.y * .858,
-      26,
+      _start.pressed ? 'START!' : '시작',
+      size.y * .918,
+      23,
       const Color(0xFF102408),
       FontWeight.w900,
     );

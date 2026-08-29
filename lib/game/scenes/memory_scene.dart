@@ -19,7 +19,7 @@ class MemoryScene extends PositionComponent
 
   @override
   Future<void> onLoad() async {
-    _bg = await Sprite.load('ui/memory.webp');
+    _bg = await Sprite.load('ui/gameplay.webp');
     _ready = TapZone(onTap: _goDoor, triggerOnDown: true);
     add(_ready);
   }
@@ -29,8 +29,8 @@ class MemoryScene extends PositionComponent
     super.onGameResize(size);
     this.size = size;
     _ready
-      ..size = Vector2(size.x * .76, size.y * .075)
-      ..position = Vector2(size.x * .12, size.y * .84);
+      ..size = Vector2(size.x * .74, size.y * .065)
+      ..position = Vector2(size.x * .13, size.y * .895);
   }
 
   void _goDoor() {
@@ -69,19 +69,23 @@ class MemoryScene extends PositionComponent
 
   @override
   void render(Canvas canvas) {
-    _bg.render(canvas, size: size);
+    _bg.render(
+      canvas,
+      position: Vector2(0, -size.y * .045),
+      size: Vector2(size.x, size.y * 1.045),
+    );
 
     // Solid content panel removes every baked-in title/list from the mockup.
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .07, size.y * .055, size.x * .86, size.y * .75),
+        Rect.fromLTWH(size.x * .045, size.y * .035, size.x * .91, size.y * .81),
         const Radius.circular(30),
       ),
-      Paint()..color = const Color(0xF4261047),
+      Paint()..color = const Color(0xFF251043),
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .085, size.y * .07, size.x * .83, size.y * .72),
+        Rect.fromLTWH(size.x * .065, size.y * .055, size.x * .87, size.y * .765),
         const Radius.circular(26),
       ),
       Paint()
@@ -93,7 +97,7 @@ class MemoryScene extends PositionComponent
     _center(
       canvas,
       '문 순서를 기억하세요',
-      size.y * .085,
+      size.y * .075,
       28,
       const Color(0xFFFFD96C),
       FontWeight.w900,
@@ -101,16 +105,16 @@ class MemoryScene extends PositionComponent
     _center(
       canvas,
       'STAGE ${session.stage} · ${session.route.length} DOORS',
-      size.y * .14,
+      size.y * .128,
       14,
       const Color(0xFFECE2FF),
       FontWeight.w800,
     );
 
     final count = session.route.length;
-    final usableH = size.y * .50;
+    final usableH = size.y * .52;
     final rowH = (usableH / count).clamp(22.0, 54.0);
-    final startY = size.y * .205;
+    final startY = size.y * .185;
     for (var i = 0; i < count; i++) {
       final isLeft = session.route[i].name == 'left';
       final y = startY + i * rowH;
@@ -156,14 +160,14 @@ class MemoryScene extends PositionComponent
     _center(
       canvas,
       timerText,
-      size.y * .745,
+      size.y * .785,
       17,
       const Color(0xFFFFE38B),
       FontWeight.w900,
     );
 
     final btn = RRect.fromRectAndRadius(
-      Rect.fromLTWH(size.x * .12, size.y * .84, size.x * .76, size.y * .075),
+      Rect.fromLTWH(size.x * .13, size.y * .895, size.x * .74, size.y * .065),
       const Radius.circular(25),
     );
     canvas.drawRRect(
@@ -180,8 +184,8 @@ class MemoryScene extends PositionComponent
     _center(
       canvas,
       _ready.pressed ? '도전!' : '✨ 기억 완료 · 도전! ✨',
-      size.y * .857,
-      22,
+      size.y * .907,
+      20,
       const Color(0xFF12230B),
       FontWeight.w900,
     );

@@ -20,3 +20,11 @@ V7.1.1 실기 테스트 피드백을 한 번에 반영한 통합 완성도 패�
 4. `다시 도전`을 누르는 순간 즉시 다음 화면으로 넘어가는지
 5. 앱을 백그라운드로 보내면 BGM이 멈추고 복귀 시 다시 재생되는지
 6. BGM이 이전보다 판타지 모험 분위기로 자연스러운지
+
+
+## V7.1.3 visible-door + layout cleanup
+- Door input fires on touch-down for immediate response.
+- Door now performs a clear open/hold/close visual cycle with portal reveal.
+- Intro button changed to `시작`; approved hero background is shifted upward so the hero is not cut off.
+- Memory screen uses a clean opaque panel over the forest background to eliminate baked-text/button ghosting.
+- Door scene input cooldown reduced while keeping animation independent from scoring.

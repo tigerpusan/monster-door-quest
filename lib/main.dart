@@ -7,7 +7,7 @@ import 'game/core/progress_store.dart';
 import 'game/monster_door_game.dart';
 
 const appDisplayName = 'MonsterDoor';
-const appVersion = '7.1.2';
+const appVersion = '7.1.3';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

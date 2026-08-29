@@ -6,25 +6,27 @@ import '../core/game_rules.dart';
 
 typedef DoorSelected = void Function(DoorSide side);
 
-/// V7.1.2: the approved art stays visible while closed. Once tapped, this
-/// component covers the baked-in door with a portal and draws a fast swinging
-/// door leaf so the player can clearly feel the door opening.
+/// V7.1.3: immediate input + a clearly visible open/hold/close visual cycle.
+/// The visual animation never blocks the next answer.
 class DoorComponent extends PositionComponent with TapCallbacks {
   DoorComponent({required this.side, required this.onSelected})
       : super(anchor: Anchor.topLeft);
 
   final DoorSide side;
   final DoorSelected onSelected;
-  final double openDuration = 0.16;
+
+  /// Kept short for tests/feel. Total visual cycle includes hold + close.
+  final double openDuration = 0.18;
+  final double visualDuration = 0.38;
 
   bool isPressed = false;
   bool isOpening = false;
   bool? correct;
   double openProgress = 0;
-  bool _locked = false;
-  double _inputLockRemaining = 0;
+  double _visualElapsed = 0;
   double _resultTimer = 0;
   double _highlight = 0;
+  bool _firedThisTap = false;
 
   void pressDown() {
     isPressed = true;
@@ -34,10 +36,9 @@ class DoorComponent extends PositionComponent with TapCallbacks {
   void open({required bool correct}) {
     this.correct = correct;
     isOpening = true;
+    _visualElapsed = 0;
     openProgress = 0;
-    _locked = true;
-    _inputLockRemaining = .045;
-    _resultTimer = .22;
+    _resultTimer = .30;
     _highlight = 1;
   }
 
@@ -46,43 +47,53 @@ class DoorComponent extends PositionComponent with TapCallbacks {
     isOpening = false;
     correct = null;
     openProgress = 0;
-    _locked = false;
-    _inputLockRemaining = 0;
+    _visualElapsed = 0;
     _resultTimer = 0;
     _highlight = 0;
+    _firedThisTap = false;
   }
 
   @override
   void onTapDown(TapDownEvent event) {
-    if (_locked) return;
+    if (_firedThisTap) return;
+    _firedThisTap = true;
     pressDown();
+    // Fire on DOWN, not UP. This removes the perceived delay on rapid play.
+    onSelected(side);
   }
 
   @override
   void onTapCancel(TapCancelEvent event) {
-    if (!_locked) isPressed = false;
+    isPressed = false;
+    _firedThisTap = false;
   }
 
   @override
   void onTapUp(TapUpEvent event) {
-    if (_locked) return;
     isPressed = false;
-    onSelected(side);
+    _firedThisTap = false;
   }
 
   @override
   void update(double dt) {
     super.update(dt);
     if (isOpening) {
-      openProgress += dt / openDuration;
-      if (openProgress >= 1) {
+      _visualElapsed += dt;
+      final t = (_visualElapsed / visualDuration).clamp(0.0, 1.0);
+
+      // 0-58% open, 58-72% hold, 72-100% close.
+      if (t < .58) {
+        openProgress = (t / .58).clamp(0.0, 1.0);
+      } else if (t < .72) {
         openProgress = 1;
-        isOpening = false;
+      } else {
+        openProgress = (1 - ((t - .72) / .28)).clamp(0.0, 1.0);
       }
-    }
-    if (_inputLockRemaining > 0) {
-      _inputLockRemaining = (_inputLockRemaining - dt).clamp(0, 1).toDouble();
-      if (_inputLockRemaining <= 0) _locked = false;
+
+      if (t >= 1) {
+        isOpening = false;
+        openProgress = 0;
+      }
     }
     if (_resultTimer > 0) {
       _resultTimer = (_resultTimer - dt).clamp(0, 1).toDouble();
@@ -93,132 +104,147 @@ class DoorComponent extends PositionComponent with TapCallbacks {
     }
   }
 
+  double _easeOutCubic(double x) => 1 - math.pow(1 - x, 3).toDouble();
+
   @override
   void render(Canvas canvas) {
     super.render(canvas);
     final accent = side == DoorSide.left
-        ? const Color(0xFF56C8FF)
+        ? const Color(0xFF53C9FF)
         : const Color(0xFFFF72D4);
-    final darkAccent = side == DoorSide.left
-        ? const Color(0xFF1946B8)
-        : const Color(0xFF9A268D);
+    final deep = side == DoorSide.left
+        ? const Color(0xFF1439A5)
+        : const Color(0xFF8B1E88);
     final frame = RRect.fromRectAndRadius(
-      size.toRect().deflate(3),
+      size.toRect().deflate(2),
       Radius.circular(size.x * .14),
     );
 
+    // Tap response: quick glow + inward press.
     if (isPressed || _highlight > 0) {
       canvas.drawRRect(
         frame,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 5 + 3 * _highlight
-          ..color = accent.withValues(alpha: .30 + .30 * _highlight)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 7),
+          ..strokeWidth = 6 + 4 * _highlight
+          ..color = accent.withValues(alpha: .45 + .35 * _highlight)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 9),
       );
     }
 
     if (openProgress > 0) {
+      final p = _easeOutCubic(openProgress);
       final inner = Rect.fromLTWH(
-        size.x * .08,
-        size.y * .055,
-        size.x * .84,
-        size.y * .90,
+        size.x * .055,
+        size.y * .035,
+        size.x * .89,
+        size.y * .93,
       );
-      final eased = 1 - math.pow(1 - openProgress, 3).toDouble();
 
-      // Hide the static baked-in door first, then reveal a deep portal.
-      final portal = RRect.fromRectAndRadius(
-        inner,
-        Radius.circular(size.x * .10),
-      );
+      // Strong black/purple portal fully hides the static painted door beneath.
+      final portal = RRect.fromRectAndRadius(inner, Radius.circular(size.x * .095));
       canvas.drawRRect(
         portal,
         Paint()
-          ..shader = Gradient.linear(
-            inner.topCenter,
-            inner.bottomCenter,
-            const [Color(0xFF060418), Color(0xFF20104A), Color(0xFF060418)],
+          ..shader = Gradient.radial(
+            inner.center,
+            inner.width * .75,
+            const [Color(0xFF3D1A75), Color(0xFF12051F), Color(0xFF020106)],
+            const [0.0, .52, 1.0],
           ),
       );
       canvas.drawRRect(
         portal,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 5
-          ..color = const Color(0xFFFFD66B).withValues(alpha: .75),
+          ..strokeWidth = 7
+          ..color = const Color(0xFFFFDB74),
       );
 
-      // Perspective-like swing: the door gets narrower around its outer hinge.
-      final widthFactor = (1 - eased * .94).clamp(.06, 1.0).toDouble();
+      // Door leaf collapses toward its OUTER hinge. This is deliberately high
+      // contrast so the player can see the door swing even during fast taps.
+      final widthFactor = (1 - p * .91).clamp(.09, 1.0).toDouble();
       final movingWidth = inner.width * widthFactor;
       final hingeX = side == DoorSide.left ? inner.left : inner.right;
       final leafRect = side == DoorSide.left
           ? Rect.fromLTWH(hingeX, inner.top, movingWidth, inner.height)
           : Rect.fromLTWH(hingeX - movingWidth, inner.top, movingWidth, inner.height);
-      final leaf = RRect.fromRectAndRadius(
-        leafRect,
-        Radius.circular(size.x * .085 * widthFactor),
+
+      // Cast shadow behind the moving leaf.
+      final shadowX = side == DoorSide.left ? leafRect.right : leafRect.left;
+      canvas.drawRect(
+        Rect.fromLTWH(shadowX - 13, inner.top + 8, 26, inner.height - 16),
+        Paint()
+          ..color = const Color(0xCC000000)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 13),
       );
 
+      final leaf = RRect.fromRectAndRadius(
+        leafRect,
+        Radius.circular(math.max(4, size.x * .085 * widthFactor)),
+      );
       canvas.drawRRect(
         leaf,
         Paint()
           ..shader = Gradient.linear(
             leafRect.topLeft,
             leafRect.bottomRight,
-            [accent, darkAccent],
+            [accent, deep],
           ),
       );
       canvas.drawRRect(
         leaf,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 5
+          ..strokeWidth = 6
           ..color = const Color(0xFFFFD66B),
       );
 
-      if (movingWidth > inner.width * .24) {
-        final gemCenter = Offset(
-          leafRect.center.dx,
-          leafRect.top + leafRect.height * .30,
-        );
-        final gemPath = Path()
-          ..moveTo(gemCenter.dx, gemCenter.dy - 15)
-          ..lineTo(gemCenter.dx + 11, gemCenter.dy)
-          ..lineTo(gemCenter.dx, gemCenter.dy + 15)
-          ..lineTo(gemCenter.dx - 11, gemCenter.dy)
-          ..close();
-        canvas.drawPath(gemPath, Paint()..color = const Color(0xFFE9F9FF));
-        canvas.drawPath(
-          gemPath,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 3
-            ..color = const Color(0xFFFFD66B),
-        );
-      }
-
-      final edgeX = side == DoorSide.left ? leafRect.right : leafRect.left;
+      // Bright inner edge behaves like a 3D door thickness.
+      final innerEdgeX = side == DoorSide.left ? leafRect.right : leafRect.left;
       canvas.drawRect(
-        Rect.fromLTWH(edgeX - 4, inner.top + 6, 8, inner.height - 12),
-        Paint()
-          ..color = const Color(0xAA000000)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
+        Rect.fromLTWH(innerEdgeX - 5, inner.top + 8, 10, inner.height - 16),
+        Paint()..color = const Color(0xFFFFF1B5),
       );
 
-      // Portal spark particles reinforce the opening motion without heavy assets.
-      for (var i = 0; i < 7; i++) {
-        final a = (i + 1) / 8;
+      // Flash from the doorway makes the action unmistakable.
+      final flashAlpha = (1 - (p - .72).abs() / .72).clamp(0.0, 1.0);
+      canvas.drawRRect(
+        portal,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 12
+          ..color = accent.withValues(alpha: .18 + .42 * flashAlpha)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12),
+      );
+
+      for (var i = 0; i < 9; i++) {
+        final a = (i + 1) / 10;
         final x = inner.left + inner.width * a;
-        final y = inner.top + inner.height * (.15 + .11 * ((i * 3) % 6));
+        final y = inner.top + inner.height * (.12 + .095 * ((i * 5) % 8));
         canvas.drawCircle(
           Offset(x, y),
-          2 + 3 * eased,
-          Paint()
-            ..color = const Color(0xFFFFE891).withValues(alpha: .18 + .70 * eased),
+          2.0 + 4.0 * p,
+          Paint()..color = const Color(0xFFFFE891).withValues(alpha: .22 + .65 * p),
         );
       }
+
+      // A speed slash in the opening direction adds a tactile hit feeling.
+      final slashY = inner.center.dy;
+      final slashStart = side == DoorSide.left
+          ? Offset(inner.right - 8, slashY)
+          : Offset(inner.left + 8, slashY);
+      final slashEnd = side == DoorSide.left
+          ? Offset(inner.left + 20, slashY - 18)
+          : Offset(inner.right - 20, slashY - 18);
+      canvas.drawLine(
+        slashStart,
+        slashEnd,
+        Paint()
+          ..color = const Color(0xAAFFFFFF)
+          ..strokeWidth = 4
+          ..strokeCap = StrokeCap.round,
+      );
     }
 
     if (correct != null) {
@@ -227,8 +253,8 @@ class DoorComponent extends PositionComponent with TapCallbacks {
         frame,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 4
-          ..color = c.withValues(alpha: .85),
+          ..strokeWidth = 5
+          ..color = c.withValues(alpha: .95),
       );
     }
   }

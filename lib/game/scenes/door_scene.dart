@@ -44,11 +44,11 @@ class DoorScene extends PositionComponent
     super.onGameResize(size);
     this.size = size;
     leftDoor
-      ..size = Vector2(size.x * .36, size.y * .42)
-      ..position = Vector2(size.x * .075, size.y * .39);
+      ..size = Vector2(size.x * .37, size.y * .455)
+      ..position = Vector2(size.x * .065, size.y * .345);
     rightDoor
-      ..size = Vector2(size.x * .36, size.y * .42)
-      ..position = Vector2(size.x * .565, size.y * .39);
+      ..size = Vector2(size.x * .37, size.y * .455)
+      ..position = Vector2(size.x * .565, size.y * .345);
     progress
       ..size = Vector2(size.x * .68, 42)
       ..position = Vector2(size.x * .16, size.y * .255);
@@ -60,7 +60,7 @@ class DoorScene extends PositionComponent
     }
     // Only a tiny anti-double-fire cooldown. The door animation does not block
     // the next answer, which preserves the fast rhythm players liked.
-    _inputCooldown = .045;
+    _inputCooldown = .018;
     unawaited(game.audioManager.playDoorTap());
     unawaited(HapticFeedback.selectionClick());
 
@@ -169,7 +169,11 @@ class DoorScene extends PositionComponent
     final shake = feedback.shakeActive ? sin(elapsed * 170) * 5 : 0.0;
     canvas.save();
     canvas.translate(shake, 0);
-    _bg.render(canvas, size: size);
+    _bg.render(
+      canvas,
+      position: Vector2(0, -size.y * .035),
+      size: Vector2(size.x, size.y * 1.035),
+    );
 
     // Fully opaque HUD card prevents the original mockup text from showing
     // through and fixes the text-on-text overlap seen in V7.1.1.
