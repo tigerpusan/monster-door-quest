@@ -1,4 +1,4 @@
-name: Build & Release MonsterDoor APK V0.7.0
+name: Build & Release MonsterDoor APK V7.1.1
 
 on:
   workflow_dispatch:
@@ -35,21 +35,6 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Set MonsterDoor version
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path("pubspec.yaml")
-          s = p.read_text(encoding="utf-8")
-          lines = s.splitlines()
-          for i, line in enumerate(lines):
-              if line.startswith("version:"):
-                  lines[i] = "version: 0.7.0+70"
-                  break
-          p.write_text("\n".join(lines) + "\n", encoding="utf-8")
-          PY
-
       - name: Create MonsterDoor Android scaffold
         shell: bash
         run: |
@@ -68,22 +53,30 @@ jobs:
         run: |
           python3 - <<'PY'
           from pathlib import Path
-          p = Path("android/app/src/main/AndroidManifest.xml")
-          s = p.read_text(encoding="utf-8")
-          s = s.replace('android:label="monsterdoor"', 'android:label="MonsterDoor"')
-          p.write_text(s, encoding="utf-8")
+          p = Path('android/app/src/main/AndroidManifest.xml')
+          s = p.read_text(encoding='utf-8')
+          s = s.replace(
+              'android:label="monsterdoor"',
+              'android:label="MonsterDoor"'
+          )
+          p.write_text(s, encoding='utf-8')
           PY
 
-      - name: Apply MonsterDoor launcher icon
+      - name: Apply launcher icon
         shell: bash
         run: |
-          cp assets/app_icon/mdpi/ic_launcher.png android/app/src/main/res/mipmap-mdpi/ic_launcher.png
-          cp assets/app_icon/hdpi/ic_launcher.png android/app/src/main/res/mipmap-hdpi/ic_launcher.png
-          cp assets/app_icon/xhdpi/ic_launcher.png android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
-          cp assets/app_icon/xxhdpi/ic_launcher.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
-          cp assets/app_icon/xxxhdpi/ic_launcher.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          cp assets/app_icon/mdpi/ic_launcher.png \
+             android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+          cp assets/app_icon/hdpi/ic_launcher.png \
+             android/app/src/main/res/mipmap-hdpi/ic_launcher.png
+          cp assets/app_icon/xhdpi/ic_launcher.png \
+             android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          cp assets/app_icon/xxhdpi/ic_launcher.png \
+             android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          cp assets/app_icon/xxxhdpi/ic_launcher.png \
+             android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
 
-      - name: Get dependencies
+      - name: Dependencies
         run: flutter pub get
 
       - name: Analyze
@@ -96,33 +89,31 @@ jobs:
         run: flutter build apk --release
 
       - name: Prepare named APK
-        shell: bash
         run: |
           cp build/app/outputs/flutter-apk/app-release.apk \
-             MonsterDoor-v0.7.0-release.apk
-          ls -lh MonsterDoor-v0.7.0-release.apk
+             MonsterDoor-v7.1.1-release.apk
 
-      - name: Upload build artifact backup
+      - name: Upload APK backup
         uses: actions/upload-artifact@v4
         with:
-          name: MonsterDoor-v0.7.0-release-apk-backup
-          path: MonsterDoor-v0.7.0-release.apk
+          name: MonsterDoor-v7.1.1-release-apk-backup
+          path: MonsterDoor-v7.1.1-release.apk
           if-no-files-found: error
 
-      - name: Replace existing test release tag if needed
-        shell: bash
+      - name: Replace old test release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release delete v0.7.0-test --yes --cleanup-tag || true
+          gh release delete v7.1.1-test \
+            --yes \
+            --cleanup-tag || true
 
-      - name: Create GitHub Release with direct APK download
-        shell: bash
+      - name: Create direct APK Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create v0.7.0-test \
-            MonsterDoor-v0.7.0-release.apk \
-            --title "MonsterDoor V0.7.0 Test Build" \
-            --notes "Android release APK test build. App: MonsterDoor / Package: com.tigerpusan.monsterdoor / Version: 0.7.0 (70)" \
+          gh release create v7.1.1-test \
+            MonsterDoor-v7.1.1-release.apk \
+            --title "MonsterDoor V7.1.1 Cute Full Playtest" \
+            --notes "Cute UI complete playtest patch. Fast door input + BGM lifecycle fix + optimized WebP art." \
             --prerelease
