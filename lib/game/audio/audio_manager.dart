@@ -72,17 +72,17 @@ class AudioManager {
     await backend.stopBgm();
   }
 
-  Future<void> playDoorTap() => sfxEnabled ? backend.play(doorTap, volume: .52) : Future.value();
-  Future<void> playDoorUnlock() => sfxEnabled ? backend.play(doorUnlock, volume: .48) : Future.value();
-  Future<void> playDoorOpen() => sfxEnabled ? backend.play(doorOpen, volume: .64) : Future.value();
-  Future<void> playCorrect() => sfxEnabled ? backend.play(correct, volume: .74) : Future.value();
+  // V7.1.6 keeps the API stable, but gameplay now deliberately uses fewer
+  // overlapping calls per tap to reduce lag on fast stages.
+  Future<void> playDoorTap() => sfxEnabled ? backend.play(doorTap, volume: .48) : Future.value();
+  Future<void> playDoorUnlock() => sfxEnabled ? backend.play(doorUnlock, volume: .45) : Future.value();
+  Future<void> playDoorOpen() => sfxEnabled ? backend.play(doorOpen, volume: .62) : Future.value();
+  Future<void> playCorrect() => sfxEnabled ? backend.play(correct, volume: .68) : Future.value();
 
   Future<void> playWrong() async {
     if (!sfxEnabled) return;
-    await Future.wait([
-      backend.play(wrongBoom, volume: .80),
-      backend.play(monsterGrowl, volume: .56),
-    ]);
+    await backend.play(wrongBoom, volume: .80);
+    await backend.play(monsterGrowl, volume: .54);
   }
 
   Future<void> playClear({bool milestoneStage = false}) =>

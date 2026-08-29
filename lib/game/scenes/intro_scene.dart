@@ -22,8 +22,8 @@ class IntroScene extends PositionComponent
     super.onGameResize(size);
     this.size = size;
     _start
-      ..size = Vector2(size.x * .76, size.y * .065)
-      ..position = Vector2(size.x * .12, size.y * .915);
+      ..size = Vector2(size.x * .76, size.y * .068)
+      ..position = Vector2(size.x * .12, size.y * .912);
   }
 
   void _centerText(
@@ -37,7 +37,7 @@ class IntroScene extends PositionComponent
     final tp = TextPainter(
       text: TextSpan(
         text: text,
-        style: TextStyle(fontSize: fs, fontWeight: weight, color: color),
+        style: TextStyle(fontSize: fs, fontWeight: weight, color: color, height: 1.18),
       ),
       textDirection: TextDirection.ltr,
       textAlign: TextAlign.center,
@@ -47,25 +47,28 @@ class IntroScene extends PositionComponent
 
   @override
   void render(Canvas canvas) {
-    // Shift the approved background slightly upward so the hero is visible
-    // between the doors instead of being hidden behind the start button.
     _bg.render(
       canvas,
-      position: Vector2(0, -size.y * .105),
-      size: Vector2(size.x, size.y * 1.105),
+      position: Vector2(0, -size.y * .125),
+      size: Vector2(size.x, size.y * 1.125),
     );
 
-    // V7.1.2: fully cover the baked-in mockup text so no ghosted overlap remains.
+    // Dim the baked top title so it no longer collides with the real intro copy.
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.x, size.y * .12),
+      Paint()..color = const Color(0xB014082C),
+    );
+
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .045, size.y * .045, size.x * .91, size.y * .345),
+        Rect.fromLTWH(size.x * .045, size.y * .07, size.x * .91, size.y * .34),
         const Radius.circular(30),
       ),
       Paint()..color = const Color(0xFF1A0C38),
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .065, size.y * .065, size.x * .87, size.y * .305),
+        Rect.fromLTWH(size.x * .065, size.y * .088, size.x * .87, size.y * .302),
         const Radius.circular(26),
       ),
       Paint()
@@ -77,7 +80,7 @@ class IntroScene extends PositionComponent
     _centerText(
       canvas,
       '몬스터 문 열기',
-      size.y * .085,
+      size.y * .112,
       31,
       const Color(0xFFFFD968),
       FontWeight.w900,
@@ -85,7 +88,7 @@ class IntroScene extends PositionComponent
     _centerText(
       canvas,
       '공주가 몬스터에게 납치되었습니다!',
-      size.y * .145,
+      size.y * .172,
       18,
       const Color(0xFFFFFFFF),
       FontWeight.w900,
@@ -93,7 +96,7 @@ class IntroScene extends PositionComponent
     _centerText(
       canvas,
       '문 순서를 기억하고',
-      size.y * .185,
+      size.y * .214,
       16,
       const Color(0xFFF4EFFF),
       FontWeight.w700,
@@ -101,7 +104,7 @@ class IntroScene extends PositionComponent
     _centerText(
       canvas,
       '같은 순서로 빠르게 문을 열어주세요.',
-      size.y * .222,
+      size.y * .251,
       15,
       const Color(0xFFF4EFFF),
       FontWeight.w700,
@@ -109,7 +112,7 @@ class IntroScene extends PositionComponent
     _centerText(
       canvas,
       '용사의 기억력이 공주를 구합니다.',
-      size.y * .258,
+      size.y * .288,
       16,
       const Color(0xFFFFE7A0),
       FontWeight.w800,
@@ -117,20 +120,27 @@ class IntroScene extends PositionComponent
     _centerText(
       canvas,
       '① 기억하기   ② 문 열기   ③ 틀리면 몬스터 출현',
-      size.y * .315,
+      size.y * .347,
       13,
       const Color(0xFFDCCBFF),
       FontWeight.w700,
     );
 
-    // Separate the hero art from the CTA so the character never collides with the button.
+    // Separate the CTA area from the character while still allowing the hero to sit
+    // naturally between the two doors.
+    final bottomShade = Rect.fromLTWH(0, size.y * .885, size.x, size.y * .115);
     canvas.drawRect(
-      Rect.fromLTWH(0, size.y * .885, size.x, size.y * .115),
-      Paint()..color = const Color(0xDD120726),
+      bottomShade,
+      Paint()
+        ..shader = Gradient.linear(
+          bottomShade.topCenter,
+          bottomShade.bottomCenter,
+          const [Color(0x660D041A), Color(0xE114082C)],
+        ),
     );
 
     final btn = RRect.fromRectAndRadius(
-      Rect.fromLTWH(size.x * .12, size.y * .915, size.x * .76, size.y * .065),
+      Rect.fromLTWH(size.x * .12, size.y * .912, size.x * .76, size.y * .068),
       const Radius.circular(28),
     );
     canvas.drawRRect(
@@ -146,7 +156,7 @@ class IntroScene extends PositionComponent
     );
     _centerText(
       canvas,
-      _start.pressed ? 'START!' : '시작',
+      '시작',
       size.y * .928,
       23,
       const Color(0xFF102408),

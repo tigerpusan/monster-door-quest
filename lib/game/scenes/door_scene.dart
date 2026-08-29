@@ -58,15 +58,15 @@ class DoorScene extends PositionComponent
     if (session.phase != SessionPhase.playing || _transitioning || _inputCooldown > 0) {
       return;
     }
-    // Only a tiny anti-double-fire cooldown. The door animation does not block
-    // the next answer, which preserves the fast rhythm players liked.
-    _inputCooldown = .018;
-    unawaited(game.audioManager.playDoorTap());
-    unawaited(HapticFeedback.selectionClick());
+
+    // Keep only one short gate against accidental double-fires while preserving fast rhythm.
+    _inputCooldown = .026;
 
     final result = session.choose(side);
     final door = side == DoorSide.left ? leftDoor : rightDoor;
     door.open(correct: result != ChoiceResult.wrong);
+
+    // Single immediate feedback path per tap keeps sound and vibration synced even on fast stages.
     unawaited(game.audioManager.playDoorOpen());
 
     if (result == ChoiceResult.wrong) {
@@ -83,9 +83,8 @@ class DoorScene extends PositionComponent
     feedback.playCorrect();
     progress.setCurrent(session.step);
     _feedbackText = result == ChoiceResult.clear ? '클리어!' : '정답!';
-    _feedbackTimer = result == ChoiceResult.clear ? .45 : .24;
+    _feedbackTimer = result == ChoiceResult.clear ? .45 : .22;
     unawaited(HapticFeedback.lightImpact());
-    unawaited(game.audioManager.playCorrect());
 
     if (result == ChoiceResult.clear) {
       _transitioning = true;
@@ -96,9 +95,6 @@ class DoorScene extends PositionComponent
         ),
       );
     }
-    // Correct non-final answers deliberately do NOT enter a transition state.
-    // The next answer can be entered almost immediately while the swing effect
-    // is still finishing.
   }
 
   @override
@@ -175,18 +171,22 @@ class DoorScene extends PositionComponent
       size: Vector2(size.x, size.y * 1.035),
     );
 
-    // Fully opaque HUD card prevents the original mockup text from showing
-    // through and fixes the text-on-text overlap seen in V7.1.1.
+    // Hide the baked top title completely so the live HUD never overlaps it.
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.x, size.y * .14),
+      Paint()..color = const Color(0xFF150830),
+    );
+
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .08, size.y * .045, size.x * .84, size.y * .275),
+        Rect.fromLTWH(size.x * .08, size.y * .06, size.x * .84, size.y * .255),
         const Radius.circular(24),
       ),
       Paint()..color = const Color(0xF21A0D39),
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .10, size.y * .065, size.x * .80, size.y * .225),
+        Rect.fromLTWH(size.x * .10, size.y * .08, size.x * .80, size.y * .215),
         const Radius.circular(20),
       ),
       Paint()
@@ -197,7 +197,7 @@ class DoorScene extends PositionComponent
     _center(
       canvas,
       '기억의 문을 여세요!',
-      size.y * .092,
+      size.y * .108,
       27,
       const Color(0xFFFFD96A),
       FontWeight.w900,
@@ -205,7 +205,7 @@ class DoorScene extends PositionComponent
     _center(
       canvas,
       'STAGE ${session.stage}   ${min(session.step + 1, session.route.length)} / ${session.route.length}',
-      size.y * .145,
+      size.y * .158,
       14,
       const Color(0xFFFFFFFF),
       FontWeight.w800,
@@ -214,13 +214,12 @@ class DoorScene extends PositionComponent
     _center(
       canvas,
       '${remain.toStringAsFixed(1)}초',
-      size.y * .195,
+      size.y * .205,
       29,
       remain < 2.5 ? const Color(0xFFFF7777) : const Color(0xFFFFE08B),
       FontWeight.w900,
     );
 
-    // Hide the baked-in timer/text from the original artwork below the HUD.
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromLTWH(size.x * .33, size.y * .285, size.x * .34, size.y * .06),

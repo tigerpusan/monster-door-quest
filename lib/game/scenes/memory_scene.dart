@@ -75,14 +75,11 @@ class MemoryScene extends PositionComponent
       size: Vector2(size.x, size.y * 1.045),
     );
 
-    // Hide all baked-in top copy from the source illustration before placing
-    // the real memory UI. This removes the last visible text ghosting.
     canvas.drawRect(
       Rect.fromLTWH(0, 0, size.x, size.y * .12),
       Paint()..color = const Color(0xFF16082F),
     );
 
-    // Solid content panel removes every baked-in title/list from the mockup.
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromLTWH(size.x * .045, size.y * .035, size.x * .91, size.y * .81),
@@ -173,10 +170,9 @@ class MemoryScene extends PositionComponent
       FontWeight.w900,
     );
 
-    // Hide the hero fragment from the underlying gameplay illustration.
-    // The memory screen should read as a clean information screen only.
+    // Remove the remaining hero fragment completely so the memory page reads as a clean list screen.
     canvas.drawRect(
-      Rect.fromLTWH(0, size.y * .82, size.x, size.y * .075),
+      Rect.fromLTWH(0, size.y * .80, size.x, size.y * .20),
       Paint()..color = const Color(0xFF16082F),
     );
 

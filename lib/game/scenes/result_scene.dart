@@ -44,7 +44,7 @@ class ResultScene extends PositionComponent
     this.size = size;
     _primary
       ..size = Vector2(size.x * .82, clear ? size.y * .09 : size.y * .11)
-      ..position = Vector2(size.x * .09, clear ? size.y * .815 : size.y * .79)
+      ..position = Vector2(size.x * .09, clear ? size.y * .815 : size.y * .80)
       ..priority = 1000;
   }
 
@@ -71,69 +71,38 @@ class ResultScene extends PositionComponent
     _bg.render(canvas, size: size);
 
     if (clear) {
-      // Cover the baked "STAGE 8 COMPLETE" entirely before drawing the real
-      // stage value. This removes the doubled text seen on the phone.
+      // Cover the baked English banner entirely. The Korean celebration title in the art remains,
+      // but the duplicate English line is removed for a cleaner result.
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          Rect.fromLTWH(size.x * .19, size.y * .145, size.x * .62, size.y * .105),
-          const Radius.circular(22),
+          Rect.fromLTWH(size.x * .18, size.y * .145, size.x * .64, size.y * .11),
+          const Radius.circular(24),
         ),
-        Paint()..color = const Color(0xFF241047),
-      );
-      _center(
-        canvas,
-        'STAGE $stage COMPLETE',
-        size.y * .181,
-        19,
-        const Color(0xFFFFFFFF),
-        FontWeight.w900,
+        Paint()..color = const Color(0xEE241047),
       );
 
-      // Replace the baked stats with one clean, fully opaque information card.
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(size.x * .14, size.y * .565, size.x * .72, size.y * .225),
-          const Radius.circular(28),
-        ),
-        Paint()..color = const Color(0xFF2A1454),
+      // Replace the busy baked stats with one clean, simple card.
+      final info = RRect.fromRectAndRadius(
+        Rect.fromLTWH(size.x * .14, size.y * .59, size.x * .72, size.y * .14),
+        const Radius.circular(28),
       );
+      canvas.drawRRect(info, Paint()..color = const Color(0xFF2A1454));
       canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(size.x * .14, size.y * .565, size.x * .72, size.y * .225),
-          const Radius.circular(28),
-        ),
+        info,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 3
+          ..strokeWidth = 2.5
           ..color = const Color(0xFFFFD86D),
       );
       _center(
         canvas,
         '완료 시간  ${elapsedSeconds.toStringAsFixed(1)}초',
-        size.y * .602,
-        20,
+        size.y * .642,
+        22,
         const Color(0xFFFFE08A),
         FontWeight.w900,
       );
-      _center(
-        canvas,
-        '정답률 100%',
-        size.y * .655,
-        20,
-        const Color(0xFFFFFFFF),
-        FontWeight.w900,
-      );
-      _center(
-        canvas,
-        '획득 별  ★★★',
-        size.y * .708,
-        20,
-        const Color(0xFFFFD96A),
-        FontWeight.w900,
-      );
 
-      // The pink "다시 보기" in the source artwork was never an actual game
-      // function. Mask it completely so the result screen has one clear CTA.
       final fadeRect = Rect.fromLTWH(0, size.y * .90, size.x, size.y * .10);
       canvas.drawRect(
         fadeRect,
@@ -145,8 +114,6 @@ class ResultScene extends PositionComponent
           ),
       );
 
-      // Reassert the single functional next-stage button on top of the baked
-      // green art, with a consistent press feedback.
       final primary = RRect.fromRectAndRadius(
         Rect.fromLTWH(size.x * .13, size.y * .815, size.x * .74, size.y * .085),
         const Radius.circular(30),
@@ -173,14 +140,30 @@ class ResultScene extends PositionComponent
         FontWeight.w900,
       );
     } else {
-      // The source illustration contains a baked retry button. Cover that area
-      // and draw one real button whose visual bounds exactly match its tap zone.
+      // Mask the busy lower copy from the background and redraw the retry area cleanly.
       canvas.drawRect(
-        Rect.fromLTWH(0, size.y * .745, size.x, size.y * .19),
-        Paint()..color = const Color(0xD90F061F),
+        Rect.fromLTWH(0, size.y * .66, size.x, size.y * .30),
+        Paint()..color = const Color(0xD9100724),
       );
+      _center(
+        canvas,
+        '문 뒤에서 몬스터가 나타났습니다.',
+        size.y * .685,
+        17,
+        const Color(0xFFFFFFFF),
+        FontWeight.w900,
+      );
+      _center(
+        canvas,
+        '기억한 순서를 다시 확인하세요.',
+        size.y * .727,
+        15,
+        const Color(0xFFD8C4FF),
+        FontWeight.w800,
+      );
+
       final retry = RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .09, size.y * .79, size.x * .82, size.y * .11),
+        Rect.fromLTWH(size.x * .09, size.y * .80, size.x * .82, size.y * .11),
         const Radius.circular(32),
       );
       canvas.drawRRect(
@@ -199,7 +182,7 @@ class ResultScene extends PositionComponent
       _center(
         canvas,
         _handled ? '다시 시작 중...' : '다시 도전',
-        size.y * .822,
+        size.y * .832,
         25,
         const Color(0xFF13240B),
         FontWeight.w900,
