@@ -6,6 +6,7 @@ import 'package:flutter/material.dart'
 import '../core/game_rules.dart';
 import '../components/tap_zone.dart';
 import '../monster_door_game.dart';
+import '../ui/game_help_overlay.dart';
 
 class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGame> {
   ResultScene({required this.clear, required this.stage, required this.elapsedSeconds});
@@ -88,12 +89,12 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
       ..position = Vector2(size.x * .79, size.y * .165)
       ..priority = 2001;
     _settingsContinue
-      ..size = Vector2(size.x * .30, size.y * .068)
-      ..position = Vector2(size.x * .17, size.y * .705)
+      ..size = Vector2(size.x * .32, size.y * .060)
+      ..position = Vector2(size.x * .15, size.y * .790)
       ..priority = 2001;
     _settingsHome
-      ..size = Vector2(size.x * .30, size.y * .068)
-      ..position = Vector2(size.x * .53, size.y * .705)
+      ..size = Vector2(size.x * .32, size.y * .060)
+      ..position = Vector2(size.x * .53, size.y * .790)
       ..priority = 2001;
   }
 
@@ -128,102 +129,11 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
   }
 
   void _drawSettingsButton(Canvas canvas) {
-    final rect = Rect.fromLTWH(size.x * .775, size.y * .020, size.x * .17, size.y * .060);
-    final box = RRect.fromRectAndRadius(rect, const Radius.circular(22));
-    canvas.drawRRect(box, Paint()..color = const Color(0xDE16082F));
-    canvas.drawRRect(
-      box,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0
-        ..color = const Color(0xCCFFD86D),
-    );
-    _drawText(canvas, '⚙', rect, 21, const Color(0xFFFFEDB1), FontWeight.w900, yOffset: -1);
+    GameHelpOverlay.drawSettingsButton(canvas, size.x, size.y);
   }
 
   void _drawSettingsOverlay(Canvas canvas) {
-    canvas.drawRect(size.toRect(), Paint()..color = const Color(0xB3000000));
-
-    final panelRect = Rect.fromLTWH(size.x * .08, size.y * .12, size.x * .84, size.y * .66);
-    final panel = RRect.fromRectAndRadius(panelRect, const Radius.circular(28));
-    canvas.drawRRect(panel, Paint()..color = const Color(0xF01D0D41));
-    canvas.drawRRect(
-      panel,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.4
-        ..color = const Color(0xCCFFD86D),
-    );
-
-    _drawText(canvas, '설정', Rect.fromLTWH(size.x * .18, size.y * .145, size.x * .52, size.y * .04), 26,
-        const Color(0xFFFFDD7A), FontWeight.w900);
-    _drawText(canvas, '✕', Rect.fromLTWH(size.x * .80, size.y * .155, size.x * .08, size.y * .03), 18,
-        const Color(0xFFFFEDB1), FontWeight.w900);
-
-    _drawText(
-      canvas,
-      '스토리\n몬스터에게 납치된 공주를 구하기 위해\n비밀의 문 순서를 기억하며 끝까지 전진하세요.',
-      Rect.fromLTWH(size.x * .16, size.y * .225, size.x * .68, size.y * .13),
-      14.5,
-      const Color(0xFFFFFFFF),
-      FontWeight.w700,
-      align: TextAlign.left,
-      height: 1.35,
-    );
-    _drawText(
-      canvas,
-      '게임 방법\n1) 순서를 기억합니다\n2) 문을 차례대로 선택합니다\n3) 성공하면 다음 스테이지로 이동합니다',
-      Rect.fromLTWH(size.x * .16, size.y * .36, size.x * .68, size.y * .15),
-      14.5,
-      const Color(0xFFFFF2C7),
-      FontWeight.w700,
-      align: TextAlign.left,
-      height: 1.34,
-    );
-    _drawText(
-      canvas,
-      '단계 설명\n인간 I~III : 좌우 문의 순서를 기억\n초인 : 더 긴 순서와 복합 규칙\n기록 : 집중력 한계 도전\n신 : 최종 기억 관문',
-      Rect.fromLTWH(size.x * .16, size.y * .515, size.x * .68, size.y * .16),
-      14.2,
-      const Color(0xFFE8DDFF),
-      FontWeight.w700,
-      align: TextAlign.left,
-      height: 1.34,
-    );
-    _drawText(
-      canvas,
-      '실패 규칙\n다시 도전 시 기본적으로 두 단계 전으로 돌아갑니다.',
-      Rect.fromLTWH(size.x * .16, size.y * .655, size.x * .68, size.y * .07),
-      13.8,
-      const Color(0xFFFFD98D),
-      FontWeight.w800,
-      align: TextAlign.left,
-      height: 1.30,
-    );
-
-    final continueRect = Rect.fromLTWH(size.x * .17, size.y * .705, size.x * .30, size.y * .068);
-    final continueBox = RRect.fromRectAndRadius(continueRect, const Radius.circular(24));
-    canvas.drawRRect(continueBox, Paint()..color = const Color(0xFF7EEB42));
-    canvas.drawRRect(
-      continueBox,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.6
-        ..color = const Color(0xFFFFFFFF),
-    );
-    _drawText(canvas, '계속하기', continueRect, 18, const Color(0xFF102408), FontWeight.w900, yOffset: -1);
-
-    final homeRect = Rect.fromLTWH(size.x * .53, size.y * .705, size.x * .30, size.y * .068);
-    final homeBox = RRect.fromRectAndRadius(homeRect, const Radius.circular(24));
-    canvas.drawRRect(homeBox, Paint()..color = const Color(0xFF45206A));
-    canvas.drawRRect(
-      homeBox,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0
-        ..color = const Color(0xCCFFD86D),
-    );
-    _drawText(canvas, '처음 화면', homeRect, 17, const Color(0xFFFFEDB1), FontWeight.w900);
+    GameHelpOverlay.draw(canvas, size.x, size.y, showHome: true);
   }
 
   @override
@@ -232,12 +142,7 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
     _drawSettingsButton(canvas);
 
     if (clear) {
-      canvas.drawRect(
-        Rect.fromLTWH(0, size.y * .59, size.x, size.y * .41),
-        Paint()..color = const Color(0x1809041D),
-      );
-
-      final milestoneRect = Rect.fromLTWH(size.x * .09, size.y * .445, size.x * .82, size.y * .047);
+      final milestoneRect = Rect.fromLTWH(size.x * .09, size.y * .300, size.x * .82, size.y * .046);
       final milestone = RRect.fromRectAndRadius(milestoneRect, const Radius.circular(22));
       canvas.drawRRect(milestone, Paint()..color = const Color(0xB3251247));
       canvas.drawRRect(
@@ -256,7 +161,7 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
         FontWeight.w800,
       );
 
-      final cardRect = Rect.fromLTWH(size.x * .10, size.y * .675, size.x * .80, size.y * .145);
+      final cardRect = Rect.fromLTWH(size.x * .10, size.y * .685, size.x * .80, size.y * .125);
       final card = RRect.fromRectAndRadius(cardRect, const Radius.circular(30));
       canvas.drawRRect(card, Paint()..color = const Color(0xEC241046));
       canvas.drawRRect(
@@ -267,8 +172,17 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
           ..color = const Color(0xFFFFD86D),
       );
 
-      final titleRect = Rect.fromLTWH(cardRect.left + 18, cardRect.top + 20, cardRect.width - 36, 34);
-      final subtitleRect = Rect.fromLTWH(cardRect.left + 24, cardRect.top + 66, cardRect.width - 48, 34);
+      final centerY = cardRect.center.dy;
+      final titleRect = Rect.fromCenter(
+        center: Offset(cardRect.center.dx, centerY - 18),
+        width: cardRect.width - 42,
+        height: 40,
+      );
+      final subtitleRect = Rect.fromCenter(
+        center: Offset(cardRect.center.dx, centerY + 27),
+        width: cardRect.width - 42,
+        height: 28,
+      );
       _drawText(
         canvas,
         '완료 시간  ${elapsedSeconds.toStringAsFixed(1)}초',
@@ -279,12 +193,11 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
       );
       _drawText(
         canvas,
-        '${stageRealmLabel(stage)}\nSTAGE $stage 완료',
+        '${stageRealmLabel(stage)} · STAGE $stage 완료',
         subtitleRect,
         16.2,
         const Color(0xFFE7DBFF),
         FontWeight.w800,
-        height: 1.20,
       );
 
       final primaryRect = Rect.fromLTWH(size.x * .11, size.y * .836, size.x * .78, size.y * .086);

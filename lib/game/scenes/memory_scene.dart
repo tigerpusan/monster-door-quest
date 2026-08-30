@@ -5,6 +5,7 @@ import 'package:flutter/material.dart'
 import '../components/tap_zone.dart';
 import '../core/game_state.dart';
 import '../monster_door_game.dart';
+import '../ui/game_help_overlay.dart';
 
 class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGame> {
   MemoryScene(this.session, this.memorySeconds);
@@ -44,13 +45,13 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
       ..position = Vector2(size.x * .775, size.y * .020);
     _settingsClose
       ..size = Vector2(size.x * .10, size.y * .055)
-      ..position = Vector2(size.x * .79, size.y * .165);
+      ..position = Vector2(size.x * .80, size.y * .135);
     _settingsContinue
-      ..size = Vector2(size.x * .30, size.y * .068)
-      ..position = Vector2(size.x * .17, size.y * .705);
+      ..size = Vector2(size.x * .32, size.y * .060)
+      ..position = Vector2(size.x * .15, size.y * .790);
     _settingsHome
-      ..size = Vector2(size.x * .30, size.y * .068)
-      ..position = Vector2(size.x * .53, size.y * .705);
+      ..size = Vector2(size.x * .32, size.y * .060)
+      ..position = Vector2(size.x * .53, size.y * .790);
   }
 
   void _toggleSettings() {
@@ -109,92 +110,11 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
   }
 
   void _drawSettingsButton(Canvas canvas) {
-    final rect = Rect.fromLTWH(size.x * .775, size.y * .020, size.x * .17, size.y * .060);
-    final box = RRect.fromRectAndRadius(rect, const Radius.circular(22));
-    canvas.drawRRect(box, Paint()..color = const Color(0xDE16082F));
-    canvas.drawRRect(
-      box,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0
-        ..color = const Color(0xCCFFD86D),
-    );
-    _drawText(canvas, '⚙', rect, 21, const Color(0xFFFFEDB1), FontWeight.w900, yOffset: -1);
+    GameHelpOverlay.drawSettingsButton(canvas, size.x, size.y);
   }
 
   void _drawSettingsOverlay(Canvas canvas) {
-    canvas.drawRect(size.toRect(), Paint()..color = const Color(0xB3000000));
-
-    final panelRect = Rect.fromLTWH(size.x * .08, size.y * .12, size.x * .84, size.y * .66);
-    final panel = RRect.fromRectAndRadius(panelRect, const Radius.circular(28));
-    canvas.drawRRect(panel, Paint()..color = const Color(0xF01D0D41));
-    canvas.drawRRect(
-      panel,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.4
-        ..color = const Color(0xCCFFD86D),
-    );
-
-    _drawText(canvas, '설정', Rect.fromLTWH(size.x * .18, size.y * .145, size.x * .52, size.y * .04), 26,
-        const Color(0xFFFFDD7A), FontWeight.w900);
-    _drawText(canvas, '✕', Rect.fromLTWH(size.x * .80, size.y * .155, size.x * .08, size.y * .03), 18,
-        const Color(0xFFFFEDB1), FontWeight.w900);
-
-    _drawText(
-      canvas,
-      '게임 방법\n문 순서를 외운 뒤 아래 버튼으로 도전하세요.\n시간이 지나면 자동으로 문 선택 화면으로 넘어갑니다.',
-      Rect.fromLTWH(size.x * .16, size.y * .245, size.x * .68, size.y * .12),
-      14.5,
-      const Color(0xFFFFFFFF),
-      FontWeight.w700,
-      align: TextAlign.left,
-      height: 1.35,
-    );
-    _drawText(
-      canvas,
-      '단계 목표\n인간 I~III를 넘어 초인 · 기록 · 신 단계까지\n점점 더 많은 문과 규칙을 기억하세요.',
-      Rect.fromLTWH(size.x * .16, size.y * .385, size.x * .68, size.y * .12),
-      14.5,
-      const Color(0xFFFFF2C7),
-      FontWeight.w700,
-      align: TextAlign.left,
-      height: 1.35,
-    );
-    _drawText(
-      canvas,
-      '실패 규칙\n다시 도전 시 기본적으로 두 단계 전으로 돌아갑니다.\n끝까지 가기 위해서는 실수 없이 집중해야 합니다.',
-      Rect.fromLTWH(size.x * .16, size.y * .525, size.x * .68, size.y * .13),
-      14.2,
-      const Color(0xFFE8DDFF),
-      FontWeight.w700,
-      align: TextAlign.left,
-      height: 1.34,
-    );
-
-    final continueRect = Rect.fromLTWH(size.x * .17, size.y * .705, size.x * .30, size.y * .068);
-    final continueBox = RRect.fromRectAndRadius(continueRect, const Radius.circular(24));
-    canvas.drawRRect(continueBox, Paint()..color = const Color(0xFF7EEB42));
-    canvas.drawRRect(
-      continueBox,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.6
-        ..color = const Color(0xFFFFFFFF),
-    );
-    _drawText(canvas, '계속하기', continueRect, 18, const Color(0xFF102408), FontWeight.w900, yOffset: -1);
-
-    final homeRect = Rect.fromLTWH(size.x * .53, size.y * .705, size.x * .30, size.y * .068);
-    final homeBox = RRect.fromRectAndRadius(homeRect, const Radius.circular(24));
-    canvas.drawRRect(homeBox, Paint()..color = const Color(0xFF45206A));
-    canvas.drawRRect(
-      homeBox,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0
-        ..color = const Color(0xCCFFD86D),
-    );
-    _drawText(canvas, '처음 화면', homeRect, 17, const Color(0xFFFFEDB1), FontWeight.w900);
+    GameHelpOverlay.draw(canvas, size.x, size.y, showHome: true);
   }
 
   @override
