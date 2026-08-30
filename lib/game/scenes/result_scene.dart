@@ -3,8 +3,8 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart'
     show FontWeight, TextAlign, TextDirection, TextPainter, TextSpan, TextStyle;
-import '../components/tap_zone.dart';
 import '../core/game_rules.dart';
+import '../components/tap_zone.dart';
 import '../monster_door_game.dart';
 
 class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGame> {
@@ -39,8 +39,8 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
     super.onGameResize(size);
     this.size = size;
     _primary
-      ..size = Vector2(size.x * .78, clear ? size.y * .085 : size.y * .10)
-      ..position = Vector2(size.x * .11, clear ? size.y * .825 : size.y * .835)
+      ..size = Vector2(size.x * .78, clear ? size.y * .082 : size.y * .10)
+      ..position = Vector2(size.x * .11, clear ? size.y * .846 : size.y * .835)
       ..priority = 1000;
   }
 
@@ -54,10 +54,6 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
   }
 
   String _milestoneText() {
-    if (stage == 5) return '인간의 영역 I 돌파!';
-    if (stage == 10) return '인간의 영역 II 돌파!';
-    if (stage == 15) return '인간의 영역 III 돌파!';
-    if (stage == 20) return '초인의 영역 돌파!';
     return '공주에게 한 걸음 더 가까워졌습니다.';
   }
 
@@ -66,37 +62,34 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
     _bg.render(canvas, size: size);
 
     if (clear) {
-      // Rebuild the upper title zone so the old black/English area disappears.
+      // Keep the illustrated clear scene visible. Only add a light subtitle strip.
       canvas.drawRect(
-        Rect.fromLTWH(0, size.y * .145, size.x, size.y * .20),
-        Paint()..color = const Color(0xFF1D0C40),
+        Rect.fromLTWH(0, size.y * .245, size.x, size.y * .085),
+        Paint()..color = const Color(0x7A16082F),
       );
-      final clearHeader = RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .18, size.y * .172, size.x * .64, size.y * .075),
-        const Radius.circular(24),
-      );
-      canvas.drawRRect(clearHeader, Paint()..color = const Color(0xCC2A1454));
-      canvas.drawRRect(
-        clearHeader,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 2
-          ..color = const Color(0x88FFD96A),
-      );
-      _center(canvas, '스테이지 클리어!', size.y * .192, 22, const Color(0xFFFFE49B), FontWeight.w900);
-      _center(canvas, _milestoneText(), size.y * .252, 14.5, const Color(0xFFE9D9FF), FontWeight.w800, maxWidth: size.x * .82);
-
-      // Remove all baked lower stats/buttons completely.
-      canvas.drawRect(
-        Rect.fromLTWH(0, size.y * .55, size.x, size.y * .45),
-        Paint()..color = const Color(0xFF14082C),
+      _center(
+        canvas,
+        _milestoneText(),
+        size.y * .272,
+        15.5,
+        const Color(0xFFF4E9FF),
+        FontWeight.w800,
+        maxWidth: size.x * .86,
       );
 
-      final info = RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .16, size.y * .635, size.x * .68, size.y * .115),
-        const Radius.circular(28),
+      // Precisely cover the old baked lower stats/button zone without hiding the hero/princess art.
+      canvas.drawRect(
+        Rect.fromLTWH(0, size.y * .628, size.x, size.y * .135),
+        Paint()..color = const Color(0xE014082C),
       );
-      canvas.drawRRect(info, Paint()..color = const Color(0xFF2A1454));
+      canvas.drawRect(
+        Rect.fromLTWH(0, size.y * .812, size.x, size.y * .165),
+        Paint()..color = const Color(0xDE14082C),
+      );
+
+      final infoRect = Rect.fromLTWH(size.x * .16, size.y * .666, size.x * .68, size.y * .102);
+      final info = RRect.fromRectAndRadius(infoRect, const Radius.circular(26));
+      canvas.drawRRect(info, Paint()..color = const Color(0xF22A1454));
       canvas.drawRRect(
         info,
         Paint()
@@ -104,13 +97,29 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
           ..strokeWidth = 2.5
           ..color = const Color(0xFFFFD86D),
       );
-      _center(canvas, '완료 시간  ${elapsedSeconds.toStringAsFixed(1)}초', size.y * .673, 22,
-          const Color(0xFFFFE08A), FontWeight.w900);
-      _center(canvas, '${stageRealmLabel(stage)} · STAGE $stage 완료', size.y * .715, 12.5,
-          const Color(0xFFD9CAFF), FontWeight.w800);
+      final firstLineY = infoRect.top + infoRect.height * .26;
+      final secondLineY = infoRect.top + infoRect.height * .62;
+      _center(
+        canvas,
+        '완료 시간  ${elapsedSeconds.toStringAsFixed(1)}초',
+        firstLineY,
+        22,
+        const Color(0xFFFFE08A),
+        FontWeight.w900,
+        maxWidth: size.x * .62,
+      );
+      _center(
+        canvas,
+        '${stageRealmLabel(stage)} · STAGE $stage 완료',
+        secondLineY,
+        13,
+        const Color(0xFFD9CAFF),
+        FontWeight.w800,
+        maxWidth: size.x * .62,
+      );
 
       final primary = RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .11, size.y * .825, size.x * .78, size.y * .085),
+        Rect.fromLTWH(size.x * .11, size.y * .846, size.x * .78, size.y * .082),
         const Radius.circular(30),
       );
       canvas.drawRRect(
@@ -124,7 +133,7 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
           ..strokeWidth = 3
           ..color = const Color(0xFFFFFFFF),
       );
-      _center(canvas, '다음 스테이지', size.y * .846, 23, const Color(0xFF13240B), FontWeight.w900);
+      _center(canvas, '다음 스테이지', size.y * .867, 23, const Color(0xFF13240B), FontWeight.w900);
     } else {
       canvas.drawRect(
         Rect.fromLTWH(0, size.y * .65, size.x, size.y * .35),

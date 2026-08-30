@@ -29,8 +29,8 @@ class MemoryScene extends PositionComponent
     super.onGameResize(size);
     this.size = size;
     _ready
-      ..size = Vector2(size.x * .74, size.y * .065)
-      ..position = Vector2(size.x * .13, size.y * .895);
+      ..size = Vector2(size.x * .74, size.y * .060)
+      ..position = Vector2(size.x * .13, size.y * .922);
   }
 
   void _goDoor() {
@@ -76,20 +76,20 @@ class MemoryScene extends PositionComponent
     );
 
     canvas.drawRect(
-      Rect.fromLTWH(0, 0, size.x, size.y * .12),
+      Rect.fromLTWH(0, 0, size.x, size.y * .10),
       Paint()..color = const Color(0xFF16082F),
     );
 
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .045, size.y * .035, size.x * .91, size.y * .81),
+        Rect.fromLTWH(size.x * .045, size.y * .035, size.x * .91, size.y * .80),
         const Radius.circular(30),
       ),
-      Paint()..color = const Color(0xFF251043),
+      Paint()..color = const Color(0xF2251043),
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .065, size.y * .055, size.x * .87, size.y * .765),
+        Rect.fromLTWH(size.x * .065, size.y * .055, size.x * .87, size.y * .755),
         const Radius.circular(26),
       ),
       Paint()
@@ -116,7 +116,7 @@ class MemoryScene extends PositionComponent
     );
 
     final count = session.route.length;
-    final usableH = size.y * .52;
+    final usableH = size.y * .49;
     final rowH = (usableH / count).clamp(22.0, 54.0);
     final startY = size.y * .185;
     for (var i = 0; i < count; i++) {
@@ -164,21 +164,15 @@ class MemoryScene extends PositionComponent
     _center(
       canvas,
       timerText,
-      size.y * .785,
+      size.y * .800,
       17,
       const Color(0xFFFFE38B),
       FontWeight.w900,
     );
 
-    // Remove the remaining hero fragment completely so the memory page reads as a clean list screen.
-    canvas.drawRect(
-      Rect.fromLTWH(0, size.y * .80, size.x, size.y * .20),
-      Paint()..color = const Color(0xFF16082F),
-    );
-
     final btn = RRect.fromRectAndRadius(
-      Rect.fromLTWH(size.x * .13, size.y * .895, size.x * .74, size.y * .065),
-      const Radius.circular(25),
+      Rect.fromLTWH(size.x * .13, size.y * .922, size.x * .74, size.y * .060),
+      const Radius.circular(24),
     );
     canvas.drawRRect(
       btn,
@@ -194,8 +188,8 @@ class MemoryScene extends PositionComponent
     _center(
       canvas,
       _ready.pressed ? '도전!' : '✨ 기억 완료 · 도전! ✨',
-      size.y * .907,
-      20,
+      size.y * .935,
+      19,
       const Color(0xFF12230B),
       FontWeight.w900,
     );
