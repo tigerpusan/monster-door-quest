@@ -7,8 +7,13 @@ import '../core/game_rules.dart';
 import '../components/tap_zone.dart';
 import '../monster_door_game.dart';
 
-class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGame> {
-  ResultScene({required this.clear, required this.stage, required this.elapsedSeconds});
+class ResultScene extends PositionComponent
+    with HasGameReference<MonsterDoorGame> {
+  ResultScene({
+    required this.clear,
+    required this.stage,
+    required this.elapsedSeconds,
+  });
 
   final bool clear;
   final int stage;
@@ -20,7 +25,9 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
   @override
   Future<void> onLoad() async {
-    _bg = await Sprite.load(clear ? 'ui/stage_clear.webp' : 'ui/monster_attack.webp');
+    _bg = await Sprite.load(
+      clear ? 'ui/stage_clear.webp' : 'ui/monster_attack.webp',
+    );
     _primary = TapZone(onTap: _goNext, triggerOnDown: true);
     _home = TapZone(onTap: game.goHome, triggerOnDown: true);
     addAll([_primary, _home]);
@@ -41,43 +48,58 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
   void onGameResize(Vector2 size) {
     super.onGameResize(size);
     this.size = size;
-    _primary
-      ..size = Vector2(size.x * .78, clear ? size.y * .082 : size.y * .10)
-      ..position = Vector2(size.x * .11, clear ? size.y * .846 : size.y * .835)
-      ..priority = 1000;
+
     _home
-      ..size = Vector2(size.x * .15, size.y * .042)
-      ..position = Vector2(size.x * .81, size.y * .018)
+      ..size = Vector2(size.x * .145, size.y * .043)
+      ..position = Vector2(size.x * .815, size.y * .014)
       ..priority = 1100;
+
+    _primary
+      ..size = Vector2(size.x * .78, clear ? size.y * .076 : size.y * .10)
+      ..position = Vector2(size.x * .11, clear ? size.y * .835 : size.y * .835)
+      ..priority = 1000;
   }
 
-  void _center(Canvas canvas, String text, double y, double fs, Color color, FontWeight weight, {double? maxWidth}) {
+  void _center(
+    Canvas canvas,
+    String text,
+    double y,
+    double fs,
+    Color color,
+    FontWeight weight, {
+    double? maxWidth,
+  }) {
     final tp = TextPainter(
-      text: TextSpan(text: text, style: TextStyle(fontSize: fs, fontWeight: weight, color: color)),
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          fontSize: fs,
+          fontWeight: weight,
+          color: color,
+          height: 1.05,
+        ),
+      ),
       textDirection: TextDirection.ltr,
-      textAlign: maxWidth == null ? TextAlign.left : TextAlign.center,
+      textAlign: TextAlign.center,
     )..layout(maxWidth: maxWidth ?? double.infinity);
     tp.paint(canvas, Offset((size.x - tp.width) / 2, y));
   }
 
-  String _milestoneText() {
-    return '공주에게 한 걸음 더 가까워졌습니다.';
-  }
-
   void _renderHomeButton(Canvas canvas) {
     final homeBox = RRect.fromRectAndRadius(
-      Rect.fromLTWH(size.x * .81, size.y * .018, size.x * .15, size.y * .042),
+      Rect.fromLTWH(size.x * .815, size.y * .014, size.x * .145, size.y * .043),
       const Radius.circular(16),
     );
-    canvas.drawRRect(homeBox, Paint()..color = const Color(0xCC16082F));
+    canvas.drawRRect(homeBox, Paint()..color = const Color(0xE51A0B35));
     canvas.drawRRect(
       homeBox,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.4
-        ..color = const Color(0x99FFD86D),
+        ..strokeWidth = 1.5
+        ..color = const Color(0xCCFFD86D),
     );
-    final homeText = TextPainter(
+
+    final tp = TextPainter(
       text: const TextSpan(
         text: '처음',
         style: TextStyle(
@@ -88,80 +110,117 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
       ),
       textDirection: TextDirection.ltr,
     )..layout();
-    homeText.paint(
+    tp.paint(
       canvas,
-      Offset(size.x * .885 - homeText.width / 2, size.y * .027),
+      Offset(size.x * .8875 - tp.width / 2, size.y * .026),
     );
   }
 
   @override
   void render(Canvas canvas) {
+    // Keep the original illustration fully visible. No full-width black masks
+    // are used on the clear screen; every replacement is a local card that
+    // matches the existing fantasy UI.
     _bg.render(canvas, size: size);
 
     if (clear) {
-      // Hide the baked English STAGE COMPLETE line cleanly, then place only the Korean milestone below it.
-      canvas.drawRect(
-        Rect.fromLTWH(0, size.y * .242, size.x, size.y * .058),
-        Paint()..color = const Color(0xFF16082F),
+      // Replace only the baked English subtitle area with one compact Korean
+      // milestone capsule. This removes the previous horizontal black band.
+      final milestone = RRect.fromRectAndRadius(
+        Rect.fromLTWH(size.x * .15, size.y * .228, size.x * .70, size.y * .052),
+        const Radius.circular(20),
+      );
+      canvas.drawRRect(milestone, Paint()..color = const Color(0xE3271150));
+      canvas.drawRRect(
+        milestone,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5
+          ..color = const Color(0x80FFD86D),
       );
       _center(
         canvas,
-        _milestoneText(),
-        size.y * .302,
-        15.5,
-        const Color(0xFFF4E9FF),
-        FontWeight.w800,
-        maxWidth: size.x * .86,
+        '공주에게 한 걸음 더 가까워졌습니다.',
+        size.y * .241,
+        14.8,
+        const Color(0xFFF7EEFF),
+        FontWeight.w900,
+        maxWidth: size.x * .64,
       );
 
-      // Fully cover the baked remaining-time/stat panel so no old text can show through.
-      canvas.drawRect(
-        Rect.fromLTWH(0, size.y * .602, size.x, size.y * .205),
-        Paint()..color = const Color(0xFF16082F),
+      // Cover the complete baked result card as one single coherent panel.
+      // This removes remaining-time/accuracy/star text underneath instead of
+      // stacking several rectangular masks on top of each other.
+      final statsCard = RRect.fromRectAndRadius(
+        Rect.fromLTWH(size.x * .105, size.y * .585, size.x * .79, size.y * .205),
+        const Radius.circular(30),
       );
-      canvas.drawRect(
-        Rect.fromLTWH(0, size.y * .812, size.x, size.y * .165),
-        Paint()..color = const Color(0xE616082F),
+      canvas.drawRRect(statsCard, Paint()..color = const Color(0xFF26104B));
+      canvas.drawRRect(
+        statsCard,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.4
+          ..color = const Color(0xFFFFD86D),
       );
 
-      final infoRect = Rect.fromLTWH(size.x * .16, size.y * .650, size.x * .68, size.y * .100);
-      final info = RRect.fromRectAndRadius(infoRect, const Radius.circular(26));
-      canvas.drawRRect(info, Paint()..color = const Color(0xF22A1454));
+      // Inner info card is vertically centered inside the replacement panel.
+      final infoRect = Rect.fromLTWH(
+        size.x * .16,
+        size.y * .635,
+        size.x * .68,
+        size.y * .105,
+      );
+      final info = RRect.fromRectAndRadius(
+        infoRect,
+        const Radius.circular(24),
+      );
+      canvas.drawRRect(info, Paint()..color = const Color(0xFF32165F));
       canvas.drawRRect(
         info,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.5
-          ..color = const Color(0xFFFFD86D),
+          ..strokeWidth = 2
+          ..color = const Color(0xCCFFD86D),
       );
-      final firstLineY = infoRect.top + infoRect.height * .22;
-      final secondLineY = infoRect.top + infoRect.height * .58;
+
       _center(
         canvas,
         '완료 시간  ${elapsedSeconds.toStringAsFixed(1)}초',
-        firstLineY,
-        22,
+        infoRect.top + infoRect.height * .22,
+        21.5,
         const Color(0xFFFFE08A),
         FontWeight.w900,
-        maxWidth: size.x * .62,
+        maxWidth: size.x * .60,
       );
       _center(
         canvas,
         '${stageRealmLabel(stage)} · STAGE $stage 완료',
-        secondLineY,
-        13,
-        const Color(0xFFD9CAFF),
+        infoRect.top + infoRect.height * .61,
+        13.2,
+        const Color(0xFFDCCEFF),
         FontWeight.w800,
-        maxWidth: size.x * .62,
+        maxWidth: size.x * .60,
       );
 
+      // Cover only the old pink retry button, not the full lower screen.
+      // This prevents "다시 보기" from ghosting behind the new CTA.
+      final retryMask = RRect.fromRectAndRadius(
+        Rect.fromLTWH(size.x * .245, size.y * .925, size.x * .51, size.y * .055),
+        const Radius.circular(22),
+      );
+      canvas.drawRRect(retryMask, Paint()..color = const Color(0xE31A0B35));
+
       final primary = RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .11, size.y * .846, size.x * .78, size.y * .082),
+        Rect.fromLTWH(size.x * .11, size.y * .835, size.x * .78, size.y * .076),
         const Radius.circular(30),
       );
       canvas.drawRRect(
         primary,
-        Paint()..color = _primary.pressed || _handled ? const Color(0xFF4FCF27) : const Color(0xFF78EA3F),
+        Paint()
+          ..color = _primary.pressed || _handled
+              ? const Color(0xFF4FCF27)
+              : const Color(0xFF78EA3F),
       );
       canvas.drawRRect(
         primary,
@@ -170,14 +229,38 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
           ..strokeWidth = 3
           ..color = const Color(0xFFFFFFFF),
       );
-      _center(canvas, '다음 스테이지', size.y * .867, 23, const Color(0xFF13240B), FontWeight.w900);
-    } else {
-      canvas.drawRect(
-        Rect.fromLTWH(0, size.y * .65, size.x, size.y * .35),
-        Paint()..color = const Color(0xF214082C),
+      _center(
+        canvas,
+        '다음 스테이지',
+        size.y * .855,
+        23,
+        const Color(0xFF13240B),
+        FontWeight.w900,
       );
-      _center(canvas, '문 뒤에서 몬스터가 나타났습니다.', size.y * .695, 17, const Color(0xFFFFFFFF), FontWeight.w900);
-      _center(canvas, '기억한 순서를 다시 확인하세요.', size.y * .738, 15, const Color(0xFFD8C4FF), FontWeight.w800);
+    } else {
+      // Failure screen keeps the working layout but uses one coherent lower
+      // panel so text/CTA cannot overlap the baked art.
+      final failPanel = RRect.fromRectAndRadius(
+        Rect.fromLTWH(size.x * .06, size.y * .675, size.x * .88, size.y * .285),
+        const Radius.circular(30),
+      );
+      canvas.drawRRect(failPanel, Paint()..color = const Color(0xF21A0B35));
+      _center(
+        canvas,
+        '문 뒤에서 몬스터가 나타났습니다.',
+        size.y * .705,
+        17,
+        const Color(0xFFFFFFFF),
+        FontWeight.w900,
+      );
+      _center(
+        canvas,
+        '기억한 순서를 다시 확인하세요.',
+        size.y * .748,
+        15,
+        const Color(0xFFD8C4FF),
+        FontWeight.w800,
+      );
 
       final retry = RRect.fromRectAndRadius(
         Rect.fromLTWH(size.x * .11, size.y * .835, size.x * .78, size.y * .10),
@@ -185,7 +268,10 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
       );
       canvas.drawRRect(
         retry,
-        Paint()..color = _primary.pressed || _handled ? const Color(0xFF4FCF27) : const Color(0xFF78EA3F),
+        Paint()
+          ..color = _primary.pressed || _handled
+              ? const Color(0xFF4FCF27)
+              : const Color(0xFF78EA3F),
       );
       canvas.drawRRect(
         retry,
@@ -194,7 +280,14 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
           ..strokeWidth = 3
           ..color = const Color(0xFFFFFFFF),
       );
-      _center(canvas, _handled ? '다시 시작 중...' : '다시 도전', size.y * .864, 24, const Color(0xFF13240B), FontWeight.w900);
+      _center(
+        canvas,
+        _handled ? '다시 시작 중...' : '다시 도전',
+        size.y * .864,
+        24,
+        const Color(0xFF13240B),
+        FontWeight.w900,
+      );
     }
 
     _renderHomeButton(canvas);
