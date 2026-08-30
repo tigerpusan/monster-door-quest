@@ -19,7 +19,7 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
   @override
   Future<void> onLoad() async {
-    _bg = await Sprite.load('ui/gameplay_clean.webp');
+    _bg = await Sprite.load('ui/gameplay_rebuild.png');
     _ready = TapZone(onTap: _goDoor, triggerOnDown: true);
     _home = TapZone(onTap: game.goHome, triggerOnDown: true);
     addAll([_ready, _home]);
@@ -30,11 +30,11 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     super.onGameResize(size);
     this.size = size;
     _ready
-      ..size = Vector2(size.x * .74, size.y * .070)
-      ..position = Vector2(size.x * .13, size.y * .895);
+      ..size = Vector2(size.x * .74, size.y * .072)
+      ..position = Vector2(size.x * .13, size.y * .894);
     _home
-      ..size = Vector2(size.x * .16, size.y * .052)
-      ..position = Vector2(size.x * .79, size.y * .020);
+      ..size = Vector2(size.x * .17, size.y * .060)
+      ..position = Vector2(size.x * .775, size.y * .020);
   }
 
   void _goDoor() {
@@ -62,6 +62,7 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     Color color,
     FontWeight weight, {
     double? maxWidth,
+    double yOffset = 0,
   }) {
     final tp = TextPainter(
       text: TextSpan(
@@ -77,7 +78,7 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
       textAlign: TextAlign.center,
     )..layout(maxWidth: maxWidth ?? rect.width);
     final dx = rect.left + (rect.width - tp.width) / 2;
-    final dy = rect.top + (rect.height - tp.height) / 2;
+    final dy = rect.top + (rect.height - tp.height) / 2 + yOffset;
     tp.paint(canvas, Offset(dx, dy));
   }
 
@@ -85,39 +86,42 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
   void render(Canvas canvas) {
     _bg.render(canvas, size: size);
 
-    // soft full-screen tint for consistent contrast
-    canvas.drawRect(
-      size.toRect(),
-      Paint()..color = const Color(0x220D0622),
-    );
+    canvas.drawRect(size.toRect(), Paint()..color = const Color(0x1809041D));
 
-    final homeRect = Rect.fromLTWH(size.x * .79, size.y * .020, size.x * .16, size.y * .052);
-    final homeBox = RRect.fromRectAndRadius(homeRect, const Radius.circular(18));
-    canvas.drawRRect(homeBox, Paint()..color = const Color(0xD016082F));
+    final homeRect = Rect.fromLTWH(size.x * .775, size.y * .020, size.x * .17, size.y * .060);
+    final homeBox = RRect.fromRectAndRadius(homeRect, const Radius.circular(22));
+    canvas.drawRRect(homeBox, Paint()..color = const Color(0xDE16082F));
     canvas.drawRRect(
       homeBox,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.8
-        ..color = const Color(0x99FFD86D),
+        ..strokeWidth = 2.0
+        ..color = const Color(0xCCFFD86D),
     );
-    _drawCenteredText(canvas, '처음', homeRect, 14, const Color(0xFFFFEDB1), FontWeight.w900);
+    _drawCenteredText(canvas, '처음', homeRect, 16, const Color(0xFFFFEDB1), FontWeight.w900, yOffset: -1);
 
-    final panelRect = Rect.fromLTWH(size.x * .045, size.y * .085, size.x * .91, size.y * .775);
+    final panelRect = Rect.fromLTWH(size.x * .05, size.y * .090, size.x * .90, size.y * .770);
     final panel = RRect.fromRectAndRadius(panelRect, const Radius.circular(30));
-    canvas.drawRRect(panel, Paint()..color = const Color(0xF2261046));
+    canvas.drawRRect(panel, Paint()..color = const Color(0xEE220F46));
+    canvas.drawRRect(
+      panel,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.5
+        ..color = const Color(0xCCFFD86D),
+    );
     canvas.drawRRect(
       panel.deflate(10),
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
-        ..color = const Color(0x88FFD76E),
+        ..strokeWidth = 1.2
+        ..color = const Color(0x40FFFFFF),
     );
 
     _drawCenteredText(
       canvas,
       '문 순서를 기억하세요',
-      Rect.fromLTWH(size.x * .10, size.y * .108, size.x * .80, size.y * .048),
+      Rect.fromLTWH(size.x * .10, size.y * .118, size.x * .80, size.y * .046),
       28,
       const Color(0xFFFFD96C),
       FontWeight.w900,
@@ -125,15 +129,15 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     _drawCenteredText(
       canvas,
       'STAGE ${session.stage} · ${session.route.length} DOORS',
-      Rect.fromLTWH(size.x * .18, size.y * .151, size.x * .64, size.y * .024),
-      14,
-      const Color(0xFFECE2FF),
+      Rect.fromLTWH(size.x * .20, size.y * .162, size.x * .60, size.y * .024),
+      14.5,
+      const Color(0xFFF0E7FF),
       FontWeight.w800,
     );
 
     final count = session.route.length;
-    final listTop = size.y * .205;
-    final listBottom = size.y * .675;
+    final listTop = size.y * .212;
+    final listBottom = size.y * .666;
     final listHeight = listBottom - listTop;
     final gap = count >= 14 ? 4.0 : count >= 10 ? 6.0 : 8.0;
     final rowHeight = ((listHeight - gap * (count - 1)) / count).clamp(24.0, 58.0);
@@ -162,6 +166,7 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
         fontSize,
         const Color(0xFFFFFFFF),
         FontWeight.w900,
+        yOffset: -0.5,
       );
     }
 
@@ -171,20 +176,20 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     final timerText = memorySeconds == null
         ? '준비되면 바로 도전하세요'
         : '기억 시간 ${remain.toStringAsFixed(1)}초';
-    final timerRect = Rect.fromLTWH(size.x * .27, size.y * .735, size.x * .46, size.y * .055);
+    final timerRect = Rect.fromLTWH(size.x * .29, size.y * .724, size.x * .42, size.y * .054);
     final timerPill = RRect.fromRectAndRadius(timerRect, const Radius.circular(22));
-    canvas.drawRRect(timerPill, Paint()..color = const Color(0xB024114A));
+    canvas.drawRRect(timerPill, Paint()..color = const Color(0xD42A124C));
     canvas.drawRRect(
       timerPill,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5
-        ..color = const Color(0x88FFD96A),
+        ..strokeWidth = 1.7
+        ..color = const Color(0xAAFFD96A),
     );
-    _drawCenteredText(canvas, timerText, timerRect, 17, const Color(0xFFFFE38B), FontWeight.w900);
+    _drawCenteredText(canvas, timerText, timerRect, 16.5, const Color(0xFFFFE38B), FontWeight.w900, yOffset: -0.5);
 
-    final btnRect = Rect.fromLTWH(size.x * .13, size.y * .895, size.x * .74, size.y * .070);
-    final btn = RRect.fromRectAndRadius(btnRect, const Radius.circular(26));
+    final btnRect = Rect.fromLTWH(size.x * .13, size.y * .894, size.x * .74, size.y * .072);
+    final btn = RRect.fromRectAndRadius(btnRect, const Radius.circular(28));
     canvas.drawRRect(
       btn,
       Paint()..color = _ready.pressed ? const Color(0xFF58D22B) : const Color(0xFF7EEB42),
@@ -193,16 +198,17 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
       btn,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.5
+        ..strokeWidth = 2.8
         ..color = const Color(0xFFFFFFFF),
     );
     _drawCenteredText(
       canvas,
       _ready.pressed ? '도전!' : '✨ 기억 완료 · 도전! ✨',
       btnRect,
-      19,
+      20,
       const Color(0xFF12230B),
       FontWeight.w900,
+      yOffset: -1,
     );
   }
 }

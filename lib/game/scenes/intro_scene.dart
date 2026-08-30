@@ -12,7 +12,7 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
 
   @override
   Future<void> onLoad() async {
-    _bg = await Sprite.load('ui/gameplay_clean.webp');
+    _bg = await Sprite.load('ui/gameplay_rebuild.png');
     _start = TapZone(onTap: game.startCurrentStage, triggerOnDown: true);
     add(_start);
   }
@@ -22,8 +22,8 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     super.onGameResize(size);
     this.size = size;
     _start
-      ..size = Vector2(size.x * .74, size.y * .070)
-      ..position = Vector2(size.x * .13, size.y * .905);
+      ..size = Vector2(size.x * .74, size.y * .072)
+      ..position = Vector2(size.x * .13, size.y * .900);
   }
 
   void _drawCenteredText(
@@ -35,6 +35,7 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     FontWeight weight, {
     TextAlign align = TextAlign.center,
     double? maxWidth,
+    double yOffset = 0,
   }) {
     final tp = TextPainter(
       text: TextSpan(
@@ -43,14 +44,14 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
           fontSize: fontSize,
           fontWeight: weight,
           color: color,
-          height: 1.15,
+          height: 1.12,
         ),
       ),
       textDirection: TextDirection.ltr,
       textAlign: align,
     )..layout(maxWidth: maxWidth ?? rect.width);
     final dx = rect.left + (rect.width - tp.width) / 2;
-    final dy = rect.top + (rect.height - tp.height) / 2;
+    final dy = rect.top + (rect.height - tp.height) / 2 + yOffset;
     tp.paint(canvas, Offset(dx, dy));
   }
 
@@ -58,7 +59,7 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     final labels = ['인간 I', '인간 II', '인간 III', '초인', '기록', '신'];
     final x1 = size.x * .16;
     final x2 = size.x * .84;
-    final y = topY + size.y * .029;
+    final y = topY + size.y * .028;
     final activeIndex = currentRealmIndex(stage);
     final step = (x2 - x1) / (labels.length - 1);
 
@@ -66,7 +67,7 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
       Offset(x1, y),
       Offset(x2, y),
       Paint()
-        ..color = const Color(0x66E7C9FF)
+        ..color = const Color(0x88CBB6FF)
         ..strokeWidth = 3
         ..strokeCap = StrokeCap.round,
     );
@@ -75,39 +76,40 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
       final x = x1 + step * i;
       final done = i < activeIndex;
       final active = i == activeIndex;
-      final radius = active ? 7.5 : 5.5;
-      canvas.drawCircle(Offset(x, y), radius + 2.5, Paint()..color = const Color(0x66210C42));
+      final radius = active ? 8.0 : 6.0;
+      canvas.drawCircle(Offset(x, y), radius + 2.2, Paint()..color = const Color(0x55200A40));
       canvas.drawCircle(
         Offset(x, y),
         radius,
         Paint()
           ..color = done
-              ? const Color(0xFFFFD867)
+              ? const Color(0xFFFFD667)
               : active
-                  ? const Color(0xFF7E91FF)
-                  : const Color(0xFF4A3369),
+                  ? const Color(0xFF8BA6FF)
+                  : const Color(0xFF544075),
       );
       canvas.drawCircle(
         Offset(x, y),
         radius,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.6
-          ..color = const Color(0xCCFFFFFF),
+          ..strokeWidth = 1.7
+          ..color = const Color(0xEFFFFFFF),
       );
 
       final tp = TextPainter(
         text: TextSpan(
           text: labels[i],
           style: TextStyle(
-            fontSize: 8.5,
+            fontSize: 8.6,
             fontWeight: active ? FontWeight.w900 : FontWeight.w700,
             color: active ? const Color(0xFFFFEDB1) : const Color(0xFFD4C4F7),
+            height: 1.05,
           ),
         ),
         textDirection: TextDirection.ltr,
         textAlign: TextAlign.center,
-      )..layout(maxWidth: 52);
+      )..layout(maxWidth: 54);
       tp.paint(canvas, Offset(x - tp.width / 2, y + 10));
     }
   }
@@ -116,40 +118,43 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
   void render(Canvas canvas) {
     _bg.render(canvas, size: size);
 
-    // Hide the original bottom hero area so the start button never clips a character silhouette.
-    canvas.drawRect(
-      Rect.fromLTWH(0, size.y * .74, size.x, size.y * .26),
-      Paint()..color = const Color(0x7A16082F),
-    );
+    canvas.drawRect(size.toRect(), Paint()..color = const Color(0x1609041D));
 
     final progress = game.progressStore.load();
     final currentStage = game.currentStage;
     final bestStage = progress.bestStage;
     final realm = stageRealmLabel(currentStage);
 
-    final panelRect = Rect.fromLTWH(size.x * .05, size.y * .050, size.x * .90, size.y * .275);
+    final panelRect = Rect.fromLTWH(size.x * .05, size.y * .055, size.x * .90, size.y * .285);
     final panel = RRect.fromRectAndRadius(panelRect, const Radius.circular(28));
-    canvas.drawRRect(panel, Paint()..color = const Color(0xF61B0C3A));
+    canvas.drawRRect(panel, Paint()..color = const Color(0xEA1A0B3B));
+    canvas.drawRRect(
+      panel,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.4
+        ..color = const Color(0xCCFFD86C),
+    );
     canvas.drawRRect(
       panel.deflate(10),
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2
-        ..color = const Color(0x99FFD968),
+        ..strokeWidth = 1.2
+        ..color = const Color(0x44FFFFFF),
     );
 
     _drawCenteredText(
       canvas,
       '몬스터 문 열기',
-      Rect.fromLTWH(size.x * .12, size.y * .073, size.x * .76, size.y * .048),
+      Rect.fromLTWH(size.x * .14, size.y * .078, size.x * .72, size.y * .046),
       29,
-      const Color(0xFFFFD968),
+      const Color(0xFFFFD96C),
       FontWeight.w900,
     );
     _drawCenteredText(
       canvas,
       '공주가 몬스터에게 납치되었습니다.',
-      Rect.fromLTWH(size.x * .10, size.y * .122, size.x * .80, size.y * .032),
+      Rect.fromLTWH(size.x * .10, size.y * .126, size.x * .80, size.y * .030),
       17,
       const Color(0xFFFFFFFF),
       FontWeight.w900,
@@ -157,38 +162,38 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     _drawCenteredText(
       canvas,
       '비밀의 문을 기억하여 공주를 구하세요.',
-      Rect.fromLTWH(size.x * .12, size.y * .165, size.x * .76, size.y * .034),
-      15.5,
-      const Color(0xFFFFE7A0),
+      Rect.fromLTWH(size.x * .12, size.y * .166, size.x * .76, size.y * .032),
+      16,
+      const Color(0xFFFFE8A7),
       FontWeight.w800,
     );
 
-    final statusRect = Rect.fromLTWH(size.x * .14, size.y * .224, size.x * .72, size.y * .054);
-    final statusCard = RRect.fromRectAndRadius(statusRect, const Radius.circular(18));
-    canvas.drawRRect(statusCard, Paint()..color = const Color(0xE029124C));
+    final statusRect = Rect.fromLTWH(size.x * .14, size.y * .228, size.x * .72, size.y * .052);
+    final statusRRect = RRect.fromRectAndRadius(statusRect, const Radius.circular(18));
+    canvas.drawRRect(statusRRect, Paint()..color = const Color(0xDE311553));
     canvas.drawRRect(
-      statusCard,
+      statusRRect,
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.6
-        ..color = const Color(0x66FFD968),
+        ..color = const Color(0x99FFD968),
     );
     _drawCenteredText(
       canvas,
       '현재 진행  $realm  ·  STAGE $currentStage  ·  최고 ${bestStage == 0 ? '-' : bestStage}',
       statusRect,
-      11.4,
+      11.3,
       const Color(0xFFFFEDB0),
       FontWeight.w800,
     );
 
-    _drawRealmMap(canvas, size.y * .255, currentStage);
+    _drawRealmMap(canvas, size.y * .258, currentStage);
 
-    final btnRect = Rect.fromLTWH(size.x * .13, size.y * .905, size.x * .74, size.y * .070);
-    final btn = RRect.fromRectAndRadius(btnRect, const Radius.circular(26));
+    final btnRect = Rect.fromLTWH(size.x * .13, size.y * .900, size.x * .74, size.y * .072);
+    final btn = RRect.fromRectAndRadius(btnRect, const Radius.circular(28));
     canvas.drawRRect(
       btn,
-      Paint()..color = _start.pressed ? const Color(0xFF5FD82C) : const Color(0xFF7EEB42),
+      Paint()..color = _start.pressed ? const Color(0xFF57D429) : const Color(0xFF7EEB42),
     );
     canvas.drawRRect(
       btn,
@@ -197,6 +202,6 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
         ..strokeWidth = 3
         ..color = const Color(0xFFFFFFFF),
     );
-    _drawCenteredText(canvas, '시작', btnRect, 22, const Color(0xFF102408), FontWeight.w900);
+    _drawCenteredText(canvas, '시작', btnRect, 23, const Color(0xFF102408), FontWeight.w900, yOffset: -1);
   }
 }

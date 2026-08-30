@@ -20,7 +20,7 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
   @override
   Future<void> onLoad() async {
-    _bg = await Sprite.load(clear ? 'ui/stage_clear_clean.webp' : 'ui/monster_attack.webp');
+    _bg = await Sprite.load(clear ? 'ui/stage_clear_rebuild.png' : 'ui/monster_attack.webp');
     _primary = TapZone(onTap: _goNext, triggerOnDown: true);
     _home = TapZone(onTap: game.goHome, triggerOnDown: true);
     addAll([_primary, _home]);
@@ -41,12 +41,12 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
     super.onGameResize(size);
     this.size = size;
     _primary
-      ..size = Vector2(size.x * .78, clear ? size.y * .082 : size.y * .10)
-      ..position = Vector2(size.x * .11, clear ? size.y * .835 : size.y * .835)
+      ..size = Vector2(size.x * .78, clear ? size.y * .086 : size.y * .10)
+      ..position = Vector2(size.x * .11, clear ? size.y * .836 : size.y * .835)
       ..priority = 1000;
     _home
-      ..size = Vector2(size.x * .16, size.y * .052)
-      ..position = Vector2(size.x * .79, size.y * .020)
+      ..size = Vector2(size.x * .17, size.y * .060)
+      ..position = Vector2(size.x * .775, size.y * .020)
       ..priority = 1100;
   }
 
@@ -58,6 +58,7 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
     Color color,
     FontWeight weight, {
     double? maxWidth,
+    double yOffset = 0,
   }) {
     final tp = TextPainter(
       text: TextSpan(
@@ -73,7 +74,7 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
       textAlign: TextAlign.center,
     )..layout(maxWidth: maxWidth ?? rect.width);
     final dx = rect.left + (rect.width - tp.width) / 2;
-    final dy = rect.top + (rect.height - tp.height) / 2;
+    final dy = rect.top + (rect.height - tp.height) / 2 + yOffset;
     tp.paint(canvas, Offset(dx, dy));
   }
 
@@ -81,47 +82,47 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
   void render(Canvas canvas) {
     _bg.render(canvas, size: size);
 
-    final homeRect = Rect.fromLTWH(size.x * .79, size.y * .020, size.x * .16, size.y * .052);
-    final homeBox = RRect.fromRectAndRadius(homeRect, const Radius.circular(18));
-    canvas.drawRRect(homeBox, Paint()..color = const Color(0xD016082F));
+    final homeRect = Rect.fromLTWH(size.x * .775, size.y * .020, size.x * .17, size.y * .060);
+    final homeBox = RRect.fromRectAndRadius(homeRect, const Radius.circular(22));
+    canvas.drawRRect(homeBox, Paint()..color = const Color(0xDE16082F));
     canvas.drawRRect(
       homeBox,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.8
-        ..color = const Color(0x99FFD86D),
+        ..strokeWidth = 2.0
+        ..color = const Color(0xCCFFD86D),
     );
-    _drawCenteredText(canvas, '처음', homeRect, 14, const Color(0xFFFFEDB1), FontWeight.w900);
+    _drawCenteredText(canvas, '처음', homeRect, 16, const Color(0xFFFFEDB1), FontWeight.w900, yOffset: -1);
 
     if (clear) {
-      // Hard-clean the lower half so no baked score/button ghosting can remain visible.
+      // Slightly darken the lower UI area but keep the art visible.
       canvas.drawRect(
-        Rect.fromLTWH(0, size.y * .56, size.x, size.y * .44),
-        Paint()..color = const Color(0xE016082F),
+        Rect.fromLTWH(0, size.y * .58, size.x, size.y * .42),
+        Paint()..color = const Color(0x2409041D),
       );
 
-      final milestoneRect = Rect.fromLTWH(size.x * .12, size.y * .290, size.x * .76, size.y * .045);
-      final milestone = RRect.fromRectAndRadius(milestoneRect, const Radius.circular(20));
-      canvas.drawRRect(milestone, Paint()..color = const Color(0xBB251246));
+      final milestoneRect = Rect.fromLTWH(size.x * .10, size.y * .355, size.x * .72, size.y * .048);
+      final milestone = RRect.fromRectAndRadius(milestoneRect, const Radius.circular(22));
+      canvas.drawRRect(milestone, Paint()..color = const Color(0xC1261248));
       canvas.drawRRect(
         milestone,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.4
+          ..strokeWidth = 1.6
           ..color = const Color(0x88FFD96A),
       );
       _drawCenteredText(
         canvas,
         '공주에게 한 걸음 더 가까워졌습니다.',
         milestoneRect,
-        15,
-        const Color(0xFFF4E9FF),
+        15.5,
+        const Color(0xFFF6EDFF),
         FontWeight.w800,
       );
 
-      final cardRect = Rect.fromLTWH(size.x * .11, size.y * .615, size.x * .78, size.y * .165);
+      final cardRect = Rect.fromLTWH(size.x * .11, size.y * .655, size.x * .78, size.y * .150);
       final card = RRect.fromRectAndRadius(cardRect, const Radius.circular(30));
-      canvas.drawRRect(card, Paint()..color = const Color(0xF2261048));
+      canvas.drawRRect(card, Paint()..color = const Color(0xEC241046));
       canvas.drawRRect(
         card,
         Paint()
@@ -130,9 +131,9 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
           ..color = const Color(0xFFFFD86D),
       );
 
-      final innerRect = Rect.fromLTWH(cardRect.left + 26, cardRect.top + 36, cardRect.width - 52, cardRect.height - 72);
-      final inner = RRect.fromRectAndRadius(innerRect, const Radius.circular(24));
-      canvas.drawRRect(inner, Paint()..color = const Color(0x552F195A));
+      final innerRect = Rect.fromLTWH(cardRect.left + 24, cardRect.top + 31, cardRect.width - 48, cardRect.height - 62);
+      final inner = RRect.fromRectAndRadius(innerRect, const Radius.circular(22));
+      canvas.drawRRect(inner, Paint()..color = const Color(0x4C3A1A62));
       canvas.drawRRect(
         inner,
         Paint()
@@ -140,24 +141,28 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
           ..strokeWidth = 1.6
           ..color = const Color(0x99FFD96A),
       );
+
+      final titleRect = Rect.fromLTWH(innerRect.left, innerRect.top + 2, innerRect.width, innerRect.height * .54);
+      final subtitleRect = Rect.fromLTWH(innerRect.left, innerRect.top + innerRect.height * .49, innerRect.width, innerRect.height * .30);
       _drawCenteredText(
         canvas,
         '완료 시간  ${elapsedSeconds.toStringAsFixed(1)}초',
-        Rect.fromLTWH(innerRect.left, innerRect.top + 6, innerRect.width, innerRect.height * .48),
-        22,
+        titleRect,
+        21,
         const Color(0xFFFFE08A),
         FontWeight.w900,
       );
       _drawCenteredText(
         canvas,
         '${stageRealmLabel(stage)} · STAGE $stage 완료',
-        Rect.fromLTWH(innerRect.left, innerRect.top + innerRect.height * .48, innerRect.width, innerRect.height * .34),
-        13,
-        const Color(0xFFD9CAFF),
+        subtitleRect,
+        13.2,
+        const Color(0xFFE7DBFF),
         FontWeight.w800,
+        yOffset: -1,
       );
 
-      final primaryRect = Rect.fromLTWH(size.x * .11, size.y * .835, size.x * .78, size.y * .082);
+      final primaryRect = Rect.fromLTWH(size.x * .11, size.y * .836, size.x * .78, size.y * .086);
       final primary = RRect.fromRectAndRadius(primaryRect, const Radius.circular(30));
       canvas.drawRRect(
         primary,
@@ -170,7 +175,7 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
           ..strokeWidth = 3
           ..color = const Color(0xFFFFFFFF),
       );
-      _drawCenteredText(canvas, '다음 스테이지', primaryRect, 23, const Color(0xFF13240B), FontWeight.w900);
+      _drawCenteredText(canvas, '다음 스테이지', primaryRect, 23, const Color(0xFF13240B), FontWeight.w900, yOffset: -1);
     } else {
       canvas.drawRect(
         Rect.fromLTWH(0, size.y * .65, size.x, size.y * .35),

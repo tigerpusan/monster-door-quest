@@ -1,24 +1,30 @@
-Monster Door - Background Reset Layout Patch
+MonsterDoor two-background rebuild patch
 
-이 패치는 누적 좌표 보정보다 "배경 정리 + 레이아웃 재구성" 방식으로 수정한 버전입니다.
+업로드할 파일 전체:
+1) /assets/images/ui/gameplay_rebuild.png
+2) /assets/images/ui/stage_clear_rebuild.png
+3) /lib/game/scenes/intro_scene.dart
+4) /lib/game/scenes/memory_scene.dart
+5) /lib/game/scenes/result_scene.dart
+6) APPLY_PATCH.txt (설명용, 업로드 안 해도 됨)
 
-교체할 파일:
-1) lib/game/scenes/intro_scene.dart
-2) lib/game/scenes/memory_scene.dart
-3) lib/game/scenes/result_scene.dart
-4) assets/images/ui/gameplay_clean.webp
-5) assets/images/ui/stage_clear_clean.webp
+GitHub 업로드 방법:
+- 저장소 루트에서 Add file -> Upload files
+- zip을 풀어서 위 5개 실제 파일을 드래그 업로드
+- 경로가 보이면 그대로 유지
+- Commit directly to main branch
 
-적용 방법:
-- 압축을 풀고, 위 5개 파일을 GitHub/로컬 프로젝트의 같은 위치에 덮어쓰기 합니다.
-- pubspec.yaml 은 이미 assets/images/ 와 assets/images/ui/ 를 포함하므로 추가 수정이 필요 없습니다.
-- 커밋 메시지 예시: MonsterDoor background reset layout patch
+권장 커밋 메시지:
+MonsterDoor two background rebuild patch
 
-이번 패치 핵심:
-- gameplay 배경의 기존 문구/진행선/8.3초 잔상 제거용 clean 배경 추가
-- stage_clear 배경의 기존 영문/점수판/다시보기 잔상 제거용 clean 배경 추가
-- 기억화면 "처음" 버튼 세로 중앙정렬 수정
-- 기억화면 CTA 버튼이 패널 라인과 겹치지 않도록 하단 독립 배치
-- 기억화면 타이머 pill/리스트/버튼 간 간격 재정리
-- 첫 화면/클리어 화면의 잔상 겹침 최소화
-- 결과화면 완료 카드와 다음 스테이지 버튼을 새로 정리
+이 패치는 다음을 반영함:
+- gameplay / intro / memory 공통 배경을 새 그림(gameplay_rebuild.png)으로 교체
+- stage clear 배경을 새 그림(stage_clear_rebuild.png)으로 교체
+- 기존 이미지에 박혀 있던 숫자/문구/캐릭터 실루엣 겹침 문제 제거
+- 시작 화면 하단 잘림, 8.3초 잔상, 기억완료 버튼 경계 겹침 문제 완화
+- 스테이지 클리어 화면의 검은 띠/희미한 영어/다시보기 겹침 문제 제거 방향으로 재설계
+- '처음' 버튼을 별도 UI 박스로 정렬 보정
+
+참고:
+- 이번 패치는 새 배경 두 장을 기준으로 UI를 다시 올리는 구조임
+- 실패 화면(monster_attack.webp)은 기존 리소스를 그대로 사용함
