@@ -52,4 +52,6 @@ class MonsterDoorGame extends FlameGame {
   }
 
   Future<void> retryCurrentStage() => startCurrentStage();
+
+  Future<void> goHome() => _setScene(IntroScene());
 }
