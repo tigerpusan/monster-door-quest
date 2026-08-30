@@ -12,8 +12,7 @@ import '../core/game_state.dart';
 import '../effects/hit_effects.dart';
 import '../monster_door_game.dart';
 
-class DoorScene extends PositionComponent
-    with HasGameReference<MonsterDoorGame> {
+class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame> {
   DoorScene(this.session);
 
   final GameSessionState session;
@@ -50,8 +49,8 @@ class DoorScene extends PositionComponent
       ..size = Vector2(size.x * .335, size.y * .405)
       ..position = Vector2(size.x * .56, size.y * .385);
     progress
-      ..size = Vector2(size.x * .68, 42)
-      ..position = Vector2(size.x * .16, size.y * .255);
+      ..size = Vector2(size.x * .60, 32)
+      ..position = Vector2(size.x * .20, size.y * .286);
   }
 
   Future<void> _choose(DoorSide side) async {
@@ -59,21 +58,16 @@ class DoorScene extends PositionComponent
       return;
     }
 
-    // 16 ms protects against accidental duplicate callbacks but still allows
-    // rapid alternating taps at frame speed.
     _inputCooldown = .016;
 
     final result = session.choose(side);
     final door = side == DoorSide.left ? leftDoor : rightDoor;
     door.open(correct: result != ChoiceResult.wrong);
 
-    // Audio and haptic fire at input time, never after animation completion.
     unawaited(game.audioManager.playDoorOpen());
     if (result == ChoiceResult.wrong) {
       unawaited(HapticFeedback.heavyImpact());
     } else {
-      // selectionClick is shorter/lower latency than lightImpact and does not
-      // build a long vibration queue during stage 7+ rapid input.
       unawaited(HapticFeedback.selectionClick());
     }
 
@@ -115,9 +109,7 @@ class DoorScene extends PositionComponent
       _feedbackTimer = (_feedbackTimer - dt).clamp(0, 1).toDouble();
     }
 
-    if (session.phase == SessionPhase.playing &&
-        elapsed >= GameRules.playSeconds &&
-        !_transitioning) {
+    if (session.phase == SessionPhase.playing && elapsed >= GameRules.playSeconds && !_transitioning) {
       session.phase = SessionPhase.failed;
       _feedbackText = 'X';
       _feedbackTimer = .6;
@@ -169,9 +161,9 @@ class DoorScene extends PositionComponent
       size: Vector2(size.x, size.y * 1.035),
     );
 
-    // Fully cover all baked title/progress/timer content in the top part of the source art.
+    // Cover all baked top/timer UI, including the old floating 8.3초 art.
     canvas.drawRect(
-      Rect.fromLTWH(0, 0, size.x, size.y * .31),
+      Rect.fromLTWH(0, 0, size.x, size.y * .345),
       Paint()..color = const Color(0xFF15082F),
     );
     canvas.drawRRect(
@@ -191,36 +183,44 @@ class DoorScene extends PositionComponent
         ..strokeWidth = 2
         ..color = const Color(0x88FFD96A),
     );
-    _center(canvas, '기억의 문을 여세요!', size.y * .100, 26,
-        const Color(0xFFFFD96A), FontWeight.w900);
+
+    _center(canvas, '기억의 문을 여세요!', size.y * .095, 26, const Color(0xFFFFD96A), FontWeight.w900);
+    _center(canvas, stageRealmLabel(session.stage), size.y * .135, 13, const Color(0xFFDCCBFF), FontWeight.w800);
     _center(
       canvas,
       'STAGE ${session.stage}   ${min(session.step + 1, session.route.length)} / ${session.route.length}',
-      size.y * .151,
+      size.y * .159,
       14,
       const Color(0xFFFFFFFF),
       FontWeight.w800,
     );
+
     final remain = (GameRules.playSeconds - elapsed).clamp(0.0, GameRules.playSeconds);
-    _center(
-      canvas,
-      '${remain.toStringAsFixed(1)}초',
-      size.y * .200,
-      29,
-      remain < 2.5 ? const Color(0xFFFF7777) : const Color(0xFFFFE08B),
-      FontWeight.w900,
+    final timerPill = RRect.fromRectAndRadius(
+      Rect.fromLTWH(size.x * .34, size.y * .190, size.x * .32, 46),
+      const Radius.circular(22),
     );
+    canvas.drawRRect(timerPill, Paint()..color = const Color(0xFF2A1452));
+    canvas.drawRRect(
+      timerPill,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.6
+        ..color = const Color(0x66FFD96A),
+    );
+    _center(canvas, '${remain.toStringAsFixed(1)}초', size.y * .205, 28,
+        remain < 2.5 ? const Color(0xFFFF7777) : const Color(0xFFFFE08B), FontWeight.w900);
 
     if (_feedbackTimer > 0) {
       final rr = RRect.fromRectAndRadius(
-        Rect.fromLTWH(size.x * .43, size.y * .305, size.x * .14, 44),
+        Rect.fromLTWH(size.x * .43, size.y * .348, size.x * .14, 44),
         const Radius.circular(22),
       );
       canvas.drawRRect(rr, Paint()..color = const Color(0xD91B0E38));
       _center(
         canvas,
         _feedbackText,
-        size.y * .311,
+        size.y * .354,
         24,
         _feedbackText == 'O' ? const Color(0xFF8DFF9E) : const Color(0xFFFF6D86),
         FontWeight.w900,
@@ -232,9 +232,7 @@ class DoorScene extends PositionComponent
       canvas.drawRect(
         size.toRect(),
         Paint()
-          ..color = (feedback.flashKind == FlashKind.correct
-                  ? const Color(0xFF6FFF98)
-                  : const Color(0xFFFF4C6E))
+          ..color = (feedback.flashKind == FlashKind.correct ? const Color(0xFF6FFF98) : const Color(0xFFFF4C6E))
               .withAlpha(alpha),
       );
     }

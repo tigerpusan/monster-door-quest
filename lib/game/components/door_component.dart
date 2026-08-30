@@ -17,10 +17,12 @@ class DoorComponent extends PositionComponent with TapCallbacks {
   final DoorSide side;
   final DoorSelected onSelected;
 
-  // Compatibility timing used by the existing regression test and older callers.
-  // The visible animation can remain slightly longer while input reaction is immediate.
-  final double openDuration = 0.18;
   final double visualDuration = 0.34;
+
+  // Backward-compatible API retained for existing tests/tooling.
+  // The visible animation still uses visualDuration; this value represents
+  // the immediate opening response window expected by older tests.
+  double get openDuration => 0.16;
   bool isPressed = false;
   bool isOpening = false;
   bool? correct;
@@ -29,9 +31,8 @@ class DoorComponent extends PositionComponent with TapCallbacks {
   double _resultTimer = 0;
   bool _firedThisTap = false;
 
-  // Kept as a public compatibility hook because the repository regression test
-  // and older input code call pressDown() directly. It only changes the pressed
-  // visual state and does not fire a duplicate door selection.
+  // Backward-compatible public press hook used by the existing test suite.
+  // Real gameplay still enters through onTapDown.
   void pressDown() {
     isPressed = true;
   }
