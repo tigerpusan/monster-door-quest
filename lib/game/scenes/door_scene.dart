@@ -6,6 +6,7 @@ import 'package:flutter/material.dart'
     show FontWeight, TextDirection, TextPainter, TextSpan, TextStyle;
 import 'package:flutter/services.dart';
 import '../components/door_component.dart';
+import '../components/tap_zone.dart';
 import '../components/route_progress.dart';
 import '../core/game_rules.dart';
 import '../core/game_state.dart';
@@ -19,6 +20,7 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
   late Sprite _bg;
   late final DoorComponent leftDoor, rightDoor;
   late final RouteProgress progress;
+  late final TapZone home;
   final feedback = HitFeedbackController();
 
   double elapsed = 0;
@@ -35,7 +37,8 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     leftDoor = DoorComponent(side: DoorSide.left, onSelected: _choose);
     rightDoor = DoorComponent(side: DoorSide.right, onSelected: _choose);
     progress = RouteProgress(total: session.route.length);
-    addAll([leftDoor, rightDoor, progress]);
+    home = TapZone(onTap: game.goHome, triggerOnDown: true);
+    addAll([leftDoor, rightDoor, progress, home]);
   }
 
   @override
@@ -51,6 +54,9 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     progress
       ..size = Vector2(size.x * .60, 32)
       ..position = Vector2(size.x * .20, size.y * .286);
+    home
+      ..size = Vector2(size.x * .15, size.y * .042)
+      ..position = Vector2(size.x * .81, size.y * .018);
   }
 
   Future<void> _choose(DoorSide side) async {
@@ -183,6 +189,18 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
         ..strokeWidth = 2
         ..color = const Color(0x88FFD96A),
     );
+
+    final homeBox = RRect.fromRectAndRadius(
+      Rect.fromLTWH(size.x * .81, size.y * .018, size.x * .15, size.y * .042),
+      const Radius.circular(16),
+    );
+    canvas.drawRRect(homeBox, Paint()..color = const Color(0xCC16082F));
+    canvas.drawRRect(homeBox, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.4..color = const Color(0x99FFD86D));
+    final homeText = TextPainter(
+      text: const TextSpan(text: '처음', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w900, color: Color(0xFFFFEDB1))),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    homeText.paint(canvas, Offset(size.x * .885 - homeText.width / 2, size.y * .027));
 
     _center(canvas, '기억의 문을 여세요!', size.y * .095, 26, const Color(0xFFFFD96A), FontWeight.w900);
     _center(canvas, stageRealmLabel(session.stage), size.y * .135, 13, const Color(0xFFDCCBFF), FontWeight.w800);

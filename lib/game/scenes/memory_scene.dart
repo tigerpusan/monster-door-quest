@@ -14,6 +14,7 @@ class MemoryScene extends PositionComponent
   final double? memorySeconds;
   late Sprite _bg;
   late TapZone _ready;
+  late TapZone _home;
   double elapsed = 0;
   bool _transitioned = false;
 
@@ -21,7 +22,8 @@ class MemoryScene extends PositionComponent
   Future<void> onLoad() async {
     _bg = await Sprite.load('ui/gameplay.webp');
     _ready = TapZone(onTap: _goDoor, triggerOnDown: true);
-    add(_ready);
+    _home = TapZone(onTap: game.goHome, triggerOnDown: true);
+    addAll([_ready, _home]);
   }
 
   @override
@@ -31,6 +33,9 @@ class MemoryScene extends PositionComponent
     _ready
       ..size = Vector2(size.x * .74, size.y * .060)
       ..position = Vector2(size.x * .13, size.y * .922);
+    _home
+      ..size = Vector2(size.x * .15, size.y * .042)
+      ..position = Vector2(size.x * .81, size.y * .018);
   }
 
   void _goDoor() {
@@ -97,6 +102,19 @@ class MemoryScene extends PositionComponent
         ..strokeWidth = 2
         ..color = const Color(0x88FFD76E),
     );
+
+
+    final home = RRect.fromRectAndRadius(
+      Rect.fromLTWH(size.x * .81, size.y * .018, size.x * .15, size.y * .042),
+      const Radius.circular(16),
+    );
+    canvas.drawRRect(home, Paint()..color = const Color(0xCC16082F));
+    canvas.drawRRect(home, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.4..color = const Color(0x99FFD86D));
+    final homeText = TextPainter(
+      text: const TextSpan(text: '처음', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w900, color: Color(0xFFFFEDB1))),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    homeText.paint(canvas, Offset(size.x * .885 - homeText.width / 2, size.y * .027));
 
     _center(
       canvas,

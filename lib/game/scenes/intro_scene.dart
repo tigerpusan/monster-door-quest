@@ -142,16 +142,12 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     );
 
     _centerText(canvas, '몬스터 문 열기', size.y * .061, 29, const Color(0xFFFFD968), FontWeight.w900);
-    _centerText(canvas, '공주가 몬스터에게 납치되었습니다!', size.y * .109, 17, const Color(0xFFFFFFFF), FontWeight.w900);
-    _centerText(canvas, '열릴 문을 기억하세요.', size.y * .156, 15.2,
-        const Color(0xFFF4EFFF), FontWeight.w800, maxWidthFactor: .78);
-    _centerText(canvas, '용사의 기억력이 공주를 구합니다.', size.y * .191, 15.8,
-        const Color(0xFFFFE7A0), FontWeight.w800);
-    _centerText(canvas, '① 기억하기   ② 문 열기   ③ 틀리면 몬스터 출현', size.y * .228, 12.5,
-        const Color(0xFFDCCBFF), FontWeight.w700, maxWidthFactor: .80);
+    _centerText(canvas, '공주가 몬스터에게 납치되었습니다.', size.y * .118, 17, const Color(0xFFFFFFFF), FontWeight.w900);
+    _centerText(canvas, '비밀의 문을 기억하여 공주를 구하세요.', size.y * .166, 15.5,
+        const Color(0xFFFFE7A0), FontWeight.w800, maxWidthFactor: .82);
 
     final statusCard = RRect.fromRectAndRadius(
-      Rect.fromLTWH(size.x * .14, size.y * .255, size.x * .72, size.y * .052),
+      Rect.fromLTWH(size.x * .14, size.y * .225, size.x * .72, size.y * .052),
       const Radius.circular(18),
     );
     canvas.drawRRect(statusCard, Paint()..color = const Color(0xE029124C));
@@ -165,14 +161,14 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     _centerText(
       canvas,
       '현재 진행  $realm  ·  STAGE $currentStage  ·  최고 ${bestStage == 0 ? '-' : bestStage}',
-      size.y * .270,
+      size.y * .240,
       11.4,
       const Color(0xFFFFEDB0),
       FontWeight.w800,
       maxWidthFactor: .68,
     );
 
-    _drawRealmMap(canvas, size.y * .285, currentStage);
+    _drawRealmMap(canvas, size.y * .255, currentStage);
 
     final btn = RRect.fromRectAndRadius(
       Rect.fromLTWH(size.x * .13, size.y * .925, size.x * .74, size.y * .062),

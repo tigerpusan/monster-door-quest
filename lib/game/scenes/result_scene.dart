@@ -15,18 +15,32 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
   final double elapsedSeconds;
   late Sprite _bg;
   late TapZone _primary;
+  late TapZone _home;
   bool _handled = false;
 
   @override
   Future<void> onLoad() async {
     _bg = await Sprite.load(clear ? 'ui/stage_clear.webp' : 'ui/monster_attack.webp');
     _primary = TapZone(onTap: _goNext, triggerOnDown: true);
-    add(_primary);
+    _home = TapZone(onTap: game.goHome, triggerOnDown: true);
+    addAll([_primary, _home]);
   }
 
   void _goNext() {
     if (_handled) return;
     _handled = true;
+    final homeBox = RRect.fromRectAndRadius(
+      Rect.fromLTWH(size.x * .81, size.y * .018, size.x * .15, size.y * .042),
+      const Radius.circular(16),
+    );
+    canvas.drawRRect(homeBox, Paint()..color = const Color(0xCC16082F));
+    canvas.drawRRect(homeBox, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.4..color = const Color(0x99FFD86D));
+    final homeText = TextPainter(
+      text: const TextSpan(text: '처음', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w900, color: Color(0xFFFFEDB1))),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    homeText.paint(canvas, Offset(size.x * .885 - homeText.width / 2, size.y * .027));
+
     if (clear) {
       unawaited(game.advanceAfterClear());
     } else {
@@ -42,6 +56,10 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
       ..size = Vector2(size.x * .78, clear ? size.y * .082 : size.y * .10)
       ..position = Vector2(size.x * .11, clear ? size.y * .846 : size.y * .835)
       ..priority = 1000;
+    _home
+      ..size = Vector2(size.x * .15, size.y * .042)
+      ..position = Vector2(size.x * .81, size.y * .018)
+      ..priority = 1100;
   }
 
   void _center(Canvas canvas, String text, double y, double fs, Color color, FontWeight weight, {double? maxWidth}) {
@@ -62,32 +80,32 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
     _bg.render(canvas, size: size);
 
     if (clear) {
-      // Keep the illustrated clear scene visible. Only add a light subtitle strip.
+      // Hide the baked English STAGE COMPLETE line cleanly, then place only the Korean milestone below it.
       canvas.drawRect(
-        Rect.fromLTWH(0, size.y * .245, size.x, size.y * .085),
-        Paint()..color = const Color(0x7A16082F),
+        Rect.fromLTWH(0, size.y * .242, size.x, size.y * .058),
+        Paint()..color = const Color(0xFF16082F),
       );
       _center(
         canvas,
         _milestoneText(),
-        size.y * .272,
+        size.y * .302,
         15.5,
         const Color(0xFFF4E9FF),
         FontWeight.w800,
         maxWidth: size.x * .86,
       );
 
-      // Precisely cover the old baked lower stats/button zone without hiding the hero/princess art.
+      // Fully cover the baked remaining-time/stat panel so no old text can show through.
       canvas.drawRect(
-        Rect.fromLTWH(0, size.y * .628, size.x, size.y * .135),
-        Paint()..color = const Color(0xE014082C),
+        Rect.fromLTWH(0, size.y * .602, size.x, size.y * .205),
+        Paint()..color = const Color(0xFF16082F),
       );
       canvas.drawRect(
         Rect.fromLTWH(0, size.y * .812, size.x, size.y * .165),
-        Paint()..color = const Color(0xDE14082C),
+        Paint()..color = const Color(0xE616082F),
       );
 
-      final infoRect = Rect.fromLTWH(size.x * .16, size.y * .666, size.x * .68, size.y * .102);
+      final infoRect = Rect.fromLTWH(size.x * .16, size.y * .650, size.x * .68, size.y * .100);
       final info = RRect.fromRectAndRadius(infoRect, const Radius.circular(26));
       canvas.drawRRect(info, Paint()..color = const Color(0xF22A1454));
       canvas.drawRRect(
@@ -97,8 +115,8 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
           ..strokeWidth = 2.5
           ..color = const Color(0xFFFFD86D),
       );
-      final firstLineY = infoRect.top + infoRect.height * .26;
-      final secondLineY = infoRect.top + infoRect.height * .62;
+      final firstLineY = infoRect.top + infoRect.height * .22;
+      final secondLineY = infoRect.top + infoRect.height * .58;
       _center(
         canvas,
         '완료 시간  ${elapsedSeconds.toStringAsFixed(1)}초',
