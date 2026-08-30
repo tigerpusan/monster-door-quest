@@ -16,20 +16,18 @@ class FlameAudioBackend implements AudioBackend {
   @override
   Future<void> preload(List<String> files) async {
     await FlameAudio.audioCache.loadAll(files);
-    // The door sound is the most latency-sensitive sound in the game.
-    // Keep multiple pre-warmed players available so rapid taps do not queue.
     _doorPool = await FlameAudio.createPool(
       AudioManager.doorOpen,
       minPlayers: 4,
       maxPlayers: 8,
     );
     _wrongPool = await FlameAudio.createPool(
-      AudioManager.wrongBoom,
+      AudioManager.wrongBright,
       minPlayers: 2,
       maxPlayers: 3,
     );
     _clearPool = await FlameAudio.createPool(
-      AudioManager.clear,
+      AudioManager.clearBright,
       minPlayers: 1,
       maxPlayers: 2,
     );
@@ -50,7 +48,7 @@ class FlameAudioBackend implements AudioBackend {
       await pool.start(volume: volume);
       return;
     }
-    await FlameAudio.play(AudioManager.wrongBoom, volume: volume);
+    await FlameAudio.play(AudioManager.wrongBright, volume: volume);
   }
 
   Future<void> playClearPool({double volume = 1}) async {
@@ -59,7 +57,7 @@ class FlameAudioBackend implements AudioBackend {
       await pool.start(volume: volume);
       return;
     }
-    await FlameAudio.play(AudioManager.clear, volume: volume);
+    await FlameAudio.play(AudioManager.clearBright, volume: volume);
   }
 
   @override
@@ -91,9 +89,8 @@ class AudioManager {
   static const doorUnlock = 'sfx/door_unlock.wav';
   static const doorOpen = 'sfx/door_open.wav';
   static const correct = 'sfx/correct.wav';
-  static const wrongBoom = 'sfx/wrong_boom.wav';
-  static const monsterGrowl = 'sfx/monster_growl.wav';
-  static const clear = 'sfx/clear_fanfare.wav';
+  static const wrongBright = 'sfx/wrong_bright.wav';
+  static const clearBright = 'sfx/clear_bright.wav';
   static const milestone = 'sfx/milestone_fanfare.wav';
 
   Future<void> preload() async {
@@ -102,9 +99,8 @@ class AudioManager {
       doorUnlock,
       doorOpen,
       correct,
-      wrongBoom,
-      monsterGrowl,
-      clear,
+      wrongBright,
+      clearBright,
       milestone,
       bgm,
     ]);
@@ -137,26 +133,26 @@ class AudioManager {
     if (!sfxEnabled) return;
     final b = backend;
     if (b is FlameAudioBackend) {
-      await b.playWrongPool(volume: .82);
+      await b.playWrongPool(volume: .70);
     } else {
-      await b.play(wrongBoom, volume: .82);
+      await b.play(wrongBright, volume: .70);
     }
-    // Do not stack a growl immediately on top of the error hit; that stacking was
-    // one of the causes of delayed audio on later stages.
   }
 
   Future<void> playClear({bool milestoneStage = false}) async {
     if (!sfxEnabled) return;
     final b = backend;
     if (!milestoneStage && b is FlameAudioBackend) {
-      await b.playClearPool(volume: .78);
+      await b.playClearPool(volume: .76);
       return;
     }
-    await b.play(milestoneStage ? milestone : clear, volume: .78);
+    await b.play(milestoneStage ? milestone : clearBright, volume: .76);
   }
 
-  // Kept for compatibility with existing tests / older callers.
-  Future<void> playDoorTap() => sfxEnabled ? backend.play(doorTap, volume: .45) : Future.value();
-  Future<void> playDoorUnlock() => sfxEnabled ? backend.play(doorUnlock, volume: .45) : Future.value();
-  Future<void> playCorrect() => sfxEnabled ? backend.play(correct, volume: .60) : Future.value();
+  Future<void> playDoorTap() =>
+      sfxEnabled ? backend.play(doorTap, volume: .45) : Future.value();
+  Future<void> playDoorUnlock() =>
+      sfxEnabled ? backend.play(doorUnlock, volume: .45) : Future.value();
+  Future<void> playCorrect() =>
+      sfxEnabled ? backend.play(correct, volume: .60) : Future.value();
 }

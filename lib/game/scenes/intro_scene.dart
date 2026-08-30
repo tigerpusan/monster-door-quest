@@ -13,6 +13,8 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
   late TapZone _settings;
   late TapZone _settingsClose;
   late TapZone _settingsContinue;
+  late TapZone _settingsMusic;
+  late TapZone _settingsReset;
   bool _settingsOpen = false;
 
   @override
@@ -20,9 +22,18 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     _bg = await Sprite.load('ui/gameplay_final_clean_v2.png');
     _start = TapZone(onTap: _startGame, triggerOnDown: true);
     _settings = TapZone(onTap: _toggleSettings, triggerOnDown: true);
-    _settingsClose = TapZone(onTap: _toggleSettings, triggerOnDown: true);
+    _settingsClose = TapZone(onTap: _closeSettings, triggerOnDown: true);
     _settingsContinue = TapZone(onTap: _closeSettings, triggerOnDown: true);
-    addAll([_start, _settings, _settingsClose, _settingsContinue]);
+    _settingsMusic = TapZone(onTap: _toggleBgm, triggerOnDown: true);
+    _settingsReset = TapZone(onTap: _resetChallenge, triggerOnDown: true);
+    addAll([
+      _start,
+      _settings,
+      _settingsClose,
+      _settingsContinue,
+      _settingsMusic,
+      _settingsReset,
+    ]);
   }
 
   void _startGame() {
@@ -30,12 +41,25 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     game.startCurrentStage();
   }
 
-  void _toggleSettings() {
-    _settingsOpen = !_settingsOpen;
+  void _toggleSettings() => _settingsOpen = !_settingsOpen;
+  void _closeSettings() => _settingsOpen = false;
+
+  void _toggleBgm() {
+    if (!_settingsOpen) return;
+    game.audioManager.bgmEnabled = !game.audioManager.bgmEnabled;
+    if (game.audioManager.bgmEnabled) {
+      game.audioManager.startBgm();
+    } else {
+      game.audioManager.stopBgm();
+    }
   }
 
-  void _closeSettings() {
+  Future<void> _resetChallenge() async {
+    if (!_settingsOpen) return;
+    await game.progressStore.saveCurrentStage(GameRules.initialStage);
+    game.currentStage = GameRules.initialStage;
     _settingsOpen = false;
+    game.goHome();
   }
 
   @override
@@ -46,14 +70,20 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
       ..size = Vector2(size.x * .74, size.y * .072)
       ..position = Vector2(size.x * .13, size.y * .900);
     _settings
-      ..size = Vector2(size.x * .17, size.y * .060)
-      ..position = Vector2(size.x * .775, size.y * .020);
+      ..size = Vector2(size.x * .145, size.y * .060)
+      ..position = Vector2(size.x * .805, size.y * .022);
     _settingsClose
-      ..size = Vector2(size.x * .10, size.y * .055)
-      ..position = Vector2(size.x * .80, size.y * .135);
+      ..size = Vector2(size.x * .09, size.y * .050)
+      ..position = Vector2(size.x * .82, size.y * .090);
+    _settingsMusic
+      ..size = Vector2(size.x * .72, size.y * .060)
+      ..position = Vector2(size.x * .14, size.y * .245);
+    _settingsReset
+      ..size = Vector2(size.x * .35, size.y * .062)
+      ..position = Vector2(size.x * .13, size.y * .812);
     _settingsContinue
-      ..size = Vector2(size.x * .32, size.y * .060)
-      ..position = Vector2(size.x * .34, size.y * .790);
+      ..size = Vector2(size.x * .35, size.y * .062)
+      ..position = Vector2(size.x * .52, size.y * .812);
   }
 
   void _drawText(
@@ -81,7 +111,9 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
       textDirection: TextDirection.ltr,
       textAlign: align,
     )..layout(maxWidth: maxWidth ?? rect.width);
-    final dx = align == TextAlign.center ? rect.left + (rect.width - tp.width) / 2 : rect.left;
+    final dx = align == TextAlign.center
+        ? rect.left + (rect.width - tp.width) / 2
+        : rect.left;
     final dy = rect.top + (rect.height - tp.height) / 2 + yOffset;
     tp.paint(canvas, Offset(dx, dy));
   }
@@ -108,7 +140,8 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
       final done = i < activeIndex;
       final active = i == activeIndex;
       final radius = active ? 8.0 : 6.0;
-      canvas.drawCircle(Offset(x, y), radius + 2.2, Paint()..color = const Color(0x55200A40));
+      canvas.drawCircle(Offset(x, y), radius + 2.2,
+          Paint()..color = const Color(0x55200A40));
       canvas.drawCircle(
         Offset(x, y),
         radius,
@@ -127,14 +160,15 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
           ..strokeWidth = 1.7
           ..color = const Color(0xEFFFFFFF),
       );
-
       final tp = TextPainter(
         text: TextSpan(
           text: labels[i],
           style: TextStyle(
             fontSize: 8.6,
             fontWeight: active ? FontWeight.w900 : FontWeight.w700,
-            color: active ? const Color(0xFFFFEDB1) : const Color(0xFFD4C4F7),
+            color: active
+                ? const Color(0xFFFFEDB1)
+                : const Color(0xFFD4C4F7),
             height: 1.05,
           ),
         ),
@@ -145,27 +179,31 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     }
   }
 
-  void _drawSettingsButton(Canvas canvas) {
-    GameHelpOverlay.drawSettingsButton(canvas, size.x, size.y);
-  }
-
   void _drawSettingsOverlay(Canvas canvas) {
-    GameHelpOverlay.draw(canvas, size.x, size.y, showHome: false);
+    final p = game.progressStore.load();
+    GameHelpOverlay.draw(
+      canvas,
+      size.x,
+      size.y,
+      currentStage: game.currentStage,
+      bestStage: p.bestStage,
+      bgmEnabled: game.audioManager.bgmEnabled,
+    );
   }
 
   @override
   void render(Canvas canvas) {
     _bg.render(canvas, size: size);
-
-    canvas.drawRect(size.toRect(), Paint()..color = const Color(0x1609041D));
-    _drawSettingsButton(canvas);
+    canvas.drawRect(size.toRect(), Paint()..color = const Color(0x1209041D));
+    GameHelpOverlay.drawSettingsButton(canvas, size.x, size.y);
 
     final progress = game.progressStore.load();
     final currentStage = game.currentStage;
     final bestStage = progress.bestStage;
     final realm = stageRealmLabel(currentStage);
 
-    final panelRect = Rect.fromLTWH(size.x * .05, size.y * .055, size.x * .90, size.y * .285);
+    // Keep the intro card fully below the gear button so their borders never cross.
+    final panelRect = Rect.fromLTWH(size.x * .05, size.y * .095, size.x * .90, size.y * .270);
     final panel = RRect.fromRectAndRadius(panelRect, const Radius.circular(28));
     canvas.drawRRect(panel, Paint()..color = const Color(0xEA1A0B3B));
     canvas.drawRRect(
@@ -186,7 +224,7 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     _drawText(
       canvas,
       '몬스터 문 열기',
-      Rect.fromLTWH(size.x * .14, size.y * .078, size.x * .72, size.y * .046),
+      Rect.fromLTWH(size.x * .14, size.y * .112, size.x * .72, size.y * .045),
       29,
       const Color(0xFFFFD96C),
       FontWeight.w900,
@@ -194,7 +232,7 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     _drawText(
       canvas,
       '공주가 몬스터에게 납치되었습니다.',
-      Rect.fromLTWH(size.x * .10, size.y * .126, size.x * .80, size.y * .030),
+      Rect.fromLTWH(size.x * .10, size.y * .162, size.x * .80, size.y * .030),
       17,
       const Color(0xFFFFFFFF),
       FontWeight.w900,
@@ -202,13 +240,13 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     _drawText(
       canvas,
       '비밀의 문을 기억하여 공주를 구하세요.',
-      Rect.fromLTWH(size.x * .12, size.y * .166, size.x * .76, size.y * .032),
+      Rect.fromLTWH(size.x * .12, size.y * .202, size.x * .76, size.y * .032),
       16,
       const Color(0xFFFFE8A7),
       FontWeight.w800,
     );
 
-    final statusRect = Rect.fromLTWH(size.x * .14, size.y * .228, size.x * .72, size.y * .052);
+    final statusRect = Rect.fromLTWH(size.x * .14, size.y * .258, size.x * .72, size.y * .050);
     final statusRRect = RRect.fromRectAndRadius(statusRect, const Radius.circular(18));
     canvas.drawRRect(statusRRect, Paint()..color = const Color(0xDE311553));
     canvas.drawRRect(
@@ -226,8 +264,7 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
       const Color(0xFFFFEDB0),
       FontWeight.w800,
     );
-
-    _drawRealmMap(canvas, size.y * .258, currentStage);
+    _drawRealmMap(canvas, size.y * .292, currentStage);
 
     final btnRect = Rect.fromLTWH(size.x * .13, size.y * .900, size.x * .74, size.y * .072);
     final btn = RRect.fromRectAndRadius(btnRect, const Radius.circular(28));
@@ -242,10 +279,9 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
         ..strokeWidth = 3
         ..color = const Color(0xFFFFFFFF),
     );
-    _drawText(canvas, '시작', btnRect, 23, const Color(0xFF102408), FontWeight.w900, yOffset: -1);
+    _drawText(canvas, '시작', btnRect, 23, const Color(0xFF102408), FontWeight.w900,
+        yOffset: -1);
 
-    if (_settingsOpen) {
-      _drawSettingsOverlay(canvas);
-    }
+    if (_settingsOpen) _drawSettingsOverlay(canvas);
   }
 }
