@@ -29,17 +29,6 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
   void _goNext() {
     if (_handled) return;
     _handled = true;
-    final homeBox = RRect.fromRectAndRadius(
-      Rect.fromLTWH(size.x * .81, size.y * .018, size.x * .15, size.y * .042),
-      const Radius.circular(16),
-    );
-    canvas.drawRRect(homeBox, Paint()..color = const Color(0xCC16082F));
-    canvas.drawRRect(homeBox, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.4..color = const Color(0x99FFD86D));
-    final homeText = TextPainter(
-      text: const TextSpan(text: '처음', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w900, color: Color(0xFFFFEDB1))),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    homeText.paint(canvas, Offset(size.x * .885 - homeText.width / 2, size.y * .027));
 
     if (clear) {
       unawaited(game.advanceAfterClear());
@@ -73,6 +62,36 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
   String _milestoneText() {
     return '공주에게 한 걸음 더 가까워졌습니다.';
+  }
+
+  void _renderHomeButton(Canvas canvas) {
+    final homeBox = RRect.fromRectAndRadius(
+      Rect.fromLTWH(size.x * .81, size.y * .018, size.x * .15, size.y * .042),
+      const Radius.circular(16),
+    );
+    canvas.drawRRect(homeBox, Paint()..color = const Color(0xCC16082F));
+    canvas.drawRRect(
+      homeBox,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.4
+        ..color = const Color(0x99FFD86D),
+    );
+    final homeText = TextPainter(
+      text: const TextSpan(
+        text: '처음',
+        style: TextStyle(
+          fontSize: 12.5,
+          fontWeight: FontWeight.w900,
+          color: Color(0xFFFFEDB1),
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout();
+    homeText.paint(
+      canvas,
+      Offset(size.x * .885 - homeText.width / 2, size.y * .027),
+    );
   }
 
   @override
@@ -177,5 +196,7 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
       );
       _center(canvas, _handled ? '다시 시작 중...' : '다시 도전', size.y * .864, 24, const Color(0xFF13240B), FontWeight.w900);
     }
+
+    _renderHomeButton(canvas);
   }
 }
