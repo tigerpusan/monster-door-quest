@@ -90,6 +90,8 @@ class AudioManager {
   static const doorOpen = 'sfx/door_open.wav';
   static const correct = 'sfx/correct.wav';
   static const wrongBright = 'sfx/wrong_bright.wav';
+  // Backward-compatible alias kept for existing tests and older callers.
+  static const wrongBoom = wrongBright;
   static const clearBright = 'sfx/clear_bright.wav';
   static const milestone = 'sfx/milestone_fanfare.wav';
 
