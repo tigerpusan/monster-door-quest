@@ -19,7 +19,7 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
   @override
   Future<void> onLoad() async {
-    _bg = await Sprite.load('ui/gameplay_rebuild.png');
+    _bg = await Sprite.load('ui/gameplay_final_clean_v2.png');
     _ready = TapZone(onTap: _goDoor, triggerOnDown: true);
     _home = TapZone(onTap: game.goHome, triggerOnDown: true);
     addAll([_ready, _home]);

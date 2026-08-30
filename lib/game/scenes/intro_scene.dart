@@ -12,7 +12,7 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
 
   @override
   Future<void> onLoad() async {
-    _bg = await Sprite.load('ui/gameplay_rebuild.png');
+    _bg = await Sprite.load('ui/gameplay_final_clean_v2.png');
     _start = TapZone(onTap: game.startCurrentStage, triggerOnDown: true);
     add(_start);
   }

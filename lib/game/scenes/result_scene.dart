@@ -20,7 +20,7 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
   @override
   Future<void> onLoad() async {
-    _bg = await Sprite.load(clear ? 'ui/stage_clear_rebuild.png' : 'ui/monster_attack.webp');
+    _bg = await Sprite.load(clear ? 'ui/stage_clear_final_clean_v2.png' : 'ui/monster_attack.webp');
     _primary = TapZone(onTap: _goNext, triggerOnDown: true);
     _home = TapZone(onTap: game.goHome, triggerOnDown: true);
     addAll([_primary, _home]);
