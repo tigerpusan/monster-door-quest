@@ -160,7 +160,7 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
     if (clear) {
       // Optical lift: keep the message between the clear title and the sword tip.
-      final milestoneRect = Rect.fromLTWH(size.x * .09, size.y * .272, size.x * .82, size.y * .044);
+      final milestoneRect = Rect.fromLTWH(size.x * .09, size.y * .238, size.x * .82, size.y * .042);
       final milestone = RRect.fromRectAndRadius(milestoneRect, const Radius.circular(22));
       canvas.drawRRect(milestone, Paint()..color = const Color(0xA8251247));
       canvas.drawRRect(milestone, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.5..color = const Color(0x88FFD96A));
@@ -174,15 +174,27 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
       );
 
       // One result card only. Text is vertically balanced inside the same card.
-      final cardRect = Rect.fromLTWH(size.x * .10, size.y * .690, size.x * .80, size.y * .128);
+      final cardRect = Rect.fromLTWH(size.x * .10, size.y * .684, size.x * .80, size.y * .136);
       final card = RRect.fromRectAndRadius(cardRect, const Radius.circular(30));
       canvas.drawRRect(card, Paint()..color = const Color(0xEC241046));
       canvas.drawRRect(card, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.4..color = const Color(0xFFFFD86D));
 
+      final timeLine = Rect.fromLTWH(
+        cardRect.left + 20,
+        cardRect.top + cardRect.height * .17,
+        cardRect.width - 40,
+        cardRect.height * .34,
+      );
+      final realmLine = Rect.fromLTWH(
+        cardRect.left + 20,
+        cardRect.top + cardRect.height * .55,
+        cardRect.width - 40,
+        cardRect.height * .24,
+      );
       _drawText(
         canvas,
         '완료 시간  ${elapsedSeconds.toStringAsFixed(1)}초',
-        Rect.fromLTWH(cardRect.left + 20, cardRect.top + 18, cardRect.width - 40, 44),
+        timeLine,
         26,
         const Color(0xFFFFE08A),
         FontWeight.w900,
@@ -190,8 +202,8 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
       _drawText(
         canvas,
         '${stageRealmLabel(stage)}  ·  STAGE $stage 완료',
-        Rect.fromLTWH(cardRect.left + 20, cardRect.top + 72, cardRect.width - 40, 34),
-        17.4,
+        realmLine,
+        17.2,
         const Color(0xFFE7DBFF),
         FontWeight.w800,
       );

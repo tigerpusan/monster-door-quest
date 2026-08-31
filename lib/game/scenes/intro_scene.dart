@@ -203,7 +203,7 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     final realm = stageRealmLabel(currentStage);
 
     // Keep the intro card fully below the gear button so their borders never cross.
-    final panelRect = Rect.fromLTWH(size.x * .05, size.y * .095, size.x * .90, size.y * .270);
+    final panelRect = Rect.fromLTWH(size.x * .055, size.y * .122, size.x * .86, size.y * .255);
     final panel = RRect.fromRectAndRadius(panelRect, const Radius.circular(28));
     canvas.drawRRect(panel, Paint()..color = const Color(0xEA1A0B3B));
     canvas.drawRRect(
@@ -224,7 +224,7 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     _drawText(
       canvas,
       '몬스터 문 열기',
-      Rect.fromLTWH(size.x * .14, size.y * .112, size.x * .72, size.y * .045),
+      Rect.fromLTWH(size.x * .14, size.y * .140, size.x * .68, size.y * .044),
       29,
       const Color(0xFFFFD96C),
       FontWeight.w900,
@@ -232,7 +232,7 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     _drawText(
       canvas,
       '공주가 몬스터에게 납치되었습니다.',
-      Rect.fromLTWH(size.x * .10, size.y * .162, size.x * .80, size.y * .030),
+      Rect.fromLTWH(size.x * .10, size.y * .192, size.x * .76, size.y * .030),
       17,
       const Color(0xFFFFFFFF),
       FontWeight.w900,
@@ -240,13 +240,13 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     _drawText(
       canvas,
       '비밀의 문을 기억하여 공주를 구하세요.',
-      Rect.fromLTWH(size.x * .12, size.y * .202, size.x * .76, size.y * .032),
+      Rect.fromLTWH(size.x * .11, size.y * .229, size.x * .75, size.y * .032),
       16,
       const Color(0xFFFFE8A7),
       FontWeight.w800,
     );
 
-    final statusRect = Rect.fromLTWH(size.x * .14, size.y * .258, size.x * .72, size.y * .050);
+    final statusRect = Rect.fromLTWH(size.x * .13, size.y * .281, size.x * .70, size.y * .048);
     final statusRRect = RRect.fromRectAndRadius(statusRect, const Radius.circular(18));
     canvas.drawRRect(statusRRect, Paint()..color = const Color(0xDE311553));
     canvas.drawRRect(
@@ -264,7 +264,7 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
       const Color(0xFFFFEDB0),
       FontWeight.w800,
     );
-    _drawRealmMap(canvas, size.y * .292, currentStage);
+    _drawRealmMap(canvas, size.y * .311, currentStage);
 
     final btnRect = Rect.fromLTWH(size.x * .13, size.y * .900, size.x * .74, size.y * .072);
     final btn = RRect.fromRectAndRadius(btnRect, const Radius.circular(28));

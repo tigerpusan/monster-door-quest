@@ -7,15 +7,15 @@ import 'package:flutter/material.dart'
 /// can bleed through or overlap the settings text.
 class GameHelpOverlay {
   static Rect settingsButtonRect(double w, double h) =>
-      Rect.fromLTWH(w * .805, h * .022, w * .145, h * .060);
+      Rect.fromLTWH(w * .815, h * .024, w * .135, h * .057);
   static Rect closeRect(double w, double h) =>
-      Rect.fromLTWH(w * .82, h * .090, w * .09, h * .050);
+      Rect.fromLTWH(w * .82, h * .080, w * .09, h * .050);
   static Rect musicRect(double w, double h) =>
-      Rect.fromLTWH(w * .14, h * .245, w * .72, h * .060);
+      Rect.fromLTWH(w * .12, h * .238, w * .76, h * .064);
   static Rect resetRect(double w, double h) =>
-      Rect.fromLTWH(w * .13, h * .812, w * .35, h * .062);
+      Rect.fromLTWH(w * .11, h * .804, w * .38, h * .068);
   static Rect continueRect(double w, double h) =>
-      Rect.fromLTWH(w * .52, h * .812, w * .35, h * .062);
+      Rect.fromLTWH(w * .51, h * .804, w * .38, h * .068);
 
   static void _drawText(
     Canvas canvas,
@@ -73,8 +73,8 @@ class GameHelpOverlay {
     _drawText(
       canvas,
       '⚙',
-      rect.translate(0, -2),
-      21,
+      rect,
+      20,
       const Color(0xFFFFEDB1),
       FontWeight.w900,
     );
@@ -88,26 +88,28 @@ class GameHelpOverlay {
     required int bestStage,
     required bool bgmEnabled,
   }) {
-    // Fully opaque base: prevents the title/doors/buttons from the game scene
-    // showing through the settings screen.
     final bg = Paint()
       ..shader = Gradient.linear(
         const Offset(0, 0),
         Offset(0, h),
-        const [Color(0xFF100722), Color(0xFF1B0A3B), Color(0xFF0C061B)],
-        const [0.0, .55, 1.0],
+        const [Color(0xFF0D061C), Color(0xFF180833), Color(0xFF0A0416)],
+        const [0.0, .58, 1.0],
       );
     canvas.drawRect(Rect.fromLTWH(0, 0, w, h), bg);
 
-    final panelRect = Rect.fromLTWH(w * .055, h * .065, w * .89, h * .845);
+    // Decorative glow rings make this feel like a game menu rather than a report page.
+    canvas.drawCircle(Offset(w * .18, h * .10), w * .18, Paint()..color = const Color(0x182F68FF));
+    canvas.drawCircle(Offset(w * .88, h * .22), w * .24, Paint()..color = const Color(0x182BEA8A));
+
+    final panelRect = Rect.fromLTWH(w * .055, h * .055, w * .89, h * .855);
     final panel = RRect.fromRectAndRadius(panelRect, const Radius.circular(30));
-    canvas.drawRRect(panel, Paint()..color = const Color(0xFF1D0B40));
+    canvas.drawRRect(panel, Paint()..color = const Color(0xFF1B0A3B));
     canvas.drawRRect(
       panel,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.5
-        ..color = const Color(0xDDFFD86D),
+        ..strokeWidth = 2.6
+        ..color = const Color(0xE6FFD86D),
     );
     canvas.drawRRect(
       panel.deflate(9),
@@ -119,28 +121,21 @@ class GameHelpOverlay {
 
     _drawText(
       canvas,
-      '⚙  설정',
-      Rect.fromLTWH(w * .20, h * .088, w * .60, h * .050),
+      '⚙  게임 설정',
+      Rect.fromLTWH(w * .18, h * .075, w * .64, h * .052),
       24,
       const Color(0xFFFFDD78),
       FontWeight.w900,
     );
-    _drawText(
-      canvas,
-      '✕',
-      closeRect(w, h),
-      20,
-      const Color(0xFFFFF0BC),
-      FontWeight.w900,
-    );
+    _drawText(canvas, '✕', closeRect(w, h), 20, const Color(0xFFFFF0BC), FontWeight.w900);
 
-    final record = Rect.fromLTWH(w * .12, h * .155, w * .76, h * .070);
+    final record = Rect.fromLTWH(w * .11, h * .142, w * .78, h * .078);
     _card(canvas, record, fill: const Color(0xFF32145C));
     _drawText(
       canvas,
-      '현재 STAGE $currentStage     ★ 최고 STAGE ${bestStage == 0 ? '-' : bestStage}',
+      '🏆  현재 STAGE $currentStage     최고 ${bestStage == 0 ? '-' : bestStage}',
       record,
-      14.2,
+      14.5,
       const Color(0xFFFFEDB1),
       FontWeight.w900,
     );
@@ -149,7 +144,7 @@ class GameHelpOverlay {
     _card(canvas, music, fill: const Color(0xFF241149));
     _drawText(
       canvas,
-      '♫  배경음악',
+      '🎵  배경음악',
       Rect.fromLTWH(music.left + 18, music.top, music.width * .55, music.height),
       15.5,
       const Color(0xFFFFFFFF),
@@ -158,23 +153,16 @@ class GameHelpOverlay {
     );
     final sw = Rect.fromLTWH(music.right - 78, music.top + 11, 58, music.height - 22);
     final swBox = RRect.fromRectAndRadius(sw, Radius.circular(sw.height / 2));
-    canvas.drawRRect(
-      swBox,
-      Paint()..color = bgmEnabled ? const Color(0xFF74E63C) : const Color(0xFF4A3A60),
-    );
+    canvas.drawRRect(swBox, Paint()..color = bgmEnabled ? const Color(0xFF74E63C) : const Color(0xFF4A3A60));
     final knobX = bgmEnabled ? sw.right - sw.height / 2 : sw.left + sw.height / 2;
-    canvas.drawCircle(
-      Offset(knobX, sw.center.dy),
-      sw.height * .34,
-      Paint()..color = const Color(0xFFFFFFFF),
-    );
+    canvas.drawCircle(Offset(knobX, sw.center.dy), sw.height * .34, Paint()..color = const Color(0xFFFFFFFF));
 
-    final how = Rect.fromLTWH(w * .12, h * .330, w * .76, h * .130);
-    _card(canvas, how);
+    final how = Rect.fromLTWH(w * .11, h * .323, w * .78, h * .125);
+    _card(canvas, how, fill: const Color(0xFF24104A));
     _drawText(
       canvas,
-      '게임 방법',
-      Rect.fromLTWH(how.left + 16, how.top + 9, how.width - 32, 26),
+      '🎮  게임 방법',
+      Rect.fromLTWH(how.left + 16, how.top + 8, how.width - 32, 25),
       15.5,
       const Color(0xFFFFE08B),
       FontWeight.w900,
@@ -182,21 +170,21 @@ class GameHelpOverlay {
     );
     _drawText(
       canvas,
-      '① 순서를 기억한다   ② 같은 순서로 문을 연다\n③ 성공하면 다음 스테이지로 전진한다',
-      Rect.fromLTWH(how.left + 16, how.top + 40, how.width - 32, how.height - 49),
-      13.3,
+      '1  문 순서를 기억   2  같은 순서로 선택\n3  성공하면 다음 스테이지로 전진',
+      Rect.fromLTWH(how.left + 16, how.top + 38, how.width - 32, how.height - 44),
+      12.8,
       const Color(0xFFF4EEFF),
       FontWeight.w700,
       align: TextAlign.left,
-      height: 1.34,
+      height: 1.36,
     );
 
-    final level = Rect.fromLTWH(w * .12, h * .480, w * .76, h * .185);
-    _card(canvas, level);
+    final level = Rect.fromLTWH(w * .11, h * .465, w * .78, h * .168);
+    _card(canvas, level, fill: const Color(0xFF281052));
     _drawText(
       canvas,
-      '단계 안내',
-      Rect.fromLTWH(level.left + 16, level.top + 9, level.width - 32, 26),
+      '🗺  단계 안내',
+      Rect.fromLTWH(level.left + 16, level.top + 8, level.width - 32, 25),
       15.5,
       const Color(0xFFFFE08B),
       FontWeight.w900,
@@ -204,21 +192,21 @@ class GameHelpOverlay {
     );
     _drawText(
       canvas,
-      '인간 I~III  ·  좌우 문 순서 기억\n초인  ·  더 긴 순서와 복합 규칙\n기록  ·  집중력 한계 도전\n신  ·  최종 기억 관문',
-      Rect.fromLTWH(level.left + 16, level.top + 39, level.width - 32, level.height - 48),
-      13.1,
+      '인간 I~III  좌우 문 순서 기억\n초인  더 긴 순서와 복합 규칙\n기록  집중력 한계 도전\n신  최종 기억 관문',
+      Rect.fromLTWH(level.left + 16, level.top + 38, level.width - 32, level.height - 44),
+      12.6,
       const Color(0xFFE8DDFF),
       FontWeight.w700,
       align: TextAlign.left,
-      height: 1.33,
+      height: 1.30,
     );
 
-    final fail = Rect.fromLTWH(w * .12, h * .685, w * .76, h * .095);
-    _card(canvas, fail, fill: const Color(0xFF301343));
+    final fail = Rect.fromLTWH(w * .11, h * .650, w * .78, h * .105);
+    _card(canvas, fail, fill: const Color(0xFF351342));
     _drawText(
       canvas,
-      '실패 규칙',
-      Rect.fromLTWH(fail.left + 16, fail.top + 8, fail.width - 32, 24),
+      '💥  실패 규칙',
+      Rect.fromLTWH(fail.left + 16, fail.top + 7, fail.width - 32, 25),
       15.0,
       const Color(0xFFFFD18A),
       FontWeight.w900,
@@ -226,43 +214,32 @@ class GameHelpOverlay {
     );
     _drawText(
       canvas,
-      '실패하면 두 단계 전으로 돌아가 다시 도전합니다.',
-      Rect.fromLTWH(fail.left + 16, fail.top + 35, fail.width - 32, fail.height - 42),
-      12.8,
+      '실패하면 기본적으로 두 단계 전으로 돌아가 다시 도전합니다.',
+      Rect.fromLTWH(fail.left + 16, fail.top + 35, fail.width - 32, fail.height - 40),
+      12.2,
       const Color(0xFFFFE8C2),
       FontWeight.w700,
       align: TextAlign.left,
+      height: 1.28,
     );
 
     final reset = resetRect(w, h);
     final resetBox = RRect.fromRectAndRadius(reset, const Radius.circular(24));
     canvas.drawRRect(resetBox, Paint()..color = const Color(0xFF5B2A75));
-    canvas.drawRRect(
-      resetBox,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.8
-        ..color = const Color(0xCCFFD86D),
-    );
-    _drawText(canvas, '↺ 도전 리셋', reset, 16.5, const Color(0xFFFFEDB1), FontWeight.w900);
+    canvas.drawRRect(resetBox, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.8..color = const Color(0xCCFFD86D));
+    _drawText(canvas, '↺ 처음부터', reset, 16.5, const Color(0xFFFFEDB1), FontWeight.w900);
 
     final cont = continueRect(w, h);
     final contBox = RRect.fromRectAndRadius(cont, const Radius.circular(24));
     canvas.drawRRect(contBox, Paint()..color = const Color(0xFF7EEB42));
-    canvas.drawRRect(
-      contBox,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.4
-        ..color = const Color(0xFFFFFFFF),
-    );
-    _drawText(canvas, '닫기', cont, 18, const Color(0xFF102408), FontWeight.w900);
+    canvas.drawRRect(contBox, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.4..color = const Color(0xFFFFFFFF));
+    _drawText(canvas, '▶ 계속하기', cont, 16.8, const Color(0xFF102408), FontWeight.w900);
 
     _drawText(
       canvas,
-      '도전 리셋: 진행 기록만 STAGE 3부터 다시 시작합니다.',
-      Rect.fromLTWH(w * .14, h * .882, w * .72, h * .020),
-      9.3,
+      '처음부터: 진행 기록을 초기화하고 STAGE 3에서 다시 시작',
+      Rect.fromLTWH(w * .12, h * .878, w * .76, h * .020),
+      9.1,
       const Color(0xFFBDAED8),
       FontWeight.w600,
     );

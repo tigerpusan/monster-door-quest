@@ -214,34 +214,46 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     _bg.render(canvas, position: Vector2(0, -size.y * .035), size: Vector2(size.x, size.y * 1.035));
 
     // Clean top HUD. The gear lives above and outside this card, so borders never intersect.
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y * .350), Paint()..color = const Color(0xFF15082F));
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y * .366), Paint()..color = const Color(0xFF15082F));
     final topCard = RRect.fromRectAndRadius(
-      Rect.fromLTWH(size.x * .075, size.y * .080, size.x * .85, size.y * .235),
+      Rect.fromLTWH(size.x * .070, size.y * .084, size.x * .84, size.y * .248),
       const Radius.circular(25),
     );
     canvas.drawRRect(topCard, Paint()..color = const Color(0xFF1B0C3A));
     canvas.drawRRect(topCard, Paint()..style = PaintingStyle.stroke..strokeWidth = 2..color = const Color(0x88FFD96A));
 
-    _center(canvas, '기억의 문을 여세요!', size.y * .102, 26, const Color(0xFFFFD96A), FontWeight.w900);
-    _center(canvas, stageRealmLabel(session.stage), size.y * .153, 13.5, const Color(0xFFDCCBFF), FontWeight.w800);
+    _center(canvas, '기억의 문을 여세요!', size.y * .105, 25.5, const Color(0xFFFFD96A), FontWeight.w900);
+    _center(canvas, stageRealmLabel(session.stage), size.y * .158, 13.8, const Color(0xFFDCCBFF), FontWeight.w800);
     _center(
       canvas,
       'STAGE ${session.stage}   ${min(session.step + 1, session.route.length)} / ${session.route.length}',
-      size.y * .180,
+      size.y * .190,
       14.5,
       const Color(0xFFFFFFFF),
       FontWeight.w800,
     );
 
     final remain = (GameRules.playSeconds - elapsed).clamp(0.0, GameRules.playSeconds);
-    // No oval timer box: centered text only, with enough vertical breathing room.
-    _center(
+    // Timer occupies its own centered band so the digits never sag toward the bottom.
+    final timerRect = Rect.fromLTWH(size.x * .24, size.y * .222, size.x * .52, size.y * .060);
+    final timerPainter = TextPainter(
+      text: TextSpan(
+        text: '${remain.toStringAsFixed(1)}초',
+        style: TextStyle(
+          fontSize: 28,
+          fontWeight: FontWeight.w900,
+          color: remain < 2.5 ? const Color(0xFFFF7777) : const Color(0xFFFFE08B),
+          height: 1.0,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: timerRect.width);
+    timerPainter.paint(
       canvas,
-      '${remain.toStringAsFixed(1)}초',
-      size.y * .226,
-      28,
-      remain < 2.5 ? const Color(0xFFFF7777) : const Color(0xFFFFE08B),
-      FontWeight.w900,
+      Offset(
+        timerRect.left + (timerRect.width - timerPainter.width) / 2,
+        timerRect.top + (timerRect.height - timerPainter.height) / 2,
+      ),
     );
 
     GameHelpOverlay.drawSettingsButton(canvas, size.x, size.y);
