@@ -10,6 +10,7 @@ abstract class AudioBackend {
 
 class FlameAudioBackend implements AudioBackend {
   AudioPool? _doorPool;
+  AudioPool? _correctPool;
   AudioPool? _wrongPool;
   AudioPool? _clearPool;
 
@@ -18,6 +19,11 @@ class FlameAudioBackend implements AudioBackend {
     await FlameAudio.audioCache.loadAll(files);
     _doorPool = await FlameAudio.createPool(
       AudioManager.doorOpen,
+      minPlayers: 4,
+      maxPlayers: 8,
+    );
+    _correctPool = await FlameAudio.createPool(
+      AudioManager.correct,
       minPlayers: 4,
       maxPlayers: 8,
     );
@@ -40,6 +46,16 @@ class FlameAudioBackend implements AudioBackend {
       return;
     }
     await FlameAudio.play(AudioManager.doorOpen, volume: volume);
+  }
+
+
+  Future<void> playCorrectPool({double volume = 1}) async {
+    final pool = _correctPool;
+    if (pool != null) {
+      await pool.start(volume: volume);
+      return;
+    }
+    await FlameAudio.play(AudioManager.correct, volume: volume);
   }
 
   Future<void> playWrongPool({double volume = 1}) async {
@@ -88,7 +104,7 @@ class AudioManager {
   static const doorTap = 'sfx/door_tap.wav';
   static const doorUnlock = 'sfx/door_unlock.wav';
   static const doorOpen = 'sfx/door_open.wav';
-  static const correct = 'sfx/correct.wav';
+  static const correct = 'sfx/correct_bright.wav';
   static const wrongBright = 'sfx/wrong_bright.wav';
   // Backward-compatible alias kept for existing tests and older callers.
   static const wrongBoom = wrongBright;
@@ -155,6 +171,13 @@ class AudioManager {
       sfxEnabled ? backend.play(doorTap, volume: .45) : Future.value();
   Future<void> playDoorUnlock() =>
       sfxEnabled ? backend.play(doorUnlock, volume: .45) : Future.value();
-  Future<void> playCorrect() =>
-      sfxEnabled ? backend.play(correct, volume: .60) : Future.value();
+  Future<void> playCorrect() async {
+    if (!sfxEnabled) return;
+    final b = backend;
+    if (b is FlameAudioBackend) {
+      await b.playCorrectPool(volume: .68);
+    } else {
+      await b.play(correct, volume: .68);
+    }
+  }
 }

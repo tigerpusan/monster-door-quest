@@ -171,7 +171,9 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
     final count = session.route.length;
     final listTop = size.y * .224;
-    final listBottom = size.y * .662;
+    // Keep the timer in a dedicated bottom zone. Even 14+ rows must end above it.
+    final timerTop = size.y * .790;
+    final listBottom = timerTop - size.y * .040;
     final listHeight = listBottom - listTop;
     final gap = count >= 14 ? 4.0 : count >= 10 ? 6.0 : 8.0;
     final rowHeight = ((listHeight - gap * (count - 1)) / count).clamp(24.0, 58.0);
@@ -193,8 +195,8 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     _drawText(
       canvas,
       timerText,
-      Rect.fromLTWH(size.x * .18, size.y * .714, size.x * .64, size.y * .038),
-      18,
+      Rect.fromLTWH(size.x * .16, timerTop, size.x * .68, size.y * .052),
+      19,
       const Color(0xFFFFE38B),
       FontWeight.w900,
     );

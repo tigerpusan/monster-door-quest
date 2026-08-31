@@ -124,7 +124,6 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     final result = session.choose(side);
     final door = side == DoorSide.left ? leftDoor : rightDoor;
     door.open(correct: result != ChoiceResult.wrong);
-    unawaited(game.audioManager.playDoorOpen());
     if (result == ChoiceResult.wrong) {
       unawaited(HapticFeedback.heavyImpact());
     } else {
@@ -140,6 +139,9 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
       return;
     }
     feedback.playCorrect();
+    if (result != ChoiceResult.clear) {
+      unawaited(game.audioManager.playCorrect());
+    }
     progress.setCurrent(session.step);
     _feedbackText = 'O';
     _feedbackTimer = .20;
