@@ -1,4 +1,4 @@
-name: Build & Release MonsterDoor Background Rebuild Final
+name: Build & Release MonsterDoor Pixel Rebuild V1
 
 on:
   workflow_dispatch:
@@ -46,7 +46,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           p=Path('android/app/src/main/AndroidManifest.xml')
-          s=p.read_text(encoding='utf-8').replace('android:label="monsterdoor"','android:label="MonsterDoor"')
+          s=p.read_text(encoding='utf-8').replace('android:label="monsterdoor"','android:label="MonsterDoor Pixel"')
           p.write_text(s,encoding='utf-8')
           PY
 
@@ -64,17 +64,26 @@ jobs:
       - name: Dependencies
         run: flutter pub get
 
-      - name: Verify final background sources
+      - name: Verify pixel rebuild sources
+        shell: bash
         run: |
-          test -f assets/images/ui/gameplay_final_clean_v2.png
-          test -f assets/images/ui/stage_clear_final_clean_v2.png
-          grep -q "ui/gameplay_final_clean_v2.png" lib/game/scenes/intro_scene.dart
-          grep -q "ui/gameplay_final_clean_v2.png" lib/game/scenes/memory_scene.dart
-          grep -q "ui/stage_clear_final_clean_v2.png" lib/game/scenes/result_scene.dart
-          ! grep -q "ui/gameplay.webp" lib/game/scenes/intro_scene.dart
-          ! grep -q "ui/gameplay.webp" lib/game/scenes/memory_scene.dart
-          ! grep -q "ui/stage_clear.webp" lib/game/scenes/result_scene.dart
-          echo "Verified unique final background assets and scene references."
+          set -e
+          test -f assets/images/ui/pixel_hero.png
+          test -f assets/images/ui/pixel_princess.png
+          test -f assets/images/ui/pixel_monster.png
+          test -f assets/images/ui/pixel_chest.png
+          test -f assets/images/ui/pixel_door_blue.png
+          test -f assets/images/ui/pixel_door_pink.png
+          test -f assets/images/ui/pixel_tree.png
+          test -f assets/images/ui/pixel_castle.png
+          test -f lib/game/ui/pixel_art_kit.dart
+          grep -q "ui/pixel_hero.png" lib/game/ui/pixel_art_kit.dart
+          grep -q "ui/pixel_door_blue.png" lib/game/ui/pixel_art_kit.dart
+          grep -q "pixel_art_kit.dart" lib/game/scenes/intro_scene.dart
+          grep -q "pixel_art_kit.dart" lib/game/scenes/memory_scene.dart
+          grep -q "pixel_art_kit.dart" lib/game/scenes/door_scene.dart
+          grep -q "pixel_art_kit.dart" lib/game/scenes/result_scene.dart
+          echo "Pixel rebuild assets and scene wiring verified."
 
       - name: Analyze
         run: flutter analyze --no-fatal-infos --no-fatal-warnings
@@ -86,25 +95,25 @@ jobs:
         run: flutter build apk --release
 
       - name: Prepare named APK
-        run: cp build/app/outputs/flutter-apk/app-release.apk MonsterDoor-background-rebuild-final.apk
+        run: cp build/app/outputs/flutter-apk/app-release.apk MonsterDoor-Pixel-Rebuild-V1.apk
 
       - name: Upload APK backup
         uses: actions/upload-artifact@v4
         with:
-          name: MonsterDoor-background-rebuild-final-apk
-          path: MonsterDoor-background-rebuild-final.apk
+          name: MonsterDoor-Pixel-Rebuild-V1-apk
+          path: MonsterDoor-Pixel-Rebuild-V1.apk
           if-no-files-found: error
 
-      - name: Replace previous background rebuild release
+      - name: Replace previous pixel rebuild release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release delete background-rebuild-final --yes --cleanup-tag || true
+        run: gh release delete pixel-rebuild-v1 --yes --cleanup-tag || true
 
       - name: Create direct APK Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create background-rebuild-final MonsterDoor-background-rebuild-final.apk \
-            --title "MonsterDoor Background Rebuild Final" \
-            --notes "Final background-source rebuild: unique clean gameplay/result assets, direct scene references, overlap cleanup, and unambiguous APK filename/version 7.2.1." \
+          gh release create pixel-rebuild-v1 MonsterDoor-Pixel-Rebuild-V1.apk \
+            --title "MonsterDoor Pixel Rebuild V1" \
+            --notes "Bright casual pixel-art rebuild with separated character, door, object and UI assets." \
             --prerelease
