@@ -1,30 +1,22 @@
-MonsterDoor two-background rebuild patch
+MONSTER DOOR PIXEL BASIC V1 PATCH
 
-업로드할 파일 전체:
-1) /assets/images/ui/gameplay_rebuild.png
-2) /assets/images/ui/stage_clear_rebuild.png
-3) /lib/game/scenes/intro_scene.dart
-4) /lib/game/scenes/memory_scene.dart
-5) /lib/game/scenes/result_scene.dart
-6) APPLY_PATCH.txt (설명용, 업로드 안 해도 됨)
+목표
+- 기존 보라/검정 중심 단일 배경형 화면을 밝은 픽셀 판타지 스타일로 1차 전환
+- 게임 로직/스테이지/타격감은 유지
+- 배경, 문, 용사, 공주, 상자, 몬스터를 개별 에셋으로 분리
 
-GitHub 업로드 방법:
-- 저장소 루트에서 Add file -> Upload files
-- zip을 풀어서 위 5개 실제 파일을 드래그 업로드
-- 경로가 보이면 그대로 유지
-- Commit directly to main branch
+포함
+1) 밝은 픽셀 기본 배경 + 구름/성/나무/부시 개별 오브젝트
+2) 좌/우 문을 개별 픽셀 스프라이트로 전환
+3) 용사/공주/상자/몬스터 개별 픽셀 스프라이트
+4) 인트로/기억/문열기/결과 화면의 보라색 UI를 밝은 크림+하늘색+초록 팔레트로 1차 전환
+5) 설정 화면도 밝은 픽셀 메뉴 팔레트로 전환
 
-권장 커밋 메시지:
-MonsterDoor two background rebuild patch
+적용
+- GitHub 저장소 루트에서 Add file > Upload files
+- 이 패치의 assets, lib 폴더를 동시에 드래그하여 덮어쓰기
+- Commit message 예: MonsterDoor pixel basic v1
+- Actions 빌드 성공 후 APK 테스트
 
-이 패치는 다음을 반영함:
-- gameplay / intro / memory 공통 배경을 새 그림(gameplay_rebuild.png)으로 교체
-- stage clear 배경을 새 그림(stage_clear_rebuild.png)으로 교체
-- 기존 이미지에 박혀 있던 숫자/문구/캐릭터 실루엣 겹침 문제 제거
-- 시작 화면 하단 잘림, 8.3초 잔상, 기억완료 버튼 경계 겹침 문제 완화
-- 스테이지 클리어 화면의 검은 띠/희미한 영어/다시보기 겹침 문제 제거 방향으로 재설계
-- '처음' 버튼을 별도 UI 박스로 정렬 보정
-
-참고:
-- 이번 패치는 새 배경 두 장을 기준으로 UI를 다시 올리는 구조임
-- 실패 화면(monster_attack.webp)은 기존 리소스를 그대로 사용함
+주의
+- 이번 버전은 '픽셀형 기본 패치'입니다. 캐릭터 프레임 애니메이션/월드맵/동서남북 스테이지 확장은 다음 단계에서 이어집니다.

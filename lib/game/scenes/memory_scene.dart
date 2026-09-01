@@ -7,6 +7,7 @@ import '../core/game_rules.dart';
 import '../core/game_state.dart';
 import '../monster_door_game.dart';
 import '../ui/game_help_overlay.dart';
+import '../ui/pixel_art_kit.dart';
 
 class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGame> {
   MemoryScene(this.session, this.memorySeconds);
@@ -14,6 +15,7 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
   final GameSessionState session;
   final double? memorySeconds;
   late Sprite _bg;
+  late PixelArtKit _pixelArt;
   late TapZone _ready;
   late TapZone _settings;
   late TapZone _settingsClose;
@@ -26,7 +28,8 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
   @override
   Future<void> onLoad() async {
-    _bg = await Sprite.load('ui/gameplay_final_clean_v2.png');
+    _bg = await Sprite.load('ui/pixel_bg_base.png');
+    _pixelArt = await PixelArtKit.load();
     _ready = TapZone(onTap: _goDoor, triggerOnDown: true);
     _settings = TapZone(onTap: _toggleSettings, triggerOnDown: true);
     _settingsClose = TapZone(onTap: _closeSettings, triggerOnDown: true);
@@ -143,21 +146,21 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
   @override
   void render(Canvas canvas) {
     _bg.render(canvas, size: size);
-    canvas.drawRect(size.toRect(), Paint()..color = const Color(0x1809041D));
+    _pixelArt.renderDecor(canvas, size, dense: true);
     GameHelpOverlay.drawSettingsButton(canvas, size.x, size.y);
 
     final panelRect = Rect.fromLTWH(size.x * .05, size.y * .090, size.x * .90, size.y * .770);
     final panel = RRect.fromRectAndRadius(panelRect, const Radius.circular(30));
-    canvas.drawRRect(panel, Paint()..color = const Color(0xEE220F46));
-    canvas.drawRRect(panel, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.5..color = const Color(0xCCFFD86D));
-    canvas.drawRRect(panel.deflate(10), Paint()..style = PaintingStyle.stroke..strokeWidth = 1.2..color = const Color(0x40FFFFFF));
+    canvas.drawRRect(panel, Paint()..color = const Color(0xF5FFF8E8));
+    canvas.drawRRect(panel, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.5..color = const Color(0xFF3A76B7));
+    canvas.drawRRect(panel.deflate(10), Paint()..style = PaintingStyle.stroke..strokeWidth = 1.2..color = const Color(0x99FFFFFF));
 
     _drawText(
       canvas,
       '문 순서를 기억하세요',
       Rect.fromLTWH(size.x * .10, size.y * .120, size.x * .80, size.y * .044),
       27,
-      const Color(0xFFFFD96C),
+      const Color(0xFF174B87),
       FontWeight.w900,
     );
     _drawText(
@@ -165,7 +168,7 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
       'STAGE ${session.stage} · ${session.route.length} DOORS',
       Rect.fromLTWH(size.x * .18, size.y * .176, size.x * .64, size.y * .024),
       15,
-      const Color(0xFFF0E7FF),
+      const Color(0xFF2F5F8A),
       FontWeight.w800,
     );
 
@@ -183,8 +186,8 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
       final y = listTop + i * (rowHeight + gap);
       final rowRect = Rect.fromLTWH(size.x * .17, y, size.x * .66, rowHeight);
       final rr = RRect.fromRectAndRadius(rowRect, Radius.circular(rowHeight / 2));
-      canvas.drawRRect(rr, Paint()..color = isLeft ? const Color(0xFF365BDA) : const Color(0xFFE34389));
-      canvas.drawRRect(rr, Paint()..style = PaintingStyle.stroke..strokeWidth = 2..color = const Color(0xFFFFD86D));
+      canvas.drawRRect(rr, Paint()..color = isLeft ? const Color(0xFF5A91E8) : const Color(0xFFFF7EA8));
+      canvas.drawRRect(rr, Paint()..style = PaintingStyle.stroke..strokeWidth = 2..color = const Color(0xFFFFC84B));
       final fontSize = (rowHeight * (count >= 14 ? .42 : .48)).clamp(14.0, 25.0);
       _drawText(canvas, '${i + 1}   ${isLeft ? '← 왼쪽' : '오른쪽 →'}', rowRect, fontSize,
           const Color(0xFFFFFFFF), FontWeight.w900, yOffset: -0.5);
@@ -197,16 +200,16 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
       timerText,
       Rect.fromLTWH(size.x * .16, timerTop, size.x * .68, size.y * .052),
       19,
-      const Color(0xFFFFE38B),
+      const Color(0xFF9A5C00),
       FontWeight.w900,
     );
 
     final btnRect = Rect.fromLTWH(size.x * .13, size.y * .894, size.x * .74, size.y * .072);
     final btn = RRect.fromRectAndRadius(btnRect, const Radius.circular(28));
-    canvas.drawRRect(btn, Paint()..color = _ready.pressed ? const Color(0xFF58D22B) : const Color(0xFF7EEB42));
+    canvas.drawRRect(btn, Paint()..color = _ready.pressed ? const Color(0xFF4AC75B) : const Color(0xFF76E56D));
     canvas.drawRRect(btn, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.8..color = const Color(0xFFFFFFFF));
     _drawText(canvas, _ready.pressed ? '도전!' : '✨ 기억 완료 · 도전! ✨', btnRect, 20,
-        const Color(0xFF12230B), FontWeight.w900, yOffset: -1);
+        const Color(0xFF12341B), FontWeight.w900, yOffset: -1);
 
     if (_settingsOpen) _drawSettingsOverlay(canvas);
   }

@@ -30,6 +30,16 @@ class DoorComponent extends PositionComponent with TapCallbacks {
   double _visualElapsed = 0;
   double _resultTimer = 0;
   bool _firedThisTap = false;
+  late Sprite _doorSprite;
+
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    _doorSprite = await Sprite.load(side == DoorSide.left
+        ? 'ui/pixel_door_blue.png'
+        : 'ui/pixel_door_pink.png');
+  }
 
   // Backward-compatible public press hook used by the existing test suite.
   // Real gameplay still enters through onTapDown.
@@ -150,6 +160,9 @@ class DoorComponent extends PositionComponent with TapCallbacks {
 
     final leaf = _leafBounds();
     final arch = _archPath(leaf);
+
+    // Closed door is now a separate pixel sprite rather than baked into the background.
+    _doorSprite.render(canvas, size: size);
 
     // Important: there is intentionally NO stroke/glow when pressed.
     if (openProgress > 0) {

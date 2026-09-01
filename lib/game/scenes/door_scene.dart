@@ -13,12 +13,14 @@ import '../core/game_state.dart';
 import '../effects/hit_effects.dart';
 import '../monster_door_game.dart';
 import '../ui/game_help_overlay.dart';
+import '../ui/pixel_art_kit.dart';
 
 class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame> {
   DoorScene(this.session);
 
   final GameSessionState session;
   late Sprite _bg;
+  late PixelArtKit _pixelArt;
   late final DoorComponent leftDoor, rightDoor;
   late final RouteProgress progress;
   late TapZone _settings;
@@ -38,7 +40,8 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
 
   @override
   Future<void> onLoad() async {
-    _bg = await Sprite.load('ui/gameplay.webp');
+    _bg = await Sprite.load('ui/pixel_bg_base.png');
+    _pixelArt = await PixelArtKit.load();
     session.beginDoorRun();
     leftDoor = DoorComponent(side: DoorSide.left, onSelected: _choose);
     rightDoor = DoorComponent(side: DoorSide.right, onSelected: _choose);
@@ -213,25 +216,27 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     final shake = feedback.shakeActive ? sin(elapsed * 170) * 4 : 0.0;
     canvas.save();
     canvas.translate(shake, 0);
-    _bg.render(canvas, position: Vector2(0, -size.y * .035), size: Vector2(size.x, size.y * 1.035));
+    _bg.render(canvas, size: size);
+    _pixelArt.renderDecor(canvas, size, dense: true);
+    _pixelArt.renderHero(canvas, size, x: .39, y: .70, scale: .22);
 
     // Clean top HUD. The gear lives above and outside this card, so borders never intersect.
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y * .366), Paint()..color = const Color(0xFF15082F));
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y * .366), Paint()..color = const Color(0xEFFFF8E8));
     final topCard = RRect.fromRectAndRadius(
       Rect.fromLTWH(size.x * .070, size.y * .084, size.x * .84, size.y * .248),
       const Radius.circular(25),
     );
-    canvas.drawRRect(topCard, Paint()..color = const Color(0xFF1B0C3A));
-    canvas.drawRRect(topCard, Paint()..style = PaintingStyle.stroke..strokeWidth = 2..color = const Color(0x88FFD96A));
+    canvas.drawRRect(topCard, Paint()..color = const Color(0xFFF7FFF0));
+    canvas.drawRRect(topCard, Paint()..style = PaintingStyle.stroke..strokeWidth = 2..color = const Color(0xFF4F86BF));
 
-    _center(canvas, '기억의 문을 여세요!', size.y * .105, 25.5, const Color(0xFFFFD96A), FontWeight.w900);
-    _center(canvas, stageRealmLabel(session.stage), size.y * .158, 13.8, const Color(0xFFDCCBFF), FontWeight.w800);
+    _center(canvas, '기억의 문을 여세요!', size.y * .105, 25.5, const Color(0xFF174B87), FontWeight.w900);
+    _center(canvas, stageRealmLabel(session.stage), size.y * .158, 13.8, const Color(0xFF52779A), FontWeight.w800);
     _center(
       canvas,
       'STAGE ${session.stage}   ${min(session.step + 1, session.route.length)} / ${session.route.length}',
       size.y * .190,
       14.5,
-      const Color(0xFFFFFFFF),
+      const Color(0xFF1C456D),
       FontWeight.w800,
     );
 
@@ -244,7 +249,7 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
         style: TextStyle(
           fontSize: 28,
           fontWeight: FontWeight.w900,
-          color: remain < 2.5 ? const Color(0xFFFF7777) : const Color(0xFFFFE08B),
+          color: remain < 2.5 ? const Color(0xFFE65353) : const Color(0xFFB66A00),
           height: 1.0,
         ),
       ),
@@ -265,7 +270,7 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
         Rect.fromLTWH(size.x * .43, size.y * .348, size.x * .14, 44),
         const Radius.circular(22),
       );
-      canvas.drawRRect(rr, Paint()..color = const Color(0xD91B0E38));
+      canvas.drawRRect(rr, Paint()..color = const Color(0xEFFFFFF2));
       _center(
         canvas,
         _feedbackText,
