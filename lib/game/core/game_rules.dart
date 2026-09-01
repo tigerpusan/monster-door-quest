@@ -42,8 +42,9 @@ String stageRealmLabel(int stage) {
   if (s <= 5) return '인간의 영역 I';
   if (s <= 10) return '인간의 영역 II';
   if (s <= 15) return '인간의 영역 III';
-  if (s <= 20) return '초인의 영역';
-  if (s <= 30) return '기록의 영역';
+  if (s <= 20) return '초인의 영역 I';
+  if (s <= 25) return '초인의 영역 II';
+  if (s <= 30) return '초인의 영역 III';
   return '신의 영역';
 }
 
@@ -52,12 +53,13 @@ String stageRealmShortLabel(int stage) {
   if (s <= 5) return '인간 I';
   if (s <= 10) return '인간 II';
   if (s <= 15) return '인간 III';
-  if (s <= 20) return '초인';
-  if (s <= 30) return '기록';
+  if (s <= 20) return '초인 I';
+  if (s <= 25) return '초인 II';
+  if (s <= 30) return '초인 III';
   return '신';
 }
 
-List<int> realmMilestones() => const [5, 10, 15, 20, 30, 40];
+List<int> realmMilestones() => const [5, 10, 15, 20, 25, 30, 40];
 
 int currentRealmIndex(int stage) {
   final s = max(GameRules.initialStage, stage);
@@ -65,8 +67,9 @@ int currentRealmIndex(int stage) {
   if (s <= 10) return 1;
   if (s <= 15) return 2;
   if (s <= 20) return 3;
-  if (s <= 30) return 4;
-  return 5;
+  if (s <= 25) return 4;
+  if (s <= 30) return 5;
+  return 6;
 }
 
 List<DoorSide> createRoute(int count, Random rng, {required int stage}) {

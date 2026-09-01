@@ -1,0 +1,123 @@
+name: Build & Release Door Mission Pixel V2
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "lib/**"
+      - "assets/**"
+      - "pubspec.yaml"
+      - "analysis_options.yaml"
+      - "test/**"
+      - ".github/workflows/build-android.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Create Android scaffold
+        run: |
+          rm -rf /tmp/monsterdoor_platform
+          flutter create --platforms=android --org com.tigerpusan --project-name monsterdoor /tmp/monsterdoor_platform
+          rm -rf android
+          cp -R /tmp/monsterdoor_platform/android ./android
+
+      - name: Set app label
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('android/app/src/main/AndroidManifest.xml')
+          s=p.read_text(encoding='utf-8').replace('android:label="monsterdoor"','android:label="문대작전"')
+          p.write_text(s,encoding='utf-8')
+          PY
+
+      - name: Apply launcher icon
+        run: |
+          cp assets/app_icon/mdpi/ic_launcher.png android/app/src/main/res/mipmap-mdpi/ic_launcher.png
+          cp assets/app_icon/hdpi/ic_launcher.png android/app/src/main/res/mipmap-hdpi/ic_launcher.png
+          cp assets/app_icon/xhdpi/ic_launcher.png android/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+          cp assets/app_icon/xxhdpi/ic_launcher.png android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+          cp assets/app_icon/xxxhdpi/ic_launcher.png android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+
+      - name: Clean build cache
+        run: flutter clean
+
+      - name: Dependencies
+        run: flutter pub get
+
+      - name: Verify pixel rebuild sources
+        shell: bash
+        run: |
+          set -e
+          test -f assets/images/ui/pixel_hero.png
+          test -f assets/images/ui/pixel_princess.png
+          test -f assets/images/ui/pixel_monster.png
+          test -f assets/images/ui/pixel_chest.png
+          test -f assets/images/ui/pixel_door_blue.png
+          test -f assets/images/ui/pixel_door_pink.png
+          test -f assets/images/ui/pixel_tree.png
+          test -f assets/images/ui/pixel_castle.png
+          test -f assets/images/ui/pixel_cloud.png
+          test -f assets/images/ui/pixel_bush.png
+          test -f assets/images/ui/pixel_fence.png
+          test -f assets/images/ui/pixel_flower.png
+          test -f lib/game/ui/pixel_art_kit.dart
+          grep -q "ui/pixel_hero.png" lib/game/ui/pixel_art_kit.dart
+          grep -q "ui/pixel_door_blue.png" lib/game/ui/pixel_art_kit.dart
+          grep -q "pixel_art_kit.dart" lib/game/scenes/intro_scene.dart
+          grep -q "pixel_art_kit.dart" lib/game/scenes/memory_scene.dart
+          grep -q "pixel_art_kit.dart" lib/game/scenes/door_scene.dart
+          grep -q "pixel_art_kit.dart" lib/game/scenes/result_scene.dart
+          echo "Pixel rebuild assets and scene wiring verified."
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - name: Test
+        run: flutter test
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Prepare named APK
+        run: cp build/app/outputs/flutter-apk/app-release.apk DoorMission-Pixel-V2.apk
+
+      - name: Upload APK backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: DoorMission-Pixel-V2-apk
+          path: DoorMission-Pixel-V2.apk
+          if-no-files-found: error
+
+      - name: Replace previous pixel rebuild release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release delete door-mission-pixel-v2 --yes --cleanup-tag || true
+
+      - name: Create direct APK Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create door-mission-pixel-v2 DoorMission-Pixel-V2.apk \
+            --title "문대작전 Pixel V2" \
+            --notes "문대작전 V2: bright casual pixel UI, seven-tier realm map, rebuilt settings and launcher icon." \
+            --prerelease

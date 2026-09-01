@@ -1,26 +1,37 @@
-MONSTER DOOR PIXEL POLISH V1 PATCH
+문대작전 Pixel V2 전체 리빌드 패치 적용 방법
 
-적용 대상: 현재 정상 빌드되는 PIXEL REBUILD 기준본
+[권장 적용]
+1. ZIP 압축을 풉니다.
+2. GitHub 저장소 루트(Code 첫 화면)에서 Add file -> Upload files 로 이동합니다.
+3. 아래 폴더를 그대로 드래그하여 덮어씁니다.
+   - assets
+   - lib
+4. Commit directly to main 선택 후 커밋합니다.
+   권장 커밋명: DoorMission Pixel V2 full visual rebuild
 
-수정 내용
-1. 첫 화면 제목: '몬스터 문대작전!'
-2. '가볍고 캐주얼한 픽셀 모험이 시작됩니다.' 문구 삭제
-3. 첫 화면 성을 더 크게/아래로 이동, 좌우 문 상단 중심 배치
-4. 첫 화면 좌우 문과 용사 크기 확대
-5. 기억 화면 순서 숫자(1,2,3...) 제거, '왼쪽/오른쪽'을 각 박스 정중앙 배치
-6. 클리어 화면 성/나무/용사/공주/보물상자 크기와 배치 확대 조정
-7. 설정 '처음부터' 버튼을 '계속하기'와 동일한 녹색/테두리/글자색으로 통일
-8. 단계 안내를 4개 목표만 표시
-   1 인간의 영역
-   2 초인의 영역
-   3 기억의 한계를 넘어
-   4 신의 영역에 도전
+[중요: 앱 이름 / APK 이름 / 아이콘 빌드 규칙]
+.github 폴더는 Windows 드래그에서 숨김 처리될 수 있습니다.
+따라서 GitHub에서 .github/workflows 위치로 직접 들어가
+UPLOAD_WORKFLOW_SEPARATELY/build-android.yml 파일을 업로드하여
+기존 build-android.yml을 반드시 교체하세요.
 
-적용 방법
-- ZIP 압축 해제
-- GitHub 프로젝트 루트에서 Add file -> Upload files
-- 압축을 푼 폴더의 lib 폴더 전체를 드래그하여 기존 파일 위에 덮어쓰기
-- Commit directly to main branch
-- 권장 커밋명: MonsterDoor pixel visual polish v1
+[이 패치의 주요 파일]
+lib/game/core/game_rules.dart
+lib/game/scenes/intro_scene.dart
+lib/game/scenes/memory_scene.dart
+lib/game/scenes/door_scene.dart
+lib/game/scenes/result_scene.dart
+lib/game/ui/pixel_art_kit.dart
+lib/game/ui/game_help_overlay.dart
+assets/images/ui/pixel_*.png
+assets/app_icon/*/ic_launcher.png
+.github/workflows/build-android.yml
 
-이번 패치는 assets를 변경하지 않습니다. 현재 정상 동작하는 픽셀 캐릭터/문/성 에셋을 그대로 사용하면서 코드상 크기와 배치를 조정합니다.
+[설치 이름]
+문대작전
+
+[APK]
+DoorMission-Pixel-V2.apk
+
+[주의]
+패키지 ID는 변경하지 않습니다. 기존 설치본 위에 업데이트 설치가 가능하도록 하는 목적입니다.

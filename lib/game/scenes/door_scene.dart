@@ -95,25 +95,30 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     progress
       ..size = Vector2(size.x * .60, 32)
       ..position = Vector2(size.x * .20, size.y * .302);
+    final settingsRect = GameHelpOverlay.settingsButtonRect(size.x, size.y);
     _settings
-      ..size = Vector2(size.x * .145, size.y * .060)
-      ..position = Vector2(size.x * .805, size.y * .022)
+      ..size = Vector2(settingsRect.width, settingsRect.height)
+      ..position = Vector2(settingsRect.left, settingsRect.top)
       ..priority = 2000;
+    final closeRect = GameHelpOverlay.closeRect(size.x, size.y);
     _settingsClose
-      ..size = Vector2(size.x * .09, size.y * .050)
-      ..position = Vector2(size.x * .82, size.y * .090)
+      ..size = Vector2(closeRect.width, closeRect.height)
+      ..position = Vector2(closeRect.left, closeRect.top)
       ..priority = 2200;
+    final musicRect = GameHelpOverlay.musicRect(size.x, size.y);
     _settingsMusic
-      ..size = Vector2(size.x * .72, size.y * .060)
-      ..position = Vector2(size.x * .14, size.y * .245)
+      ..size = Vector2(musicRect.width, musicRect.height)
+      ..position = Vector2(musicRect.left, musicRect.top)
       ..priority = 2200;
+    final resetRect = GameHelpOverlay.resetRect(size.x, size.y);
     _settingsReset
-      ..size = Vector2(size.x * .35, size.y * .062)
-      ..position = Vector2(size.x * .13, size.y * .812)
+      ..size = Vector2(resetRect.width, resetRect.height)
+      ..position = Vector2(resetRect.left, resetRect.top)
       ..priority = 2200;
+    final continueRect = GameHelpOverlay.continueRect(size.x, size.y);
     _settingsContinue
-      ..size = Vector2(size.x * .35, size.y * .062)
-      ..position = Vector2(size.x * .52, size.y * .812)
+      ..size = Vector2(continueRect.width, continueRect.height)
+      ..position = Vector2(continueRect.left, continueRect.top)
       ..priority = 2200;
   }
 
@@ -206,6 +211,7 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
       currentStage: game.currentStage,
       bestStage: p.bestStage,
       bgmEnabled: game.audioManager.bgmEnabled,
+      pixelArt: _pixelArt,
     );
   }
 

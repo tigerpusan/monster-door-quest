@@ -1,21 +1,20 @@
 import 'dart:ui';
+import 'package:flame/components.dart';
 import 'package:flutter/material.dart'
     show FontWeight, TextAlign, TextDirection, TextPainter, TextSpan, TextStyle;
+import 'pixel_art_kit.dart';
 
-/// Full-screen game-style settings panel.
-/// The scene behind it is intentionally covered completely so no background UI
-/// can bleed through or overlap the settings text.
 class GameHelpOverlay {
   static Rect settingsButtonRect(double w, double h) =>
-      Rect.fromLTWH(w * .815, h * .024, w * .135, h * .057);
+      Rect.fromLTWH(w * .825, h * .020, w * .125, h * .060);
   static Rect closeRect(double w, double h) =>
-      Rect.fromLTWH(w * .82, h * .080, w * .09, h * .050);
+      Rect.fromLTWH(w * .82, h * .067, w * .09, h * .050);
   static Rect musicRect(double w, double h) =>
-      Rect.fromLTWH(w * .12, h * .238, w * .76, h * .064);
+      Rect.fromLTWH(w * .10, h * .205, w * .80, h * .070);
   static Rect resetRect(double w, double h) =>
-      Rect.fromLTWH(w * .11, h * .804, w * .38, h * .068);
+      Rect.fromLTWH(w * .105, h * .825, w * .385, h * .070);
   static Rect continueRect(double w, double h) =>
-      Rect.fromLTWH(w * .51, h * .804, w * .38, h * .068);
+      Rect.fromLTWH(w * .51, h * .825, w * .385, h * .070);
 
   static void _drawText(
     Canvas canvas,
@@ -47,37 +46,59 @@ class GameHelpOverlay {
     tp.paint(canvas, Offset(dx, dy));
   }
 
-  static void _card(Canvas canvas, Rect rect, {Color? fill}) {
-    final rr = RRect.fromRectAndRadius(rect, const Radius.circular(20));
-    canvas.drawRRect(rr, Paint()..color = fill ?? const Color(0xFFFFF8E8));
+  static void _pixelCard(
+    Canvas canvas,
+    Rect rect, {
+    required Color fill,
+    required Color border,
+    double radius = 19,
+  }) {
+    final rr = RRect.fromRectAndRadius(rect, Radius.circular(radius));
+    canvas.drawRRect(rr.shift(const Offset(0, 4)), Paint()..color = const Color(0x330B3768));
+    canvas.drawRRect(rr, Paint()..color = fill);
     canvas.drawRRect(
       rr,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.6
-        ..color = const Color(0xFF5A8FC3),
+        ..strokeWidth = 2.1
+        ..color = border,
     );
+    canvas.drawRRect(
+      rr.deflate(6),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = .9
+        ..color = const Color(0x77FFFFFF),
+    );
+  }
+
+  static void _banner(Canvas canvas, Rect rect, Color fill, String text, Color textColor) {
+    final rr = RRect.fromRectAndRadius(rect, const Radius.circular(10));
+    canvas.drawRRect(rr.shift(const Offset(0, 3)), Paint()..color = const Color(0x33000000));
+    canvas.drawRRect(rr, Paint()..color = fill);
+    canvas.drawRRect(
+      rr,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5
+        ..color = const Color(0x99FFFFFF),
+    );
+    _drawText(canvas, text, rect, 15.6, textColor, FontWeight.w900, align: TextAlign.left);
   }
 
   static void drawSettingsButton(Canvas canvas, double w, double h) {
     final rect = settingsButtonRect(w, h);
-    final box = RRect.fromRectAndRadius(rect, const Radius.circular(22));
-    canvas.drawRRect(box, Paint()..color = const Color(0xFFF7FFF0));
+    final box = RRect.fromRectAndRadius(rect, const Radius.circular(24));
+    canvas.drawRRect(box.shift(const Offset(0, 3)), Paint()..color = const Color(0x440E4C83));
+    canvas.drawRRect(box, Paint()..color = const Color(0xFFFFF9E8));
     canvas.drawRRect(
       box,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0
-        ..color = const Color(0xFF4F86BF),
+        ..strokeWidth = 2.2
+        ..color = const Color(0xFF2C6DB1),
     );
-    _drawText(
-      canvas,
-      '⚙',
-      rect,
-      20,
-      const Color(0xFF174B87),
-      FontWeight.w900,
-    );
+    _drawText(canvas, '⚙', rect, 21, const Color(0xFF1D5D9D), FontWeight.w900);
   }
 
   static void draw(
@@ -87,183 +108,163 @@ class GameHelpOverlay {
     required int currentStage,
     required int bestStage,
     required bool bgmEnabled,
+    PixelArtKit? pixelArt,
   }) {
-    final bg = Paint()
-      ..shader = Gradient.linear(
-        const Offset(0, 0),
-        Offset(0, h),
-        const [Color(0xFF5BB9EE), Color(0xFF93D9F5), Color(0xFFE9F8FF)],
-        const [0.0, .58, 1.0],
+    final size = Vector2(w, h);
+    if (pixelArt != null) {
+      pixelArt.renderBackground(canvas, size, showCastle: false, showTrees: true, rich: true);
+    } else {
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, w, h),
+        Paint()
+          ..shader = Gradient.linear(
+            const Offset(0, 0),
+            Offset(0, h),
+            const [Color(0xFF27AAF2), Color(0xFF86D9FF), Color(0xFFEAF9FF)],
+            const [0.0, .60, 1.0],
+          ),
       );
-    canvas.drawRect(Rect.fromLTWH(0, 0, w, h), bg);
+    }
 
-    // Decorative glow rings make this feel like a game menu rather than a report page.
-    canvas.drawCircle(Offset(w * .18, h * .10), w * .18, Paint()..color = const Color(0x220073B8));
-    canvas.drawCircle(Offset(w * .88, h * .22), w * .24, Paint()..color = const Color(0x221DBA67));
-
-    final panelRect = Rect.fromLTWH(w * .055, h * .055, w * .89, h * .855);
+    final panelRect = Rect.fromLTWH(w * .045, h * .045, w * .91, h * .885);
     final panel = RRect.fromRectAndRadius(panelRect, const Radius.circular(30));
+    canvas.drawRRect(panel.shift(const Offset(0, 5)), Paint()..color = const Color(0x440E4B85));
     canvas.drawRRect(panel, Paint()..color = const Color(0xFFFFF9EA));
     canvas.drawRRect(
       panel,
       Paint()
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.6
-        ..color = const Color(0xFF3E7DB9),
+        ..strokeWidth = 2.8
+        ..color = const Color(0xFF2F70B2),
     );
     canvas.drawRRect(
       panel.deflate(9),
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.0
-        ..color = const Color(0x33FFFFFF),
+        ..color = const Color(0x66FFFFFF),
     );
 
     _drawText(
       canvas,
       '⚙  게임 설정',
-      Rect.fromLTWH(w * .18, h * .075, w * .64, h * .052),
-      24,
+      Rect.fromLTWH(w * .19, h * .065, w * .58, h * .060),
+      25,
       const Color(0xFF174B87),
       FontWeight.w900,
     );
-    _drawText(canvas, '✕', closeRect(w, h), 20, const Color(0xFF174B87), FontWeight.w900);
+    _drawText(canvas, '✕', closeRect(w, h), 22, const Color(0xFF174B87), FontWeight.w900);
 
-    final record = Rect.fromLTWH(w * .11, h * .142, w * .78, h * .078);
-    _card(canvas, record, fill: const Color(0xFFEAF7FF));
+    final record = Rect.fromLTWH(w * .105, h * .133, w * .79, h * .060);
+    _pixelCard(canvas, record, fill: const Color(0xFFF1FAFF), border: const Color(0xFF4C8CCA));
     _drawText(
       canvas,
-      '🏆  현재 STAGE $currentStage     최고 ${bestStage == 0 ? '-' : bestStage}',
+      '🏆  현재 STAGE $currentStage     │     최고 ${bestStage == 0 ? '-' : bestStage}',
       record,
-      14.5,
+      14.2,
       const Color(0xFF174B87),
       FontWeight.w900,
     );
 
     final music = musicRect(w, h);
-    _card(canvas, music, fill: const Color(0xFFF2FBFF));
+    _pixelCard(canvas, music, fill: const Color(0xFFF6FCFF), border: const Color(0xFF4C8CCA));
     _drawText(
       canvas,
-      '🎵  배경음악',
+      '♪  배경음악',
       Rect.fromLTWH(music.left + 18, music.top, music.width * .55, music.height),
-      15.5,
+      16.0,
       const Color(0xFF17345B),
-      FontWeight.w800,
+      FontWeight.w900,
       align: TextAlign.left,
     );
-    final sw = Rect.fromLTWH(music.right - 78, music.top + 11, 58, music.height - 22);
+    final sw = Rect.fromLTWH(music.right - 78, music.top + 12, 58, music.height - 24);
     final swBox = RRect.fromRectAndRadius(sw, Radius.circular(sw.height / 2));
-    canvas.drawRRect(swBox, Paint()..color = bgmEnabled ? const Color(0xFF74E63C) : const Color(0xFF4A3A60));
+    canvas.drawRRect(swBox, Paint()..color = bgmEnabled ? const Color(0xFF7BE63C) : const Color(0xFF8A8F9A));
     final knobX = bgmEnabled ? sw.right - sw.height / 2 : sw.left + sw.height / 2;
-    canvas.drawCircle(Offset(knobX, sw.center.dy), sw.height * .34, Paint()..color = const Color(0xFF17345B));
+    canvas.drawCircle(Offset(knobX, sw.center.dy), sw.height * .34, Paint()..color = const Color(0xFF174B87));
 
-    final how = Rect.fromLTWH(w * .11, h * .323, w * .78, h * .125);
-    _card(canvas, how, fill: const Color(0xFF24104A));
-    _drawText(
-      canvas,
-      '🎮  게임 방법',
-      Rect.fromLTWH(how.left + 16, how.top + 8, how.width - 32, 25),
-      15.5,
-      const Color(0xFFFFE08B),
-      FontWeight.w900,
-      align: TextAlign.left,
-    );
-    _drawText(
-      canvas,
-      '1  문 순서를 기억   2  같은 순서로 선택\n3  성공하면 다음 스테이지로 전진',
-      Rect.fromLTWH(how.left + 16, how.top + 38, how.width - 32, how.height - 44),
-      12.8,
-      const Color(0xFFF4EEFF),
-      FontWeight.w700,
-      align: TextAlign.left,
-      height: 1.36,
-    );
-
-    final level = Rect.fromLTWH(w * .11, h * .465, w * .78, h * .168);
-    _card(canvas, level, fill: const Color(0xFFF7FBEA));
-    _drawText(
-      canvas,
-      '🗺  단계 안내',
-      Rect.fromLTWH(level.left + 16, level.top + 8, level.width - 32, 25),
-      15.5,
-      const Color(0xFF2E6D32),
-      FontWeight.w900,
-      align: TextAlign.left,
-    );
-
-    final guideItems = <String>[
-      '인간의 영역',
-      '초인의 영역',
-      '기억의 한계를 넘어',
-      '신의 영역에 도전',
-    ];
-    for (var i = 0; i < guideItems.length; i++) {
-      final cy = level.top + 49 + i * 25.5;
-      canvas.drawCircle(
-        Offset(level.left + 28, cy),
-        10.5,
-        Paint()..color = const Color(0xFF6DBA4A),
-      );
-      _drawText(
-        canvas,
-        '${i + 1}',
-        Rect.fromLTWH(level.left + 17.5, cy - 10.5, 21, 21),
-        11.5,
-        const Color(0xFFFFFFFF),
-        FontWeight.w900,
-      );
-      _drawText(
-        canvas,
-        guideItems[i],
-        Rect.fromLTWH(level.left + 48, cy - 12, level.width - 64, 24),
-        12.8,
-        const Color(0xFF315B46),
-        FontWeight.w800,
-        align: TextAlign.left,
-      );
+    final how = Rect.fromLTWH(w * .105, h * .293, w * .79, h * .142);
+    _pixelCard(canvas, how, fill: const Color(0xFFEAF6FF), border: const Color(0xFF4A8BCB));
+    _banner(canvas, Rect.fromLTWH(how.left + 13, how.top + 10, how.width * .44, 34),
+        const Color(0xFF2D73C6), '🎮  게임 방법', const Color(0xFFFFFFFF));
+    final colW = (how.width - 34) / 3;
+    final items = ['1\n문 순서를 기억', '2\n같은 순서로 선택', '3\n성공하면 다음 스테이지'];
+    for (var i = 0; i < 3; i++) {
+      final r = Rect.fromLTWH(how.left + 12 + colW * i, how.top + 51, colW - 2, how.height - 58);
+      _drawText(canvas, items[i], r, 11.6, const Color(0xFF214A73), FontWeight.w900, height: 1.22);
+      if (i < 2) {
+        canvas.drawLine(
+          Offset(r.right + 2, r.top + 3),
+          Offset(r.right + 2, r.bottom - 3),
+          Paint()..color = const Color(0x665C9ED6)..strokeWidth = 1.2,
+        );
+      }
     }
 
-    final fail = Rect.fromLTWH(w * .11, h * .650, w * .78, h * .105);
-    _card(canvas, fail, fill: const Color(0xFF351342));
+    final level = Rect.fromLTWH(w * .105, h * .455, w * .79, h * .190);
+    _pixelCard(canvas, level, fill: const Color(0xFFFFF9D8), border: const Color(0xFF79A84F));
+    _banner(canvas, Rect.fromLTWH(level.left + 13, level.top + 10, level.width * .44, 34),
+        const Color(0xFF55A53D), '🗺  단계 안내', const Color(0xFFFFFFFF));
+
+    final guideItems = <String>[
+      '인간의 영역  I · II · III',
+      '초인의 영역  I · II · III',
+      '신의 영역',
+    ];
+    for (var i = 0; i < guideItems.length; i++) {
+      final cy = level.top + 61 + i * 36;
+      canvas.drawCircle(Offset(level.left + 28, cy), 11.5, Paint()..color = const Color(0xFF65B94D));
+      _drawText(canvas, '${i + 1}', Rect.fromLTWH(level.left + 16.5, cy - 11.5, 23, 23),
+          11.8, const Color(0xFFFFFFFF), FontWeight.w900);
+      _drawText(canvas, guideItems[i], Rect.fromLTWH(level.left + 51, cy - 13, level.width * .55, 26),
+          12.8, const Color(0xFF315B46), FontWeight.w900, align: TextAlign.left);
+    }
+    if (pixelArt != null) {
+      pixelArt.renderCastle(canvas, size,
+          x: level.left / w + .57, y: level.top / h + .045, width: .20, height: .15);
+    }
+
+    final fail = Rect.fromLTWH(w * .105, h * .665, w * .79, h * .120);
+    _pixelCard(canvas, fail, fill: const Color(0xFFFFEFE7), border: const Color(0xFFD56A59));
+    _banner(canvas, Rect.fromLTWH(fail.left + 13, fail.top + 10, fail.width * .44, 34),
+        const Color(0xFFD95545), '💥  실패 규칙', const Color(0xFFFFFFFF));
     _drawText(
       canvas,
-      '💥  실패 규칙',
-      Rect.fromLTWH(fail.left + 16, fail.top + 7, fail.width - 32, 25),
-      15.0,
-      const Color(0xFFFFD18A),
-      FontWeight.w900,
+      '실패하면 기본적으로 두 단계 전으로\n돌아가 다시 도전합니다.',
+      Rect.fromLTWH(fail.left + 16, fail.top + 52, fail.width * .58, fail.height - 58),
+      12.1,
+      const Color(0xFF7C3A32),
+      FontWeight.w800,
       align: TextAlign.left,
+      height: 1.27,
     );
-    _drawText(
-      canvas,
-      '실패하면 기본적으로 두 단계 전으로 돌아가 다시 도전합니다.',
-      Rect.fromLTWH(fail.left + 16, fail.top + 35, fail.width - 32, fail.height - 40),
-      12.2,
-      const Color(0xFFFFE8C2),
-      FontWeight.w700,
-      align: TextAlign.left,
-      height: 1.28,
-    );
+    if (pixelArt != null) {
+      pixelArt.monster.render(canvas,
+          position: Vector2(fail.left + fail.width * .69, fail.top + 39),
+          size: Vector2(fail.width * .22, fail.width * .22));
+    }
 
     final reset = resetRect(w, h);
     final resetBox = RRect.fromRectAndRadius(reset, const Radius.circular(24));
+    canvas.drawRRect(resetBox.shift(const Offset(0, 3)), Paint()..color = const Color(0x442C6A1D));
     canvas.drawRRect(resetBox, Paint()..color = const Color(0xFF7EEB42));
     canvas.drawRRect(resetBox, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.4..color = const Color(0xFF17345B));
-    _drawText(canvas, '↺ 처음부터', reset, 16.5, const Color(0xFF102408), FontWeight.w900);
+    _drawText(canvas, '↻  처음부터', reset, 16.6, const Color(0xFF102408), FontWeight.w900);
 
     final cont = continueRect(w, h);
     final contBox = RRect.fromRectAndRadius(cont, const Radius.circular(24));
+    canvas.drawRRect(contBox.shift(const Offset(0, 3)), Paint()..color = const Color(0x442C6A1D));
     canvas.drawRRect(contBox, Paint()..color = const Color(0xFF7EEB42));
     canvas.drawRRect(contBox, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.4..color = const Color(0xFF17345B));
-    _drawText(canvas, '▶ 계속하기', cont, 16.8, const Color(0xFF102408), FontWeight.w900);
+    _drawText(canvas, '▶  계속하기', cont, 16.6, const Color(0xFF102408), FontWeight.w900);
 
     _drawText(
       canvas,
       '처음부터: 진행 기록을 초기화하고 STAGE 3에서 다시 시작',
-      Rect.fromLTWH(w * .12, h * .878, w * .76, h * .020),
-      9.1,
-      const Color(0xFFBDAED8),
-      FontWeight.w600,
+      Rect.fromLTWH(w * .12, h * .902, w * .76, h * .018),
+      8.9,
+      const Color(0xFF7F8792),
+      FontWeight.w700,
     );
   }
 }
