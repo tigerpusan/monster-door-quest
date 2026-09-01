@@ -61,8 +61,33 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     ]);
   }
 
-  void _toggleSettings() => _settingsOpen = !_settingsOpen;
-  void _closeSettings() => _settingsOpen = false;
+  void _hideSettingsZone(TapZone zone) {
+    zone
+      ..size = Vector2.zero()
+      ..position = Vector2.zero();
+  }
+
+  void _syncSettingsZones() {
+    if (size.x <= 0 || size.y <= 0) return;
+    if (_settingsOpen) {
+      final closeRect = GameHelpOverlay.closeRect(size.x, size.y);
+      _settingsClose..size = Vector2(closeRect.width, closeRect.height)..position = Vector2(closeRect.left, closeRect.top)..priority = 2200;
+      final musicRect = GameHelpOverlay.musicRect(size.x, size.y);
+      _settingsMusic..size = Vector2(musicRect.width, musicRect.height)..position = Vector2(musicRect.left, musicRect.top)..priority = 2200;
+      final resetRect = GameHelpOverlay.resetRect(size.x, size.y);
+      _settingsReset..size = Vector2(resetRect.width, resetRect.height)..position = Vector2(resetRect.left, resetRect.top)..priority = 2200;
+      final continueRect = GameHelpOverlay.continueRect(size.x, size.y);
+      _settingsContinue..size = Vector2(continueRect.width, continueRect.height)..position = Vector2(continueRect.left, continueRect.top)..priority = 2200;
+    } else {
+      _hideSettingsZone(_settingsClose);
+      _hideSettingsZone(_settingsMusic);
+      _hideSettingsZone(_settingsReset);
+      _hideSettingsZone(_settingsContinue);
+    }
+  }
+
+  void _toggleSettings() { _settingsOpen = !_settingsOpen; _syncSettingsZones(); }
+  void _closeSettings() { _settingsOpen = false; _syncSettingsZones(); }
 
   void _toggleBgm() {
     if (!_settingsOpen) return;
@@ -93,33 +118,14 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
       ..size = Vector2(size.x * .35, size.y * .36)
       ..position = Vector2(size.x * .575, size.y * .405);
     progress
-      ..size = Vector2(size.x * .56, 28)
-      ..position = Vector2(size.x * .22, size.y * .276);
+      ..size = Vector2(size.x * .56, 24)
+      ..position = Vector2(size.x * .22, size.y * .258);
     final settingsRect = GameHelpOverlay.settingsButtonRect(size.x, size.y);
     _settings
       ..size = Vector2(settingsRect.width, settingsRect.height)
       ..position = Vector2(settingsRect.left, settingsRect.top)
       ..priority = 2000;
-    final closeRect = GameHelpOverlay.closeRect(size.x, size.y);
-    _settingsClose
-      ..size = Vector2(closeRect.width, closeRect.height)
-      ..position = Vector2(closeRect.left, closeRect.top)
-      ..priority = 2200;
-    final musicRect = GameHelpOverlay.musicRect(size.x, size.y);
-    _settingsMusic
-      ..size = Vector2(musicRect.width, musicRect.height)
-      ..position = Vector2(musicRect.left, musicRect.top)
-      ..priority = 2200;
-    final resetRect = GameHelpOverlay.resetRect(size.x, size.y);
-    _settingsReset
-      ..size = Vector2(resetRect.width, resetRect.height)
-      ..position = Vector2(resetRect.left, resetRect.top)
-      ..priority = 2200;
-    final continueRect = GameHelpOverlay.continueRect(size.x, size.y);
-    _settingsContinue
-      ..size = Vector2(continueRect.width, continueRect.height)
-      ..position = Vector2(continueRect.left, continueRect.top)
-      ..priority = 2200;
+    _syncSettingsZones();
   }
 
   Future<void> _choose(DoorSide side) async {

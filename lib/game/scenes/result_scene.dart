@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart'
@@ -24,6 +25,7 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
   late TapZone _settingsReset;
   bool _handled = false;
   bool _settingsOpen = false;
+  double _animTime = 0;
 
   @override
   Future<void> onLoad() async {
@@ -37,8 +39,8 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
     addAll([_primary, _settings, _settingsClose, _settingsContinue, _settingsMusic, _settingsReset]);
   }
 
-  void _toggleSettings() => _settingsOpen = !_settingsOpen;
-  void _closeSettings() => _settingsOpen = false;
+  void _toggleSettings() { _settingsOpen = !_settingsOpen; _syncSettingsZones(); }
+  void _closeSettings() { _settingsOpen = false; _syncSettingsZones(); }
 
   void _toggleBgm() {
     if (!_settingsOpen) return;
@@ -87,6 +89,20 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
     }
   }
 
+  void _hideZone(TapZone zone) { zone..size = Vector2.zero()..position = Vector2.zero(); }
+
+  void _syncSettingsZones() {
+    if (size.x <= 0 || size.y <= 0) return;
+    if (_settingsOpen) {
+      _placeZone(_settingsClose, GameHelpOverlay.closeRect(size.x, size.y), priority: 2001);
+      _placeZone(_settingsMusic, GameHelpOverlay.musicRect(size.x, size.y), priority: 2001);
+      _placeZone(_settingsReset, GameHelpOverlay.resetRect(size.x, size.y), priority: 2001);
+      _placeZone(_settingsContinue, GameHelpOverlay.continueRect(size.x, size.y), priority: 2001);
+    } else {
+      _hideZone(_settingsClose); _hideZone(_settingsMusic); _hideZone(_settingsReset); _hideZone(_settingsContinue);
+    }
+  }
+
   void _placeZone(TapZone zone, Rect r, {int? priority}) {
     zone
       ..size = Vector2(r.width, r.height)
@@ -103,10 +119,7 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
             size.x * .78, clear ? size.y * .084 : size.y * .10),
         priority: 1000);
     _placeZone(_settings, GameHelpOverlay.settingsButtonRect(size.x, size.y), priority: 1100);
-    _placeZone(_settingsClose, GameHelpOverlay.closeRect(size.x, size.y), priority: 2001);
-    _placeZone(_settingsMusic, GameHelpOverlay.musicRect(size.x, size.y), priority: 2001);
-    _placeZone(_settingsReset, GameHelpOverlay.resetRect(size.x, size.y), priority: 2001);
-    _placeZone(_settingsContinue, GameHelpOverlay.continueRect(size.x, size.y), priority: 2001);
+    _syncSettingsZones();
   }
 
   void _drawText(
@@ -130,6 +143,12 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
     tp.paint(canvas, Offset(dx, dy));
   }
 
+  @override
+  void update(double dt) {
+    super.update(dt);
+    _animTime += dt;
+  }
+
   void _drawSettingsOverlay(Canvas canvas) {
     final p = game.progressStore.load();
     GameHelpOverlay.draw(
@@ -147,33 +166,44 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
     _pixelArt.renderClearParty(canvas, size);
     GameHelpOverlay.drawSettingsButton(canvas, size.x, size.y);
 
-    final titleRect = Rect.fromLTWH(size.x * .12, size.y * .105, size.x * .76, size.y * .080);
-    _drawText(canvas, '스테이지 클리어!', titleRect.shift(const Offset(2, 3)), 32,
-        const Color(0xFF0E3B73), FontWeight.w900);
-    _drawText(canvas, '스테이지 클리어!', titleRect, 32, const Color(0xFF1B5596), FontWeight.w900);
+    final pulse = 1.0 + sin(_animTime * 3.8) * .018;
+    canvas.save();
+    canvas.translate(size.x * .5, size.y * .15);
+    canvas.scale(pulse, pulse);
+    canvas.translate(-size.x * .5, -size.y * .15);
+    final titleRect = Rect.fromLTWH(size.x * .08, size.y * .095, size.x * .84, size.y * .086);
+    _drawText(canvas, '스테이지 클리어!', titleRect.shift(const Offset(3, 4)), 34,
+        const Color(0xFF0B356E), FontWeight.w900);
+    _drawText(canvas, '스테이지 클리어!', titleRect.shift(const Offset(0, -2)), 34,
+        const Color(0xFFFFFFFF), FontWeight.w900);
+    _drawText(canvas, '스테이지 클리어!', titleRect, 34,
+        const Color(0xFF1769C2), FontWeight.w900);
+    canvas.restore();
 
-    final milestoneRect = Rect.fromLTWH(size.x * .09, size.y * .195, size.x * .82, size.y * .044);
+    final sparklePaint = Paint()..color = const Color(0xFFFFD53D);
+    final sparkleR = 3.0 + sin(_animTime * 5.0).abs() * 3.0;
+    canvas.drawCircle(Offset(size.x * .18, size.y * .13), sparkleR, sparklePaint);
+    canvas.drawCircle(Offset(size.x * .82, size.y * .155), sparkleR * .8, sparklePaint);
+
+    final milestoneRect = Rect.fromLTWH(size.x * .09, size.y * .188, size.x * .82, size.y * .044);
     final milestone = RRect.fromRectAndRadius(milestoneRect, const Radius.circular(22));
     canvas.drawRRect(milestone.shift(const Offset(0, 3)), Paint()..color = const Color(0x330B3768));
-    canvas.drawRRect(milestone, Paint()..color = const Color(0xF8FFF7E5));
-    canvas.drawRRect(milestone, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.6..color = const Color(0xFF5A8FC3));
+    canvas.drawRRect(milestone, Paint()..color = const Color(0xFFFFF8E6));
+    canvas.drawRRect(milestone, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.7..color = const Color(0xFF4B8AC8));
     _drawText(canvas, '공주에게 한 걸음 더 가까워졌습니다.', milestoneRect, 15.8,
-        const Color(0xFF244E76), FontWeight.w900);
+        const Color(0xFF234E79), FontWeight.w900);
 
-    final cardRect = Rect.fromLTWH(size.x * .10, size.y * .684, size.x * .80, size.y * .136);
+    final cardRect = Rect.fromLTWH(size.x * .10, size.y * .692, size.x * .80, size.y * .132);
     final card = RRect.fromRectAndRadius(cardRect, const Radius.circular(30));
     canvas.drawRRect(card.shift(const Offset(0, 4)), Paint()..color = const Color(0x330B3768));
-    canvas.drawRRect(card, Paint()..color = const Color(0xFAFFF4DC));
+    canvas.drawRRect(card, Paint()..color = const Color(0xFFFFF3D9));
     canvas.drawRRect(card, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.4..color = const Color(0xFF3C78B7));
-    canvas.drawRRect(card.deflate(7), Paint()..style = PaintingStyle.stroke..strokeWidth = .9..color = const Color(0x77FFFFFF));
 
-    final timeLine = Rect.fromLTWH(cardRect.left + 18, cardRect.top + cardRect.height * .14,
-        cardRect.width - 36, cardRect.height * .38);
-    final realmLine = Rect.fromLTWH(cardRect.left + 18, cardRect.top + cardRect.height * .55,
-        cardRect.width - 36, cardRect.height * .28);
-    _drawText(canvas, '완료 시간  ${elapsedSeconds.toStringAsFixed(1)}초', timeLine, 27,
+    final timeLine = Rect.fromLTWH(cardRect.left + 20, cardRect.top + 14, cardRect.width - 40, cardRect.height * .45);
+    final realmLine = Rect.fromLTWH(cardRect.left + 20, cardRect.top + cardRect.height * .54, cardRect.width - 40, cardRect.height * .30);
+    _drawText(canvas, '완료 시간  ${elapsedSeconds.toStringAsFixed(1)}초', timeLine, 27.5,
         const Color(0xFFA15C00), FontWeight.w900);
-    _drawText(canvas, '${stageRealmLabel(stage)}  ·  STAGE $stage 완료', realmLine, 16.7,
+    _drawText(canvas, '${stageRealmLabel(stage)}  ·  STAGE $stage 완료', realmLine, 16.5,
         const Color(0xFF315B7E), FontWeight.w900);
 
     final primaryRect = Rect.fromLTWH(size.x * .11, size.y * .842, size.x * .78, size.y * .084);
@@ -181,7 +211,7 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
     canvas.drawRRect(primary.shift(const Offset(0, 4)), Paint()..color = const Color(0x44246016));
     canvas.drawRRect(primary, Paint()..color = _primary.pressed || _handled ? const Color(0xFF49C755) : const Color(0xFF74E64B));
     canvas.drawRRect(primary, Paint()..style = PaintingStyle.stroke..strokeWidth = 3..color = const Color(0xFF17345B));
-    _drawText(canvas, '✦  다음 스테이지  ✦', primaryRect, 23, const Color(0xFF12341B), FontWeight.w900, yOffset: -1);
+    _drawText(canvas, _handled ? '이동 중...' : '✦  다음 스테이지  ✦', primaryRect, 23, const Color(0xFF12341B), FontWeight.w900, yOffset: -1);
   }
 
   void _drawFail(Canvas canvas) {

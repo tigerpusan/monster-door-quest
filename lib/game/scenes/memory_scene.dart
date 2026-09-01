@@ -37,6 +37,20 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     addAll([_ready, _settings, _settingsClose, _settingsContinue, _settingsMusic, _settingsReset]);
   }
 
+  void _hideZone(TapZone zone) { zone..size = Vector2.zero()..position = Vector2.zero(); }
+
+  void _syncSettingsZones() {
+    if (size.x <= 0 || size.y <= 0) return;
+    if (_settingsOpen) {
+      _placeZone(_settingsClose, GameHelpOverlay.closeRect(size.x, size.y), priority: 2200);
+      _placeZone(_settingsMusic, GameHelpOverlay.musicRect(size.x, size.y), priority: 2200);
+      _placeZone(_settingsReset, GameHelpOverlay.resetRect(size.x, size.y), priority: 2200);
+      _placeZone(_settingsContinue, GameHelpOverlay.continueRect(size.x, size.y), priority: 2200);
+    } else {
+      _hideZone(_settingsClose); _hideZone(_settingsMusic); _hideZone(_settingsReset); _hideZone(_settingsContinue);
+    }
+  }
+
   void _placeZone(TapZone zone, Rect r, {int? priority}) {
     zone
       ..size = Vector2(r.width, r.height)
@@ -50,14 +64,11 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     this.size = size;
     _placeZone(_ready, Rect.fromLTWH(size.x * .13, size.y * .894, size.x * .74, size.y * .072));
     _placeZone(_settings, GameHelpOverlay.settingsButtonRect(size.x, size.y), priority: 2000);
-    _placeZone(_settingsClose, GameHelpOverlay.closeRect(size.x, size.y), priority: 2200);
-    _placeZone(_settingsMusic, GameHelpOverlay.musicRect(size.x, size.y), priority: 2200);
-    _placeZone(_settingsReset, GameHelpOverlay.resetRect(size.x, size.y), priority: 2200);
-    _placeZone(_settingsContinue, GameHelpOverlay.continueRect(size.x, size.y), priority: 2200);
+    _syncSettingsZones();
   }
 
-  void _toggleSettings() => _settingsOpen = !_settingsOpen;
-  void _closeSettings() => _settingsOpen = false;
+  void _toggleSettings() { _settingsOpen = !_settingsOpen; _syncSettingsZones(); }
+  void _closeSettings() { _settingsOpen = false; _syncSettingsZones(); }
 
   void _toggleBgm() {
     if (!_settingsOpen) return;

@@ -12,7 +12,6 @@ class PixelArtKit {
   late Sprite pinkDoor;
   late Sprite tree;
   late Sprite castle;
-  late Sprite cloud;
 
   static Future<PixelArtKit> load() async {
     final kit = PixelArtKit._();
@@ -24,7 +23,6 @@ class PixelArtKit {
     kit.pinkDoor = await Sprite.load('ui/pixel_door_pink.png');
     kit.tree = await Sprite.load('ui/pixel_tree.png');
     kit.castle = await Sprite.load('ui/pixel_castle.png');
-    kit.cloud = await Sprite.load('ui/pixel_cloud.png');
     return kit;
   }
 
@@ -37,14 +35,13 @@ class PixelArtKit {
     final sky = Rect.fromLTWH(0, 0, size.x, size.y);
     canvas.drawRect(sky, Paint()..shader = Gradient.linear(
       Offset(size.x * .5, 0), Offset(size.x * .5, size.y),
-      const [Color(0xFF159CE8), Color(0xFF74D5FF), Color(0xFFC9F1FF)],
-      const [0.0, .52, 1.0],
+      const [Color(0xFF129FEA), Color(0xFF74D8FF), Color(0xFFD7F5FF)],
+      const [0.0, .56, 1.0],
     ));
     if (rich) {
-      cloud.render(canvas, position: Vector2(size.x * .02, size.y * .19), size: Vector2(size.x * .21, size.x * .10));
-      cloud.render(canvas, position: Vector2(size.x * .77, size.y * .16), size: Vector2(size.x * .18, size.x * .085));
       _sparkle(canvas, size.x * .15, size.y * .12, 10);
       _sparkle(canvas, size.x * .80, size.y * .15, 9);
+      _sparkle(canvas, size.x * .55, size.y * .08, 6);
     }
     final hill = Path()
       ..moveTo(0, size.y * .69)
@@ -81,31 +78,32 @@ class PixelArtKit {
 
   void renderIntroWorld(Canvas canvas, Vector2 size) {
     renderBackground(canvas,size,showPath:true,rich:true);
-    renderCastle(canvas,size,x:.29,y:.39,width:.42,height:.31);
-    renderTrees(canvas,size,top:.55,leftScale:.22,rightScale:.22);
-    renderDoorPair(canvas,size,top:.55,scale:.34,heightScale:.31,leftX:.055,rightX:.605);
-    renderHero(canvas,size,x:.35,y:.715,scale:.30);
+    renderCastle(canvas,size,x:.27,y:.39,width:.46,height:.34);
+    renderTrees(canvas,size,top:.56,leftScale:.22,rightScale:.22);
+    renderDoorPair(canvas,size,top:.55,scale:.36,heightScale:.30,leftX:.045,rightX:.595);
+    renderHero(canvas,size,x:.34,y:.705,scale:.32);
   }
 
   void renderClearParty(Canvas canvas, Vector2 size) {
     renderBackground(canvas,size,showPath:true,rich:true);
-    renderTrees(canvas,size,top:.40,leftScale:.25,rightScale:.25);
-    renderCastle(canvas,size,x:.28,y:.31,width:.44,height:.33);
-    chest.render(canvas,position:Vector2(size.x*.06,size.y*.50),size:Vector2(size.x*.24,size.x*.24));
-    hero.render(canvas,position:Vector2(size.x*.29,size.y*.46),size:Vector2(size.x*.30,size.x*.30));
-    princess.render(canvas,position:Vector2(size.x*.52,size.y*.43),size:Vector2(size.x*.34,size.x*.34));
+    renderTrees(canvas,size,top:.40,leftScale:.26,rightScale:.26);
+    renderCastle(canvas,size,x:.23,y:.29,width:.54,height:.40);
+    chest.render(canvas,position:Vector2(size.x*.055,size.y*.51),size:Vector2(size.x*.25,size.x*.25));
+    hero.render(canvas,position:Vector2(size.x*.275,size.y*.47),size:Vector2(size.x*.32,size.x*.32));
+    princess.render(canvas,position:Vector2(size.x*.51,size.y*.445),size:Vector2(size.x*.36,size.x*.36));
   }
 
   void renderFailWorld(Canvas canvas, Vector2 size) {
     renderBackground(canvas,size,showPath:true,rich:true);
     renderTrees(canvas,size,top:.55,leftScale:.22,rightScale:.22);
-    renderCastle(canvas,size,x:.36,y:.30,width:.28,height:.21);
-    monster.render(canvas,position:Vector2(size.x*.29,size.y*.38),size:Vector2(size.x*.42,size.x*.42));
+    renderCastle(canvas,size,x:.32,y:.30,width:.36,height:.27);
+    monster.render(canvas,position:Vector2(size.x*.32,size.y*.40),size:Vector2(size.x*.36,size.x*.36));
   }
 
   void _sparkle(Canvas canvas,double cx,double cy,double r){
     final p=Paint()..color=const Color(0xFFFFF0A3)..strokeWidth=3..strokeCap=StrokeCap.square;
-    canvas.drawLine(Offset(cx-r,cy),Offset(cx+r,cy),p); canvas.drawLine(Offset(cx,cy-r),Offset(cx,cy+r),p);
+    canvas.drawLine(Offset(cx-r,cy),Offset(cx+r,cy),p);
+    canvas.drawLine(Offset(cx,cy-r),Offset(cx,cy+r),p);
   }
 
   void _drawPath(Canvas canvas,Vector2 size){
