@@ -1,14 +1,12 @@
 import 'dart:async';
-import 'dart:math';
 import 'dart:ui';
 import 'package:flame/components.dart';
-import 'package:flutter/material.dart'
-    show FontWeight, TextAlign, TextDirection, TextPainter, TextSpan, TextStyle;
+import 'package:flutter/material.dart' show FontWeight;
 import '../core/game_rules.dart';
 import '../components/tap_zone.dart';
 import '../monster_door_game.dart';
 import '../ui/game_help_overlay.dart';
-import '../ui/pixel_art_kit.dart';
+import '../ui/v5_image_ui.dart';
 
 class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGame> {
   ResultScene({required this.clear, required this.stage, required this.elapsedSeconds});
@@ -16,7 +14,7 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
   final bool clear;
   final int stage;
   final double elapsedSeconds;
-  late PixelArtKit _pixelArt;
+  late V5ImageUI _v5;
   late TapZone _primary;
   late TapZone _settings;
   late TapZone _settingsClose;
@@ -25,11 +23,10 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
   late TapZone _settingsReset;
   bool _handled = false;
   bool _settingsOpen = false;
-  double _animTime = 0;
 
   @override
   Future<void> onLoad() async {
-    _pixelArt = await PixelArtKit.load();
+    _v5 = await V5ImageUI.load();
     _primary = TapZone(onTap: _goNext, triggerOnDown: true);
     _settings = TapZone(onTap: _toggleSettings, triggerOnDown: true);
     _settingsClose = TapZone(onTap: _closeSettings, triggerOnDown: true);
@@ -37,6 +34,40 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
     _settingsMusic = TapZone(onTap: _toggleBgm, triggerOnDown: true);
     _settingsReset = TapZone(onTap: _resetChallenge, triggerOnDown: true);
     addAll([_primary, _settings, _settingsClose, _settingsContinue, _settingsMusic, _settingsReset]);
+  }
+
+  void _hideZone(TapZone z) => z..size = Vector2.zero()..position = Vector2.zero();
+  void _placeZone(TapZone z, Rect r, {int? priority}) {
+    z..size = Vector2(r.width, r.height)..position = Vector2(r.left, r.top);
+    if (priority != null) z.priority = priority;
+  }
+
+  void _syncSettingsZones() {
+    if (size.x <= 0 || size.y <= 0) return;
+    if (_settingsOpen) {
+      _placeZone(_settingsClose, GameHelpOverlay.closeRect(size.x, size.y), priority: 2200);
+      _placeZone(_settingsMusic, GameHelpOverlay.musicRect(size.x, size.y), priority: 2200);
+      _placeZone(_settingsReset, GameHelpOverlay.resetRect(size.x, size.y), priority: 2200);
+      _placeZone(_settingsContinue, GameHelpOverlay.continueRect(size.x, size.y), priority: 2200);
+    } else {
+      _hideZone(_settingsClose); _hideZone(_settingsMusic); _hideZone(_settingsReset); _hideZone(_settingsContinue);
+    }
+  }
+
+  @override
+  void onGameResize(Vector2 size) {
+    super.onGameResize(size);
+    this.size = size;
+    _placeZone(
+      _primary,
+      clear
+          ? Rect.fromLTWH(size.x * .13, size.y * .875, size.x * .74, size.y * .105)
+          : Rect.fromLTWH(size.x * .14, size.y * .865, size.x * .72, size.y * .110),
+      priority: 1000,
+    );
+    // Clear/fail mockups do not display a gear. Keep the zone hidden unless overlay is already open.
+    _hideZone(_settings);
+    _syncSettingsZones();
   }
 
   void _toggleSettings() { _settingsOpen = !_settingsOpen; _syncSettingsZones(); }
@@ -63,19 +94,9 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
   Future<void> _retryWithPenalty() async {
     final dynamic g = game;
     final targetStage = stage <= 2 ? 1 : stage - 2;
-    try {
-      await g.retryWithPenalty(targetStage: targetStage, penaltySteps: 2);
-      return;
-    } catch (_) {}
-    try {
-      await g.retryFromStage(targetStage);
-      return;
-    } catch (_) {}
-    try {
-      g.currentStage = targetStage;
-      await g.startCurrentStage();
-      return;
-    } catch (_) {}
+    try { await g.retryWithPenalty(targetStage: targetStage, penaltySteps: 2); return; } catch (_) {}
+    try { await g.retryFromStage(targetStage); return; } catch (_) {}
+    try { g.currentStage = targetStage; await g.startCurrentStage(); return; } catch (_) {}
     await game.retryCurrentStage();
   }
 
@@ -89,64 +110,26 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
     }
   }
 
-  void _hideZone(TapZone zone) { zone..size = Vector2.zero()..position = Vector2.zero(); }
-
-  void _syncSettingsZones() {
-    if (size.x <= 0 || size.y <= 0) return;
-    if (_settingsOpen) {
-      _placeZone(_settingsClose, GameHelpOverlay.closeRect(size.x, size.y), priority: 2001);
-      _placeZone(_settingsMusic, GameHelpOverlay.musicRect(size.x, size.y), priority: 2001);
-      _placeZone(_settingsReset, GameHelpOverlay.resetRect(size.x, size.y), priority: 2001);
-      _placeZone(_settingsContinue, GameHelpOverlay.continueRect(size.x, size.y), priority: 2001);
-    } else {
-      _hideZone(_settingsClose); _hideZone(_settingsMusic); _hideZone(_settingsReset); _hideZone(_settingsContinue);
-    }
-  }
-
-  void _placeZone(TapZone zone, Rect r, {int? priority}) {
-    zone
-      ..size = Vector2(r.width, r.height)
-      ..position = Vector2(r.left, r.top);
-    if (priority != null) zone.priority = priority;
-  }
-
-  @override
-  void onGameResize(Vector2 size) {
-    super.onGameResize(size);
-    this.size = size;
-    _placeZone(_primary,
-        Rect.fromLTWH(size.x * .11, clear ? size.y * .842 : size.y * .835,
-            size.x * .78, clear ? size.y * .084 : size.y * .10),
-        priority: 1000);
-    _placeZone(_settings, GameHelpOverlay.settingsButtonRect(size.x, size.y), priority: 1100);
-    _syncSettingsZones();
-  }
-
-  void _drawText(
-    Canvas canvas,
-    String text,
-    Rect rect,
-    double fontSize,
-    Color color,
-    FontWeight weight, {
-    double yOffset = 0,
-    TextAlign align = TextAlign.center,
-    double height = 1.12,
-  }) {
-    final tp = TextPainter(
-      text: TextSpan(text: text, style: TextStyle(fontSize: fontSize, fontWeight: weight, color: color, height: height)),
-      textDirection: TextDirection.ltr,
-      textAlign: align,
-    )..layout(maxWidth: rect.width);
-    final dx = align == TextAlign.center ? rect.left + (rect.width - tp.width) / 2 : rect.left;
-    final dy = rect.top + (rect.height - tp.height) / 2 + yOffset;
-    tp.paint(canvas, Offset(dx, dy));
-  }
-
-  @override
-  void update(double dt) {
-    super.update(dt);
-    _animTime += dt;
+  void _drawLiveClearData(Canvas canvas) {
+    // Replace the baked sample completion data while keeping the generated card art.
+    final live = Rect.fromLTWH(size.x * .145, size.y * .740, size.x * .71, size.y * .115);
+    V5ImageUI.roundedCover(canvas, live, const Color(0xFFFFF4DD), radius: 18);
+    V5ImageUI.text(
+      canvas,
+      '완료 시간  ${elapsedSeconds.toStringAsFixed(1)}초',
+      Rect.fromLTWH(size.x * .17, size.y * .748, size.x * .66, size.y * .052),
+      27,
+      const Color(0xFFA45D00),
+      FontWeight.w900,
+    );
+    V5ImageUI.text(
+      canvas,
+      '${stageRealmLabel(stage)}  ·  STAGE $stage 완료',
+      Rect.fromLTWH(size.x * .16, size.y * .803, size.x * .68, size.y * .035),
+      16,
+      const Color(0xFF174B87),
+      FontWeight.w900,
+    );
   }
 
   void _drawSettingsOverlay(Canvas canvas) {
@@ -158,90 +141,17 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
       currentStage: game.currentStage,
       bestStage: p.bestStage,
       bgmEnabled: game.audioManager.bgmEnabled,
-      pixelArt: _pixelArt,
+      v5: _v5,
     );
-  }
-
-  void _drawClear(Canvas canvas) {
-    _pixelArt.renderClearParty(canvas, size);
-    GameHelpOverlay.drawSettingsButton(canvas, size.x, size.y);
-
-    final pulse = 1.0 + sin(_animTime * 3.8) * .018;
-    canvas.save();
-    canvas.translate(size.x * .5, size.y * .15);
-    canvas.scale(pulse, pulse);
-    canvas.translate(-size.x * .5, -size.y * .15);
-    final titleRect = Rect.fromLTWH(size.x * .08, size.y * .095, size.x * .84, size.y * .086);
-    _drawText(canvas, '스테이지 클리어!', titleRect.shift(const Offset(3, 4)), 34,
-        const Color(0xFF0B356E), FontWeight.w900);
-    _drawText(canvas, '스테이지 클리어!', titleRect.shift(const Offset(0, -2)), 34,
-        const Color(0xFFFFFFFF), FontWeight.w900);
-    _drawText(canvas, '스테이지 클리어!', titleRect, 34,
-        const Color(0xFF1769C2), FontWeight.w900);
-    canvas.restore();
-
-    final sparklePaint = Paint()..color = const Color(0xFFFFD53D);
-    final sparkleR = 3.0 + sin(_animTime * 5.0).abs() * 3.0;
-    canvas.drawCircle(Offset(size.x * .18, size.y * .13), sparkleR, sparklePaint);
-    canvas.drawCircle(Offset(size.x * .82, size.y * .155), sparkleR * .8, sparklePaint);
-
-    final milestoneRect = Rect.fromLTWH(size.x * .09, size.y * .188, size.x * .82, size.y * .044);
-    final milestone = RRect.fromRectAndRadius(milestoneRect, const Radius.circular(22));
-    canvas.drawRRect(milestone.shift(const Offset(0, 3)), Paint()..color = const Color(0x330B3768));
-    canvas.drawRRect(milestone, Paint()..color = const Color(0xFFFFF8E6));
-    canvas.drawRRect(milestone, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.7..color = const Color(0xFF4B8AC8));
-    _drawText(canvas, '공주에게 한 걸음 더 가까워졌습니다.', milestoneRect, 15.8,
-        const Color(0xFF234E79), FontWeight.w900);
-
-    final cardRect = Rect.fromLTWH(size.x * .10, size.y * .692, size.x * .80, size.y * .132);
-    final card = RRect.fromRectAndRadius(cardRect, const Radius.circular(30));
-    canvas.drawRRect(card.shift(const Offset(0, 4)), Paint()..color = const Color(0x330B3768));
-    canvas.drawRRect(card, Paint()..color = const Color(0xFFFFF3D9));
-    canvas.drawRRect(card, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.4..color = const Color(0xFF3C78B7));
-
-    final timeLine = Rect.fromLTWH(cardRect.left + 20, cardRect.top + 14, cardRect.width - 40, cardRect.height * .45);
-    final realmLine = Rect.fromLTWH(cardRect.left + 20, cardRect.top + cardRect.height * .54, cardRect.width - 40, cardRect.height * .30);
-    _drawText(canvas, '완료 시간  ${elapsedSeconds.toStringAsFixed(1)}초', timeLine, 27.5,
-        const Color(0xFFA15C00), FontWeight.w900);
-    _drawText(canvas, '${stageRealmLabel(stage)}  ·  STAGE $stage 완료', realmLine, 16.5,
-        const Color(0xFF315B7E), FontWeight.w900);
-
-    final primaryRect = Rect.fromLTWH(size.x * .11, size.y * .842, size.x * .78, size.y * .084);
-    final primary = RRect.fromRectAndRadius(primaryRect, const Radius.circular(30));
-    canvas.drawRRect(primary.shift(const Offset(0, 4)), Paint()..color = const Color(0x44246016));
-    canvas.drawRRect(primary, Paint()..color = _primary.pressed || _handled ? const Color(0xFF49C755) : const Color(0xFF74E64B));
-    canvas.drawRRect(primary, Paint()..style = PaintingStyle.stroke..strokeWidth = 3..color = const Color(0xFF17345B));
-    _drawText(canvas, _handled ? '이동 중...' : '✦  다음 스테이지  ✦', primaryRect, 23, const Color(0xFF12341B), FontWeight.w900, yOffset: -1);
-  }
-
-  void _drawFail(Canvas canvas) {
-    _pixelArt.renderFailWorld(canvas, size);
-    GameHelpOverlay.drawSettingsButton(canvas, size.x, size.y);
-    _drawText(canvas, '아쉬워요!', Rect.fromLTWH(size.x * .18, size.y * .11, size.x * .64, size.y * .08),
-        30, const Color(0xFF174B87), FontWeight.w900);
-
-    final info = Rect.fromLTWH(size.x * .08, size.y * .675, size.x * .84, size.y * .105);
-    final box = RRect.fromRectAndRadius(info, const Radius.circular(25));
-    canvas.drawRRect(box, Paint()..color = const Color(0xF8FFF1E7));
-    canvas.drawRRect(box, Paint()..style = PaintingStyle.stroke..strokeWidth = 2..color = const Color(0xFFD16B59));
-    _drawText(canvas, '문 뒤에서 몬스터가 나타났습니다.\n두 단계 전으로 돌아가 다시 도전합니다.',
-        info.deflate(14), 14.2, const Color(0xFF7C3A32), FontWeight.w900, height: 1.32);
-
-    final retryRect = Rect.fromLTWH(size.x * .11, size.y * .835, size.x * .78, size.y * .10);
-    final retry = RRect.fromRectAndRadius(retryRect, const Radius.circular(32));
-    canvas.drawRRect(retry.shift(const Offset(0, 4)), Paint()..color = const Color(0x44246016));
-    canvas.drawRRect(retry, Paint()..color = _primary.pressed || _handled ? const Color(0xFF49C755) : const Color(0xFF76E56D));
-    canvas.drawRRect(retry, Paint()..style = PaintingStyle.stroke..strokeWidth = 3..color = const Color(0xFF17345B));
-    _drawText(canvas, _handled ? '다시 시작 중...' : '다시 도전', retryRect, 24,
-        const Color(0xFF12341B), FontWeight.w900);
   }
 
   @override
   void render(Canvas canvas) {
     if (clear) {
-      _drawClear(canvas);
+      _v5.drawFull(canvas, size, _v5.clear);
+      _drawLiveClearData(canvas);
     } else {
-      _drawFail(canvas);
+      _v5.drawFull(canvas, size, _v5.fail);
     }
     if (_settingsOpen) _drawSettingsOverlay(canvas);
   }

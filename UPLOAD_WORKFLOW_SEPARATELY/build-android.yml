@@ -1,4 +1,4 @@
-name: Build & Release Door Mission Pixel V2
+name: Build & Release Door Mission Pixel V5
 
 on:
   workflow_dispatch:
@@ -64,30 +64,21 @@ jobs:
       - name: Dependencies
         run: flutter pub get
 
-      - name: Verify pixel rebuild sources
+      - name: Verify V5 image-driven sources
         shell: bash
         run: |
           set -e
-          test -f assets/images/ui/pixel_hero.png
-          test -f assets/images/ui/pixel_princess.png
-          test -f assets/images/ui/pixel_monster.png
-          test -f assets/images/ui/pixel_chest.png
-          test -f assets/images/ui/pixel_door_blue.png
-          test -f assets/images/ui/pixel_door_pink.png
-          test -f assets/images/ui/pixel_tree.png
-          test -f assets/images/ui/pixel_castle.png
-          test -f assets/images/ui/pixel_cloud.png
-          test -f assets/images/ui/pixel_bush.png
-          test -f assets/images/ui/pixel_fence.png
-          test -f assets/images/ui/pixel_flower.png
-          test -f lib/game/ui/pixel_art_kit.dart
-          grep -q "ui/pixel_hero.png" lib/game/ui/pixel_art_kit.dart
-          grep -q "ui/pixel_door_blue.png" lib/game/ui/pixel_art_kit.dart
-          grep -q "pixel_art_kit.dart" lib/game/scenes/intro_scene.dart
-          grep -q "pixel_art_kit.dart" lib/game/scenes/memory_scene.dart
-          grep -q "pixel_art_kit.dart" lib/game/scenes/door_scene.dart
-          grep -q "pixel_art_kit.dart" lib/game/scenes/result_scene.dart
-          echo "Pixel rebuild assets and scene wiring verified."
+          test -f assets/images/ui/v5/intro_template.png
+          test -f assets/images/ui/v5/memory_template.png
+          test -f assets/images/ui/v5/clear_template.png
+          test -f assets/images/ui/v5/settings_template.png
+          test -f assets/images/ui/v5/fail_template.png
+          test -f lib/game/ui/v5_image_ui.dart
+          grep -q "V5ImageUI" lib/game/scenes/intro_scene.dart
+          grep -q "V5ImageUI" lib/game/scenes/memory_scene.dart
+          grep -q "V5ImageUI" lib/game/scenes/result_scene.dart
+          grep -q "bgmEnabled" lib/game/ui/game_help_overlay.dart
+          echo "V5 image-driven UI and BGM toggle wiring verified."
 
       - name: Analyze
         run: flutter analyze --no-fatal-infos --no-fatal-warnings
@@ -99,25 +90,25 @@ jobs:
         run: flutter build apk --release
 
       - name: Prepare named APK
-        run: cp build/app/outputs/flutter-apk/app-release.apk DoorMission-Pixel-V2.apk
+        run: cp build/app/outputs/flutter-apk/app-release.apk DoorMission-Pixel-V5.apk
 
       - name: Upload APK backup
         uses: actions/upload-artifact@v4
         with:
-          name: DoorMission-Pixel-V2-apk
-          path: DoorMission-Pixel-V2.apk
+          name: DoorMission-Pixel-V5-apk
+          path: DoorMission-Pixel-V5.apk
           if-no-files-found: error
 
-      - name: Replace previous pixel rebuild release
+      - name: Replace previous V5 release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release delete door-mission-pixel-v2 --yes --cleanup-tag || true
+        run: gh release delete door-mission-pixel-v5 --yes --cleanup-tag || true
 
       - name: Create direct APK Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create door-mission-pixel-v2 DoorMission-Pixel-V2.apk \
-            --title "문대작전 Pixel V2" \
-            --notes "문대작전 V2: bright casual pixel UI, seven-tier realm map, rebuilt settings and launcher icon." \
+          gh release create door-mission-pixel-v5 DoorMission-Pixel-V5.apk \
+            --title "문대작전 Pixel V5" \
+            --notes "V5 image-driven UI: final concept-art screens used as live templates, dynamic stage/time overlays, fixed door scene spacing, responsive memory rows, active BGM toggle." \
             --prerelease

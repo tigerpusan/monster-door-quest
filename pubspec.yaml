@@ -1,7 +1,7 @@
 name: monster_door_quest
-description: MonsterDoor cute fantasy memory game
+description: Door Mission Pixel V5 image-driven memory game
 publish_to: "none"
-version: 7.2.1+721
+version: 7.3.0+730
 
 environment:
   sdk: ">=3.11.0 <4.0.0"
@@ -23,5 +23,6 @@ flutter:
   assets:
     - assets/images/
     - assets/images/ui/
+    - assets/images/ui/v5/
     - assets/audio/bgm/
     - assets/audio/sfx/

@@ -1,20 +1,19 @@
 import 'dart:ui';
 import 'package:flame/components.dart';
-import 'package:flutter/material.dart'
-    show FontWeight, TextAlign, TextDirection, TextPainter, TextSpan, TextStyle;
+import 'package:flutter/material.dart' show FontWeight;
 import '../components/tap_zone.dart';
 import '../core/game_rules.dart';
 import '../core/game_state.dart';
 import '../monster_door_game.dart';
 import '../ui/game_help_overlay.dart';
-import '../ui/pixel_art_kit.dart';
+import '../ui/v5_image_ui.dart';
 
 class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGame> {
   MemoryScene(this.session, this.memorySeconds);
 
   final GameSessionState session;
   final double? memorySeconds;
-  late PixelArtKit _pixelArt;
+  late V5ImageUI _v5;
   late TapZone _ready;
   late TapZone _settings;
   late TapZone _settingsClose;
@@ -27,7 +26,7 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
   @override
   Future<void> onLoad() async {
-    _pixelArt = await PixelArtKit.load();
+    _v5 = await V5ImageUI.load();
     _ready = TapZone(onTap: _goDoor, triggerOnDown: true);
     _settings = TapZone(onTap: _toggleSettings, triggerOnDown: true);
     _settingsClose = TapZone(onTap: _closeSettings, triggerOnDown: true);
@@ -37,7 +36,11 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     addAll([_ready, _settings, _settingsClose, _settingsContinue, _settingsMusic, _settingsReset]);
   }
 
-  void _hideZone(TapZone zone) { zone..size = Vector2.zero()..position = Vector2.zero(); }
+  void _hideZone(TapZone z) => z..size = Vector2.zero()..position = Vector2.zero();
+  void _placeZone(TapZone z, Rect r, {int? priority}) {
+    z..size = Vector2(r.width, r.height)..position = Vector2(r.left, r.top);
+    if (priority != null) z.priority = priority;
+  }
 
   void _syncSettingsZones() {
     if (size.x <= 0 || size.y <= 0) return;
@@ -51,18 +54,11 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     }
   }
 
-  void _placeZone(TapZone zone, Rect r, {int? priority}) {
-    zone
-      ..size = Vector2(r.width, r.height)
-      ..position = Vector2(r.left, r.top);
-    if (priority != null) zone.priority = priority;
-  }
-
   @override
   void onGameResize(Vector2 size) {
     super.onGameResize(size);
     this.size = size;
-    _placeZone(_ready, Rect.fromLTWH(size.x * .13, size.y * .894, size.x * .74, size.y * .072));
+    _placeZone(_ready, Rect.fromLTWH(size.x * .14, size.y * .855, size.x * .72, size.y * .105), priority: 1000);
     _placeZone(_settings, GameHelpOverlay.settingsButtonRect(size.x, size.y), priority: 2000);
     _syncSettingsZones();
   }
@@ -103,25 +99,55 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     }
   }
 
-  void _drawText(
-    Canvas canvas,
-    String text,
-    Rect rect,
-    double fontSize,
-    Color color,
-    FontWeight weight, {
-    double yOffset = 0,
-    TextAlign align = TextAlign.center,
-    double height = 1.12,
-  }) {
-    final tp = TextPainter(
-      text: TextSpan(text: text, style: TextStyle(fontSize: fontSize, fontWeight: weight, color: color, height: height)),
-      textDirection: TextDirection.ltr,
-      textAlign: align,
-    )..layout(maxWidth: rect.width);
-    final dx = align == TextAlign.center ? rect.left + (rect.width - tp.width) / 2 : rect.left;
-    final dy = rect.top + (rect.height - tp.height) / 2 + yOffset;
-    tp.paint(canvas, Offset(dx, dy));
+  void _drawLiveMemory(Canvas canvas) {
+    // Blank the baked sample contents but preserve the generated frame/background.
+    final liveArea = Rect.fromLTWH(size.x * .145, size.y * .255, size.x * .71, size.y * .565);
+    V5ImageUI.roundedCover(canvas, liveArea, const Color(0xFFFFF7E7), radius: 10);
+
+    V5ImageUI.text(
+      canvas,
+      'STAGE ${session.stage} · ${session.route.length} DOORS',
+      Rect.fromLTWH(size.x * .20, size.y * .260, size.x * .60, size.y * .040),
+      16,
+      const Color(0xFF173F70),
+      FontWeight.w900,
+    );
+
+    final count = session.route.length;
+    final listTop = size.y * .320;
+    final listBottom = size.y * .720;
+    final totalH = listBottom - listTop;
+    final gap = count >= 12 ? 4.0 : count >= 9 ? 6.0 : 9.0;
+    final rowH = ((totalH - gap * (count - 1)) / count).clamp(25.0, 73.0);
+    for (var i = 0; i < count; i++) {
+      final isLeft = session.route[i].name == 'left';
+      final y = listTop + i * (rowH + gap);
+      final r = Rect.fromLTWH(size.x * .175, y, size.x * .65, rowH);
+      final rr = RRect.fromRectAndRadius(r, Radius.circular(rowH / 2));
+      canvas.drawRRect(rr.shift(const Offset(0, 3)), Paint()..color = const Color(0x33214D78));
+      canvas.drawRRect(rr, Paint()..color = isLeft ? const Color(0xFF176ED8) : const Color(0xFFFF3E74));
+      canvas.drawRRect(rr, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.3..color = const Color(0xFFFFB531));
+      final fs = (rowH * .48).clamp(14.0, 27.0);
+      V5ImageUI.text(
+        canvas,
+        isLeft ? '←  왼쪽' : '오른쪽  →',
+        r,
+        fs,
+        const Color(0xFFFFFFFF),
+        FontWeight.w900,
+      );
+    }
+
+    final remain = memorySeconds == null ? 0.0 : (memorySeconds! - elapsed).clamp(0.0, memorySeconds!);
+    final timer = memorySeconds == null ? '기억 시간  준비' : '기억 시간  ${remain.toStringAsFixed(1)}초';
+    V5ImageUI.text(
+      canvas,
+      timer,
+      Rect.fromLTWH(size.x * .22, size.y * .755, size.x * .56, size.y * .050),
+      20,
+      const Color(0xFF9C5700),
+      FontWeight.w900,
+    );
   }
 
   void _drawSettingsOverlay(Canvas canvas) {
@@ -133,89 +159,14 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
       currentStage: game.currentStage,
       bestStage: p.bestStage,
       bgmEnabled: game.audioManager.bgmEnabled,
-      pixelArt: _pixelArt,
+      v5: _v5,
     );
   }
 
   @override
   void render(Canvas canvas) {
-    _pixelArt.renderBackground(canvas, size, showCastle: false, showTrees: true, rich: true);
-    _pixelArt.renderCastle(canvas, size, x: .37, y: .035, width: .26, height: .19);
-    GameHelpOverlay.drawSettingsButton(canvas, size.x, size.y);
-
-    final panelRect = Rect.fromLTWH(size.x * .055, size.y * .120, size.x * .89, size.y * .742);
-    final panel = RRect.fromRectAndRadius(panelRect, const Radius.circular(30));
-    canvas.drawRRect(panel.shift(const Offset(0, 5)), Paint()..color = const Color(0x330B3768));
-    canvas.drawRRect(panel, Paint()..color = const Color(0xFAFFF8E8));
-    canvas.drawRRect(panel, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.6..color = const Color(0xFF3477BB));
-    canvas.drawRRect(panel.deflate(10), Paint()..style = PaintingStyle.stroke..strokeWidth = 1.0..color = const Color(0x77FFFFFF));
-
-    _drawText(
-      canvas,
-      '문 순서를 기억하세요',
-      Rect.fromLTWH(size.x * .10, size.y * .145, size.x * .80, size.y * .050),
-      28,
-      const Color(0xFF174B87),
-      FontWeight.w900,
-    );
-    _drawText(
-      canvas,
-      '✦  STAGE ${session.stage} · ${session.route.length} DOORS  ✦',
-      Rect.fromLTWH(size.x * .18, size.y * .200, size.x * .64, size.y * .028),
-      14.6,
-      const Color(0xFF2F5F8A),
-      FontWeight.w900,
-    );
-
-    final count = session.route.length;
-    final listTop = size.y * .258;
-    final timerTop = size.y * .775;
-    final listBottom = timerTop - size.y * .028;
-    final listHeight = listBottom - listTop;
-    final gap = count >= 14 ? 4.0 : count >= 10 ? 6.0 : 9.0;
-    final rowHeight = ((listHeight - gap * (count - 1)) / count).clamp(24.0, 62.0);
-
-    for (var i = 0; i < count; i++) {
-      final isLeft = session.route[i].name == 'left';
-      final y = listTop + i * (rowHeight + gap);
-      final rowRect = Rect.fromLTWH(size.x * .17, y, size.x * .66, rowHeight);
-      final rr = RRect.fromRectAndRadius(rowRect, Radius.circular(rowHeight / 2));
-      final fill = isLeft ? const Color(0xFF2F79DB) : const Color(0xFFF15486);
-      canvas.drawRRect(rr.shift(const Offset(0, 3)), Paint()..color = const Color(0x330B3768));
-      canvas.drawRRect(rr, Paint()..color = fill);
-      canvas.drawRRect(rr, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.2..color = const Color(0xFFFFC846));
-      canvas.drawRRect(rr.deflate(4), Paint()..style = PaintingStyle.stroke..strokeWidth = .8..color = const Color(0x77FFFFFF));
-      final fontSize = (rowHeight * (count >= 14 ? .43 : .50)).clamp(14.0, 26.0);
-      _drawText(
-        canvas,
-        isLeft ? '←  왼쪽' : '오른쪽  →',
-        rowRect,
-        fontSize,
-        const Color(0xFFFFFFFF),
-        FontWeight.w900,
-        yOffset: -0.5,
-      );
-    }
-
-    final remain = memorySeconds == null ? 0.0 : (memorySeconds! - elapsed).clamp(0.0, memorySeconds!);
-    final timerText = memorySeconds == null ? '⏳  준비되면 바로 도전하세요' : '⏳  기억 시간  ${remain.toStringAsFixed(1)}초';
-    _drawText(
-      canvas,
-      timerText,
-      Rect.fromLTWH(size.x * .16, timerTop, size.x * .68, size.y * .052),
-      19,
-      const Color(0xFFA55E00),
-      FontWeight.w900,
-    );
-
-    final btnRect = Rect.fromLTWH(size.x * .13, size.y * .894, size.x * .74, size.y * .072);
-    final btn = RRect.fromRectAndRadius(btnRect, const Radius.circular(28));
-    canvas.drawRRect(btn.shift(const Offset(0, 4)), Paint()..color = const Color(0x44246016));
-    canvas.drawRRect(btn, Paint()..color = _ready.pressed ? const Color(0xFF4FCB50) : const Color(0xFF72E83D));
-    canvas.drawRRect(btn, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.8..color = const Color(0xFF174B87));
-    _drawText(canvas, _ready.pressed ? '도전!' : '✦  기억 완료 · 도전!  ✦', btnRect, 20,
-        const Color(0xFF12341B), FontWeight.w900, yOffset: -1);
-
+    _v5.drawFull(canvas, size, _v5.memory);
+    _drawLiveMemory(canvas);
     if (_settingsOpen) _drawSettingsOverlay(canvas);
   }
 }
