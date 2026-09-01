@@ -34,16 +34,16 @@ class PixelArtKit {
     canvas.drawRect(
       skyRect,
       Paint()
-        ..shader = const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
+        ..shader = Gradient.linear(
+          Offset(size.x * .5, 0),
+          Offset(size.x * .5, size.y),
+          const <Color>[
             Color(0xFF69C7FF),
             Color(0xFFAEE6FF),
             Color(0xFFF7FCFF),
           ],
-          stops: [0.0, .58, 1.0],
-        ).createShader(skyRect),
+          const <double>[0.0, .58, 1.0],
+        ),
     );
 
     _sparkle(canvas, size.x * .20, size.y * .10, 16);
