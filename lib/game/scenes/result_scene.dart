@@ -15,7 +15,6 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
   final bool clear;
   final int stage;
   final double elapsedSeconds;
-  late Sprite _bg;
   late PixelArtKit _pixelArt;
   late TapZone _primary;
   late TapZone _settings;
@@ -28,7 +27,6 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
   @override
   Future<void> onLoad() async {
-    _bg = await Sprite.load('ui/pixel_bg_base.png');
     _pixelArt = await PixelArtKit.load();
     _primary = TapZone(onTap: _goNext, triggerOnDown: true);
     _settings = TapZone(onTap: _toggleSettings, triggerOnDown: true);
@@ -158,8 +156,7 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
   @override
   void render(Canvas canvas) {
-    _bg.render(canvas, size: size);
-    _pixelArt.renderDecor(canvas, size, dense: true);
+    _pixelArt.renderBackground(canvas, size);
     if (clear) {
       _pixelArt.renderClearParty(canvas, size);
     } else {
@@ -168,7 +165,6 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
     GameHelpOverlay.drawSettingsButton(canvas, size.x, size.y);
 
     if (clear) {
-      // Optical lift: keep the message between the clear title and the sword tip.
       final milestoneRect = Rect.fromLTWH(size.x * .09, size.y * .238, size.x * .82, size.y * .042);
       final milestone = RRect.fromRectAndRadius(milestoneRect, const Radius.circular(22));
       canvas.drawRRect(milestone, Paint()..color = const Color(0xEFFFF7E4));
@@ -182,7 +178,9 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
         FontWeight.w800,
       );
 
-      // One result card only. Text is vertically balanced inside the same card.
+      final titleRect = Rect.fromLTWH(size.x * .16, size.y * .12, size.x * .68, size.y * .10);
+      _drawText(canvas, '스테이지 클리어!', titleRect, 30, const Color(0xFF174B87), FontWeight.w900);
+
       final cardRect = Rect.fromLTWH(size.x * .10, size.y * .684, size.x * .80, size.y * .136);
       final card = RRect.fromRectAndRadius(cardRect, const Radius.circular(30));
       canvas.drawRRect(card, Paint()..color = const Color(0xF7FFF4DC));
@@ -223,6 +221,8 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
       canvas.drawRRect(primary, Paint()..style = PaintingStyle.stroke..strokeWidth = 3..color = const Color(0xFF17345B));
       _drawText(canvas, '다음 스테이지', primaryRect, 23, const Color(0xFF12341B), FontWeight.w900, yOffset: -1);
     } else {
+      final failTitle = Rect.fromLTWH(size.x * .18, size.y * .12, size.x * .64, size.y * .08);
+      _drawText(canvas, '아쉬워요!', failTitle, 29, const Color(0xFF174B87), FontWeight.w900);
       canvas.drawRect(Rect.fromLTWH(0, size.y * .64, size.x, size.y * .36), Paint()..color = const Color(0xD9FFF3E3));
       _drawText(canvas, '문 뒤에서 몬스터가 나타났습니다.', Rect.fromLTWH(size.x * .10, size.y * .682, size.x * .80, size.y * .032), 17,
           const Color(0xFF17345B), FontWeight.w900);

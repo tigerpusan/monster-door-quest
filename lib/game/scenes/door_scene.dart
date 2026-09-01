@@ -19,7 +19,6 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
   DoorScene(this.session);
 
   final GameSessionState session;
-  late Sprite _bg;
   late PixelArtKit _pixelArt;
   late final DoorComponent leftDoor, rightDoor;
   late final RouteProgress progress;
@@ -40,7 +39,6 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
 
   @override
   Future<void> onLoad() async {
-    _bg = await Sprite.load('ui/pixel_bg_base.png');
     _pixelArt = await PixelArtKit.load();
     session.beginDoorRun();
     leftDoor = DoorComponent(side: DoorSide.left, onSelected: _choose);
@@ -216,11 +214,9 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     final shake = feedback.shakeActive ? sin(elapsed * 170) * 4 : 0.0;
     canvas.save();
     canvas.translate(shake, 0);
-    _bg.render(canvas, size: size);
-    _pixelArt.renderDecor(canvas, size, dense: true);
+    _pixelArt.renderBackground(canvas, size);
     _pixelArt.renderHero(canvas, size, x: .39, y: .70, scale: .22);
 
-    // Clean top HUD. The gear lives above and outside this card, so borders never intersect.
     canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y * .366), Paint()..color = const Color(0xEFFFF8E8));
     final topCard = RRect.fromRectAndRadius(
       Rect.fromLTWH(size.x * .070, size.y * .084, size.x * .84, size.y * .248),
@@ -241,7 +237,6 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     );
 
     final remain = (GameRules.playSeconds - elapsed).clamp(0.0, GameRules.playSeconds);
-    // Timer occupies its own centered band so the digits never sag toward the bottom.
     final timerRect = Rect.fromLTWH(size.x * .24, size.y * .222, size.x * .52, size.y * .060);
     final timerPainter = TextPainter(
       text: TextSpan(

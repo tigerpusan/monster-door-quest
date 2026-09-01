@@ -9,7 +9,6 @@ import '../ui/game_help_overlay.dart';
 import '../ui/pixel_art_kit.dart';
 
 class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame> {
-  late Sprite _bg;
   late PixelArtKit _pixelArt;
   late TapZone _start;
   late TapZone _settings;
@@ -21,7 +20,6 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
 
   @override
   Future<void> onLoad() async {
-    _bg = await Sprite.load('ui/pixel_bg_base.png');
     _pixelArt = await PixelArtKit.load();
     _start = TapZone(onTap: _startGame, triggerOnDown: true);
     _settings = TapZone(onTap: _toggleSettings, triggerOnDown: true);
@@ -196,10 +194,9 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
 
   @override
   void render(Canvas canvas) {
-    _bg.render(canvas, size: size);
-    _pixelArt.renderDecor(canvas, size, dense: true);
-    _pixelArt.renderDoorPair(canvas, size, top: .48, scale: .30);
-    _pixelArt.renderHero(canvas, size, x: .39, y: .67, scale: .22);
+    _pixelArt.renderBackground(canvas, size);
+    _pixelArt.renderDoorPair(canvas, size, top: .48, scale: .29);
+    _pixelArt.renderHero(canvas, size, x: .37, y: .67, scale: .25);
     GameHelpOverlay.drawSettingsButton(canvas, size.x, size.y);
 
     final progress = game.progressStore.load();
@@ -207,7 +204,6 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     final bestStage = progress.bestStage;
     final realm = stageRealmLabel(currentStage);
 
-    // Keep the intro card fully below the gear button so their borders never cross.
     final panelRect = Rect.fromLTWH(size.x * .055, size.y * .122, size.x * .86, size.y * .255);
     final panel = RRect.fromRectAndRadius(panelRect, const Radius.circular(28));
     canvas.drawRRect(panel, Paint()..color = const Color(0xF7FFF7E7));
@@ -228,7 +224,7 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
 
     _drawText(
       canvas,
-      '몬스터 문 열기',
+      '몬스터 문열기',
       Rect.fromLTWH(size.x * .14, size.y * .140, size.x * .68, size.y * .044),
       29,
       const Color(0xFF174B87),
@@ -236,7 +232,7 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     );
     _drawText(
       canvas,
-      '공주가 몬스터에게 납치되었습니다.',
+      '문 순서를 기억해 공주를 구하세요!',
       Rect.fromLTWH(size.x * .10, size.y * .192, size.x * .76, size.y * .030),
       17,
       const Color(0xFF17345B),
@@ -244,7 +240,7 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     );
     _drawText(
       canvas,
-      '비밀의 문을 기억하여 공주를 구하세요.',
+      '가볍고 캐주얼한 픽셀 모험이 시작됩니다.',
       Rect.fromLTWH(size.x * .11, size.y * .229, size.x * .75, size.y * .032),
       16,
       const Color(0xFF2D658E),

@@ -14,7 +14,6 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
   final GameSessionState session;
   final double? memorySeconds;
-  late Sprite _bg;
   late PixelArtKit _pixelArt;
   late TapZone _ready;
   late TapZone _settings;
@@ -28,7 +27,6 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
   @override
   Future<void> onLoad() async {
-    _bg = await Sprite.load('ui/pixel_bg_base.png');
     _pixelArt = await PixelArtKit.load();
     _ready = TapZone(onTap: _goDoor, triggerOnDown: true);
     _settings = TapZone(onTap: _toggleSettings, triggerOnDown: true);
@@ -145,8 +143,7 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
   @override
   void render(Canvas canvas) {
-    _bg.render(canvas, size: size);
-    _pixelArt.renderDecor(canvas, size, dense: true);
+    _pixelArt.renderBackground(canvas, size);
     GameHelpOverlay.drawSettingsButton(canvas, size.x, size.y);
 
     final panelRect = Rect.fromLTWH(size.x * .05, size.y * .090, size.x * .90, size.y * .770);
@@ -174,7 +171,6 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
     final count = session.route.length;
     final listTop = size.y * .224;
-    // Keep the timer in a dedicated bottom zone. Even 14+ rows must end above it.
     final timerTop = size.y * .790;
     final listBottom = timerTop - size.y * .040;
     final listHeight = listBottom - listTop;
@@ -189,8 +185,15 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
       canvas.drawRRect(rr, Paint()..color = isLeft ? const Color(0xFF5A91E8) : const Color(0xFFFF7EA8));
       canvas.drawRRect(rr, Paint()..style = PaintingStyle.stroke..strokeWidth = 2..color = const Color(0xFFFFC84B));
       final fontSize = (rowHeight * (count >= 14 ? .42 : .48)).clamp(14.0, 25.0);
-      _drawText(canvas, '${i + 1}   ${isLeft ? '← 왼쪽' : '오른쪽 →'}', rowRect, fontSize,
-          const Color(0xFFFFFFFF), FontWeight.w900, yOffset: -0.5);
+      _drawText(
+        canvas,
+        '${i + 1}   ${isLeft ? '← 왼쪽' : '오른쪽 →'}',
+        rowRect,
+        fontSize,
+        const Color(0xFFFFFFFF),
+        FontWeight.w900,
+        yOffset: -0.5,
+      );
     }
 
     final remain = memorySeconds == null ? 0.0 : (memorySeconds! - elapsed).clamp(0.0, memorySeconds!);
@@ -208,7 +211,7 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     final btn = RRect.fromRectAndRadius(btnRect, const Radius.circular(28));
     canvas.drawRRect(btn, Paint()..color = _ready.pressed ? const Color(0xFF4AC75B) : const Color(0xFF76E56D));
     canvas.drawRRect(btn, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.8..color = const Color(0xFFFFFFFF));
-    _drawText(canvas, _ready.pressed ? '도전!' : '✨ 기억 완료 · 도전! ✨', btnRect, 20,
+    _drawText(canvas, _ready.pressed ? '도전!' : '기억 완료 · 도전!', btnRect, 20,
         const Color(0xFF12341B), FontWeight.w900, yOffset: -1);
 
     if (_settingsOpen) _drawSettingsOverlay(canvas);

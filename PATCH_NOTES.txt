@@ -1,0 +1,22 @@
+몬스터 문열기 픽셀 리빌드 패치 V2
+
+핵심 변경
+1) 기존 덮어씌우기형 배경 중심 구조에서 분리형 픽셀 에셋 구조로 전환
+2) 용사 / 공주 / 몬스터 / 보물상자 / 좌우 문 / 나무 / 성을 개별 PNG로 분리
+3) 인트로 / 기억 / 문 선택 / 결과 화면을 밝고 캐주얼한 픽셀 스타일로 재구성
+4) 설정 오버레이는 게임풍 화면을 유지하도록 동일 구조 유지
+5) GitHub 워크플로 검증용 gameplay_final_clean_v2.png / stage_clear_final_clean_v2.png 포함
+
+적용 파일
+- assets/images/ui/*.png
+- lib/game/ui/pixel_art_kit.dart
+- lib/game/ui/game_help_overlay.dart
+- lib/game/components/door_component.dart
+- lib/game/scenes/intro_scene.dart
+- lib/game/scenes/memory_scene.dart
+- lib/game/scenes/door_scene.dart
+- lib/game/scenes/result_scene.dart
+
+적용 방법
+기존 프로젝트 루트에 본 압축을 풀어 같은 경로로 덮어쓰기.
+필요 시 flutter clean 후 다시 빌드.
