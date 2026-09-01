@@ -194,9 +194,18 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
 
   @override
   void render(Canvas canvas) {
-    _pixelArt.renderBackground(canvas, size);
-    _pixelArt.renderDoorPair(canvas, size, top: .48, scale: .29);
-    _pixelArt.renderHero(canvas, size, x: .37, y: .67, scale: .25);
+    _pixelArt.renderBackground(canvas, size, showCastle: false);
+    _pixelArt.renderCastle(canvas, size, x: .30, y: .405, width: .40, height: .30);
+    _pixelArt.renderDoorPair(
+      canvas,
+      size,
+      top: .515,
+      scale: .34,
+      heightScale: .315,
+      leftX: .065,
+      rightX: .595,
+    );
+    _pixelArt.renderHero(canvas, size, x: .345, y: .695, scale: .31);
     GameHelpOverlay.drawSettingsButton(canvas, size.x, size.y);
 
     final progress = game.progressStore.load();
@@ -224,7 +233,7 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
 
     _drawText(
       canvas,
-      '몬스터 문열기',
+      '몬스터 문대작전!',
       Rect.fromLTWH(size.x * .14, size.y * .140, size.x * .68, size.y * .044),
       29,
       const Color(0xFF174B87),
@@ -238,16 +247,7 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
       const Color(0xFF17345B),
       FontWeight.w900,
     );
-    _drawText(
-      canvas,
-      '가볍고 캐주얼한 픽셀 모험이 시작됩니다.',
-      Rect.fromLTWH(size.x * .11, size.y * .229, size.x * .75, size.y * .032),
-      16,
-      const Color(0xFF2D658E),
-      FontWeight.w800,
-    );
-
-    final statusRect = Rect.fromLTWH(size.x * .13, size.y * .281, size.x * .70, size.y * .048);
+    final statusRect = Rect.fromLTWH(size.x * .13, size.y * .248, size.x * .70, size.y * .048);
     final statusRRect = RRect.fromRectAndRadius(statusRect, const Radius.circular(18));
     canvas.drawRRect(statusRRect, Paint()..color = const Color(0xFFF0FAFF));
     canvas.drawRRect(
@@ -265,7 +265,7 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
       const Color(0xFF235A86),
       FontWeight.w800,
     );
-    _drawRealmMap(canvas, size.y * .311, currentStage);
+    _drawRealmMap(canvas, size.y * .278, currentStage);
 
     final btnRect = Rect.fromLTWH(size.x * .13, size.y * .900, size.x * .74, size.y * .072);
     final btn = RRect.fromRectAndRadius(btnRect, const Radius.circular(28));

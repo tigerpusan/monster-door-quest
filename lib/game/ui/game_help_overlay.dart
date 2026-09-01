@@ -180,26 +180,48 @@ class GameHelpOverlay {
     );
 
     final level = Rect.fromLTWH(w * .11, h * .465, w * .78, h * .168);
-    _card(canvas, level, fill: const Color(0xFF281052));
+    _card(canvas, level, fill: const Color(0xFFF7FBEA));
     _drawText(
       canvas,
       '🗺  단계 안내',
       Rect.fromLTWH(level.left + 16, level.top + 8, level.width - 32, 25),
       15.5,
-      const Color(0xFFFFE08B),
+      const Color(0xFF2E6D32),
       FontWeight.w900,
       align: TextAlign.left,
     );
-    _drawText(
-      canvas,
-      '인간 I~III  좌우 문 순서 기억\n초인  더 긴 순서와 복합 규칙\n기록  집중력 한계 도전\n신  최종 기억 관문',
-      Rect.fromLTWH(level.left + 16, level.top + 38, level.width - 32, level.height - 44),
-      12.6,
-      const Color(0xFFE8DDFF),
-      FontWeight.w700,
-      align: TextAlign.left,
-      height: 1.30,
-    );
+
+    final guideItems = <String>[
+      '인간의 영역',
+      '초인의 영역',
+      '기억의 한계를 넘어',
+      '신의 영역에 도전',
+    ];
+    for (var i = 0; i < guideItems.length; i++) {
+      final cy = level.top + 49 + i * 25.5;
+      canvas.drawCircle(
+        Offset(level.left + 28, cy),
+        10.5,
+        Paint()..color = const Color(0xFF6DBA4A),
+      );
+      _drawText(
+        canvas,
+        '${i + 1}',
+        Rect.fromLTWH(level.left + 17.5, cy - 10.5, 21, 21),
+        11.5,
+        const Color(0xFFFFFFFF),
+        FontWeight.w900,
+      );
+      _drawText(
+        canvas,
+        guideItems[i],
+        Rect.fromLTWH(level.left + 48, cy - 12, level.width - 64, 24),
+        12.8,
+        const Color(0xFF315B46),
+        FontWeight.w800,
+        align: TextAlign.left,
+      );
+    }
 
     final fail = Rect.fromLTWH(w * .11, h * .650, w * .78, h * .105);
     _card(canvas, fail, fill: const Color(0xFF351342));
@@ -225,9 +247,9 @@ class GameHelpOverlay {
 
     final reset = resetRect(w, h);
     final resetBox = RRect.fromRectAndRadius(reset, const Radius.circular(24));
-    canvas.drawRRect(resetBox, Paint()..color = const Color(0xFF5B2A75));
-    canvas.drawRRect(resetBox, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.8..color = const Color(0xCCFFD86D));
-    _drawText(canvas, '↺ 처음부터', reset, 16.5, const Color(0xFF174B87), FontWeight.w900);
+    canvas.drawRRect(resetBox, Paint()..color = const Color(0xFF7EEB42));
+    canvas.drawRRect(resetBox, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.4..color = const Color(0xFF17345B));
+    _drawText(canvas, '↺ 처음부터', reset, 16.5, const Color(0xFF102408), FontWeight.w900);
 
     final cont = continueRect(w, h);
     final contBox = RRect.fromRectAndRadius(cont, const Radius.circular(24));

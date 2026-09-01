@@ -156,7 +156,12 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
   @override
   void render(Canvas canvas) {
-    _pixelArt.renderBackground(canvas, size);
+    _pixelArt.renderBackground(
+      canvas,
+      size,
+      showCastle: !clear,
+      showTrees: !clear,
+    );
     if (clear) {
       _pixelArt.renderClearParty(canvas, size);
     } else {

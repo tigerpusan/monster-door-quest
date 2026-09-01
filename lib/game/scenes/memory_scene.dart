@@ -187,7 +187,7 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
       final fontSize = (rowHeight * (count >= 14 ? .42 : .48)).clamp(14.0, 25.0);
       _drawText(
         canvas,
-        '${i + 1}   ${isLeft ? '← 왼쪽' : '오른쪽 →'}',
+        isLeft ? '← 왼쪽' : '오른쪽 →',
         rowRect,
         fontSize,
         const Color(0xFFFFFFFF),

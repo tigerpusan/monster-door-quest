@@ -1,9 +1,6 @@
 import 'dart:ui';
 import 'package:flame/components.dart';
 
-/// Casual, bright pixel-art kit for the rebuilt monster-door project.
-/// All major visuals are split into individual sprite assets so scenes can
-/// place UI and characters independently instead of relying on one flat image.
 class PixelArtKit {
   PixelArtKit._();
 
@@ -29,7 +26,13 @@ class PixelArtKit {
     return kit;
   }
 
-  void renderBackground(Canvas canvas, Vector2 size, {bool showPath = true}) {
+  void renderBackground(
+    Canvas canvas,
+    Vector2 size, {
+    bool showPath = true,
+    bool showCastle = true,
+    bool showTrees = true,
+  }) {
     final skyRect = Offset.zero & Size(size.x, size.y);
     canvas.drawRect(
       skyRect,
@@ -64,11 +67,33 @@ class PixelArtKit {
       Paint()..color = const Color(0xFF61B63E),
     );
 
+    if (showCastle) {
+      renderCastle(canvas, size);
+    }
+    if (showTrees) {
+      renderTrees(canvas, size);
+    }
+    if (showPath) {
+      _drawPath(canvas, size);
+    }
+  }
+
+  void renderCastle(
+    Canvas canvas,
+    Vector2 size, {
+    double x = .35,
+    double y = .35,
+    double width = .30,
+    double height = .23,
+  }) {
     castle.render(
       canvas,
-      position: Vector2(size.x * .35, size.y * .35),
-      size: Vector2(size.x * .30, size.x * .23),
+      position: Vector2(size.x * x, size.y * y),
+      size: Vector2(size.x * width, size.x * height),
     );
+  }
+
+  void renderTrees(Canvas canvas, Vector2 size) {
     tree.render(
       canvas,
       position: Vector2(size.x * .02, size.y * .53),
@@ -79,29 +104,38 @@ class PixelArtKit {
       position: Vector2(size.x * .76, size.y * .54),
       size: Vector2(size.x * .22, size.x * .22),
     );
-
-    if (showPath) {
-      _drawPath(canvas, size);
-    }
   }
 
-  void renderDoorPair(Canvas canvas, Vector2 size, {double top = .43, double scale = .30}) {
-    final h = size.y * .28;
+  void renderDoorPair(
+    Canvas canvas,
+    Vector2 size, {
+    double top = .43,
+    double scale = .30,
+    double heightScale = .28,
+    double leftX = .10,
+    double rightX = .58,
+  }) {
+    final h = size.y * heightScale;
     final w = size.x * scale;
     blueDoor.render(
       canvas,
-      position: Vector2(size.x * .10, size.y * top),
+      position: Vector2(size.x * leftX, size.y * top),
       size: Vector2(w, h),
     );
     pinkDoor.render(
       canvas,
-      position: Vector2(size.x * .58, size.y * top),
+      position: Vector2(size.x * rightX, size.y * top),
       size: Vector2(w, h),
     );
   }
 
-  void renderHero(Canvas canvas, Vector2 size,
-      {double x = .39, double y = .69, double scale = .27}) {
+  void renderHero(
+    Canvas canvas,
+    Vector2 size, {
+    double x = .39,
+    double y = .69,
+    double scale = .27,
+  }) {
     hero.render(
       canvas,
       position: Vector2(size.x * x, size.y * y),
@@ -110,20 +144,35 @@ class PixelArtKit {
   }
 
   void renderClearParty(Canvas canvas, Vector2 size) {
+    tree.render(
+      canvas,
+      position: Vector2(size.x * .015, size.y * .47),
+      size: Vector2(size.x * .28, size.x * .28),
+    );
+    tree.render(
+      canvas,
+      position: Vector2(size.x * .73, size.y * .48),
+      size: Vector2(size.x * .27, size.x * .27),
+    );
+    castle.render(
+      canvas,
+      position: Vector2(size.x * .31, size.y * .34),
+      size: Vector2(size.x * .38, size.x * .29),
+    );
     chest.render(
       canvas,
-      position: Vector2(size.x * .14, size.y * .53),
-      size: Vector2(size.x * .18, size.x * .18),
+      position: Vector2(size.x * .09, size.y * .54),
+      size: Vector2(size.x * .22, size.x * .22),
     );
     hero.render(
       canvas,
-      position: Vector2(size.x * .30, size.y * .46),
-      size: Vector2(size.x * .23, size.x * .23),
+      position: Vector2(size.x * .29, size.y * .47),
+      size: Vector2(size.x * .27, size.x * .27),
     );
     princess.render(
       canvas,
-      position: Vector2(size.x * .51, size.y * .43),
-      size: Vector2(size.x * .28, size.x * .28),
+      position: Vector2(size.x * .52, size.y * .44),
+      size: Vector2(size.x * .31, size.x * .31),
     );
   }
 
