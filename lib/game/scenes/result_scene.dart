@@ -144,16 +144,15 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
   }
 
   void _drawClear(Canvas canvas) {
-    _pixelArt.renderBackground(canvas, size, showCastle: false, showTrees: false, rich: true);
     _pixelArt.renderClearParty(canvas, size);
     GameHelpOverlay.drawSettingsButton(canvas, size.x, size.y);
 
-    final titleRect = Rect.fromLTWH(size.x * .12, size.y * .095, size.x * .76, size.y * .080);
+    final titleRect = Rect.fromLTWH(size.x * .12, size.y * .105, size.x * .76, size.y * .080);
     _drawText(canvas, '스테이지 클리어!', titleRect.shift(const Offset(2, 3)), 32,
         const Color(0xFF0E3B73), FontWeight.w900);
     _drawText(canvas, '스테이지 클리어!', titleRect, 32, const Color(0xFF1B5596), FontWeight.w900);
 
-    final milestoneRect = Rect.fromLTWH(size.x * .09, size.y * .182, size.x * .82, size.y * .044);
+    final milestoneRect = Rect.fromLTWH(size.x * .09, size.y * .195, size.x * .82, size.y * .044);
     final milestone = RRect.fromRectAndRadius(milestoneRect, const Radius.circular(22));
     canvas.drawRRect(milestone.shift(const Offset(0, 3)), Paint()..color = const Color(0x330B3768));
     canvas.drawRRect(milestone, Paint()..color = const Color(0xF8FFF7E5));
@@ -186,8 +185,7 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
   }
 
   void _drawFail(Canvas canvas) {
-    _pixelArt.renderBackground(canvas, size, showCastle: true, showTrees: true, rich: true);
-    _pixelArt.renderMonster(canvas, size);
+    _pixelArt.renderFailWorld(canvas, size);
     GameHelpOverlay.drawSettingsButton(canvas, size.x, size.y);
     _drawText(canvas, '아쉬워요!', Rect.fromLTWH(size.x * .18, size.y * .11, size.x * .64, size.y * .08),
         30, const Color(0xFF174B87), FontWeight.w900);

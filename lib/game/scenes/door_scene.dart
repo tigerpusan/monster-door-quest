@@ -87,14 +87,14 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     super.onGameResize(size);
     this.size = size;
     leftDoor
-      ..size = Vector2(size.x * .335, size.y * .405)
-      ..position = Vector2(size.x * .105, size.y * .385);
+      ..size = Vector2(size.x * .35, size.y * .36)
+      ..position = Vector2(size.x * .075, size.y * .405);
     rightDoor
-      ..size = Vector2(size.x * .335, size.y * .405)
-      ..position = Vector2(size.x * .56, size.y * .385);
+      ..size = Vector2(size.x * .35, size.y * .36)
+      ..position = Vector2(size.x * .575, size.y * .405);
     progress
-      ..size = Vector2(size.x * .60, 32)
-      ..position = Vector2(size.x * .20, size.y * .302);
+      ..size = Vector2(size.x * .56, 28)
+      ..position = Vector2(size.x * .22, size.y * .276);
     final settingsRect = GameHelpOverlay.settingsButtonRect(size.x, size.y);
     _settings
       ..size = Vector2(settingsRect.width, settingsRect.height)
@@ -220,8 +220,10 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     final shake = feedback.shakeActive ? sin(elapsed * 170) * 4 : 0.0;
     canvas.save();
     canvas.translate(shake, 0);
-    _pixelArt.renderBackground(canvas, size);
-    _pixelArt.renderHero(canvas, size, x: .39, y: .70, scale: .22);
+    _pixelArt.renderBackground(canvas, size, showPath: true, rich: true);
+    _pixelArt.renderCastle(canvas, size, x: .38, y: .34, width: .24, height: .18);
+    _pixelArt.renderTrees(canvas, size, top: .57, leftScale: .20, rightScale: .20);
+    _pixelArt.renderHero(canvas, size, x: .36, y: .71, scale: .28);
 
     canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y * .366), Paint()..color = const Color(0xEFFFF8E8));
     final topCard = RRect.fromRectAndRadius(

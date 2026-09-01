@@ -1,37 +1,16 @@
-문대작전 Pixel V2 전체 리빌드 패치 적용 방법
+문대작전 Pixel Visual Rebuild V3 적용
 
-[권장 적용]
-1. ZIP 압축을 풉니다.
-2. GitHub 저장소 루트(Code 첫 화면)에서 Add file -> Upload files 로 이동합니다.
-3. 아래 폴더를 그대로 드래그하여 덮어씁니다.
-   - assets
-   - lib
-4. Commit directly to main 선택 후 커밋합니다.
-   권장 커밋명: DoorMission Pixel V2 full visual rebuild
+1) ZIP 압축 해제
+2) GitHub 프로젝트 루트에서 lib 폴더를 통째로 드래그하여 덮어쓰기
+3) assets 폴더는 이번 V3에서 기존 깨끗한 개별 픽셀 자산을 그대로 사용하므로 선택 적용
+4) Commit message: DoorMission Pixel Visual Rebuild V3
+5) Actions에서 빌드 확인
 
-[중요: 앱 이름 / APK 이름 / 아이콘 빌드 규칙]
-.github 폴더는 Windows 드래그에서 숨김 처리될 수 있습니다.
-따라서 GitHub에서 .github/workflows 위치로 직접 들어가
-UPLOAD_WORKFLOW_SEPARATELY/build-android.yml 파일을 업로드하여
-기존 build-android.yml을 반드시 교체하세요.
-
-[이 패치의 주요 파일]
-lib/game/core/game_rules.dart
-lib/game/scenes/intro_scene.dart
-lib/game/scenes/memory_scene.dart
-lib/game/scenes/door_scene.dart
-lib/game/scenes/result_scene.dart
-lib/game/ui/pixel_art_kit.dart
-lib/game/ui/game_help_overlay.dart
-assets/images/ui/pixel_*.png
-assets/app_icon/*/ic_launcher.png
-.github/workflows/build-android.yml
-
-[설치 이름]
-문대작전
-
-[APK]
-DoorMission-Pixel-V2.apk
-
-[주의]
-패키지 ID는 변경하지 않습니다. 기존 설치본 위에 업데이트 설치가 가능하도록 하는 목적입니다.
+핵심 변경
+- 작은 흰 배경 조각을 만들던 bush/fence/flower 자산 렌더링 완전 제거
+- 시작/도전/성공/실패 배경을 깨끗한 하늘+언덕+길+개별 투명 스프라이트 조합으로 재구성
+- 실패 화면 몬스터와 성의 겹침 축소
+- 기억의 문 화면 진행점 패널 내부로 이동
+- 문의 세로 비율 완화, 용사 확대
+- 설정 화면은 배경 오브젝트를 제거하고 카드형 UI만 남김
+- 설정 카드 줄간격 및 단계 안내 재정렬
