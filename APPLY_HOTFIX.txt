@@ -1,0 +1,12 @@
+MonsterDoor Pixel Build Compatibility Hotfix
+
+Purpose:
+- Restores legacy background source filenames required by the current GitHub Actions verification step.
+- Does not change the pixel gameplay code or new pixel assets.
+
+Upload from repository root:
+- assets/images/ui/gameplay_final_clean_v2.png
+- assets/images/ui/stage_clear_final_clean_v2.png
+
+Recommended commit message:
+MonsterDoor pixel build compatibility hotfix
