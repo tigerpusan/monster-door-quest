@@ -1,4 +1,4 @@
-name: Build & Release Door Mission Pixel V2
+name: Build & Release Door Mission Pixel V3
 
 on:
   workflow_dispatch:
@@ -99,25 +99,25 @@ jobs:
         run: flutter build apk --release
 
       - name: Prepare named APK
-        run: cp build/app/outputs/flutter-apk/app-release.apk DoorMission-Pixel-V2.apk
+        run: cp build/app/outputs/flutter-apk/app-release.apk DoorMission-Pixel-V3.apk
 
       - name: Upload APK backup
         uses: actions/upload-artifact@v4
         with:
-          name: DoorMission-Pixel-V2-apk
-          path: DoorMission-Pixel-V2.apk
+          name: DoorMission-Pixel-V3-apk
+          path: DoorMission-Pixel-V3.apk
           if-no-files-found: error
 
       - name: Replace previous pixel rebuild release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release delete door-mission-pixel-v2 --yes --cleanup-tag || true
+        run: gh release delete door-mission-pixel-v3 --yes --cleanup-tag || true
 
       - name: Create direct APK Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create door-mission-pixel-v2 DoorMission-Pixel-V2.apk \
-            --title "문대작전 Pixel V2" \
-            --notes "문대작전 V2: bright casual pixel UI, seven-tier realm map, rebuilt settings and launcher icon." \
+          gh release create door-mission-pixel-v3 DoorMission-Pixel-V3.apk \
+            --title "문대작전 Pixel V3" \
+            --notes "문대작전 Pixel Visual Rebuild V3: cleaned layered pixel UI, rebuilt scene composition and settings layout." \
             --prerelease
