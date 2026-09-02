@@ -73,8 +73,51 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     }
   }
 
-  void _toggleSettings() { _settingsOpen = !_settingsOpen; _syncSettingsZones(); }
-  void _closeSettings() { _settingsOpen = false; _syncSettingsZones(); }
+  void _layoutWorld() {
+    if (size.x <= 0 || size.y <= 0) return;
+
+    // Keep the playable world entirely below the HUD.
+    // The castle gets a dedicated band and is never clipped by the top card.
+    leftDoor
+      ..size = Vector2(size.x * .36, size.y * .33)
+      ..position = Vector2(size.x * .055, size.y * .485);
+    rightDoor
+      ..size = Vector2(size.x * .36, size.y * .33)
+      ..position = Vector2(size.x * .585, size.y * .485);
+    progress
+      ..size = Vector2(size.x * .58, 24)
+      ..position = Vector2(size.x * .21, size.y * .286);
+  }
+
+  void _hideWorldForSettings() {
+    // Settings must be a true full-screen layer. Removing the visual footprint
+    // of gameplay children prevents doors/progress dots from rendering above it.
+    leftDoor
+      ..size = Vector2.zero()
+      ..position = Vector2.zero();
+    rightDoor
+      ..size = Vector2.zero()
+      ..position = Vector2.zero();
+    progress
+      ..size = Vector2.zero()
+      ..position = Vector2.zero();
+  }
+
+  void _toggleSettings() {
+    _settingsOpen = !_settingsOpen;
+    if (_settingsOpen) {
+      _hideWorldForSettings();
+    } else {
+      _layoutWorld();
+    }
+    _syncSettingsZones();
+  }
+
+  void _closeSettings() {
+    _settingsOpen = false;
+    _layoutWorld();
+    _syncSettingsZones();
+  }
 
   void _toggleBgm() {
     if (!_settingsOpen) return;
@@ -98,18 +141,11 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
   void onGameResize(Vector2 size) {
     super.onGameResize(size);
     this.size = size;
-
-    // V5: move the interactive world lower and give the castle its own visible band.
-    leftDoor
-      ..size = Vector2(size.x * .35, size.y * .34)
-      ..position = Vector2(size.x * .075, size.y * .455);
-    rightDoor
-      ..size = Vector2(size.x * .35, size.y * .34)
-      ..position = Vector2(size.x * .575, size.y * .455);
-    progress
-      ..size = Vector2(size.x * .56, 24)
-      ..position = Vector2(size.x * .22, size.y * .302);
-
+    if (_settingsOpen) {
+      _hideWorldForSettings();
+    } else {
+      _layoutWorld();
+    }
     _placeZone(_settings, GameHelpOverlay.settingsButtonRect(size.x, size.y), priority: 2000);
     _syncSettingsZones();
   }
@@ -191,14 +227,14 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     canvas.translate(shake, 0);
 
     _pixelArt.renderBackground(canvas, size, showPath: true, rich: false);
-    // Larger, fully visible castle below the top panel.
-    _pixelArt.renderCastle(canvas, size, x: .335, y: .355, width: .33, height: .245);
-    _pixelArt.renderTrees(canvas, size, top: .58, leftScale: .20, rightScale: .20);
-    _pixelArt.renderHero(canvas, size, x: .355, y: .755, scale: .30);
+    // V5.1: give the castle, doors and hero separate vertical bands.
+    _pixelArt.renderCastle(canvas, size, x: .285, y: .355, width: .43, height: .255);
+    _pixelArt.renderTrees(canvas, size, top: .60, leftScale: .19, rightScale: .19);
+    _pixelArt.renderHero(canvas, size, x: .345, y: .785, scale: .32);
 
-    // Compact top panel; progress dots live inside it and no longer overlap the timer.
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y * .345), Paint()..color = const Color(0xF4FFF8E8));
-    final cardRect = Rect.fromLTWH(size.x * .07, size.y * .082, size.x * .84, size.y * .248);
+    // Compact HUD. Timer and progress dots are separate rows.
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y * .350), Paint()..color = const Color(0xF4FFF8E8));
+    final cardRect = Rect.fromLTWH(size.x * .07, size.y * .082, size.x * .84, size.y * .252);
     final card = RRect.fromRectAndRadius(cardRect, const Radius.circular(25));
     canvas.drawRRect(card, Paint()..color = const Color(0xFFF9FFF2));
     canvas.drawRRect(card, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.2..color = const Color(0xFF4F86BF));
@@ -212,7 +248,7 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     _center(
       canvas,
       '${remain.toStringAsFixed(1)}초',
-      size.y * .226,
+      size.y * .218,
       28,
       remain < 2.5 ? const Color(0xFFE65353) : const Color(0xFFB66A00),
       FontWeight.w900,

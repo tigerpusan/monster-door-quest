@@ -99,52 +99,113 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     }
   }
 
-  void _drawLiveMemory(Canvas canvas) {
-    // Blank the baked sample contents but preserve the generated frame/background.
-    final liveArea = Rect.fromLTWH(size.x * .145, size.y * .255, size.x * .71, size.y * .565);
-    V5ImageUI.roundedCover(canvas, liveArea, const Color(0xFFFFF7E7), radius: 10);
+  void _drawDirectionPill(
+    Canvas canvas,
+    Rect r, {
+    required bool isLeft,
+    required double fontSize,
+  }) {
+    final rr = RRect.fromRectAndRadius(r, Radius.circular(r.height / 2));
+    canvas.drawRRect(
+      rr.shift(const Offset(0, 3)),
+      Paint()..color = const Color(0x33214D78),
+    );
+    canvas.drawRRect(
+      rr,
+      Paint()..color = isLeft ? const Color(0xFF176ED8) : const Color(0xFFFF3E74),
+    );
+    canvas.drawRRect(
+      rr,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.2
+        ..color = const Color(0xFFFFB531),
+    );
+    V5ImageUI.text(
+      canvas,
+      isLeft ? '← 왼쪽' : '오른쪽 →',
+      r,
+      fontSize,
+      const Color(0xFFFFFFFF),
+      FontWeight.w900,
+    );
+  }
 
+  void _drawLiveMemory(Canvas canvas) {
+    // V5.1: one fixed content window. It completely masks the sample
+    // STAGE / directions / timer baked into the concept image.
+    final liveArea = Rect.fromLTWH(
+      size.x * .135,
+      size.y * .245,
+      size.x * .73,
+      size.y * .600,
+    );
+    V5ImageUI.roundedCover(
+      canvas,
+      liveArea,
+      const Color(0xFFFFF7E7),
+      radius: 12,
+    );
+
+    // Dynamic STAGE line.
     V5ImageUI.text(
       canvas,
       'STAGE ${session.stage} · ${session.route.length} DOORS',
-      Rect.fromLTWH(size.x * .20, size.y * .260, size.x * .60, size.y * .040),
-      16,
+      Rect.fromLTWH(size.x * .18, size.y * .255, size.x * .64, size.y * .045),
+      16.5,
       const Color(0xFF173F70),
       FontWeight.w900,
     );
 
     final count = session.route.length;
-    final listTop = size.y * .320;
-    final listBottom = size.y * .720;
-    final totalH = listBottom - listTop;
-    final gap = count >= 12 ? 4.0 : count >= 9 ? 6.0 : 9.0;
-    final rowH = ((totalH - gap * (count - 1)) / count).clamp(25.0, 73.0);
+    final listTop = size.y * .318;
+    final listBottom = size.y * .710;
+    final availableH = listBottom - listTop;
+
+    // 3~5: large single-column cards.
+    // 6~14: compact two-column cards, read left-to-right then top-to-bottom.
+    final columns = count <= 5 ? 1 : 2;
+    final rows = (count / columns).ceil();
+    final gapY = count >= 12 ? 5.0 : 8.0;
+    final gapX = size.x * .025;
+    final totalGapY = gapY * (rows - 1);
+    final rowH = ((availableH - totalGapY) / rows).clamp(28.0, 72.0);
+    final totalW = size.x * .66;
+    final cellW = columns == 1 ? totalW : (totalW - gapX) / 2;
+    final left = size.x * .17;
+
     for (var i = 0; i < count; i++) {
       final isLeft = session.route[i].name == 'left';
-      final y = listTop + i * (rowH + gap);
-      final r = Rect.fromLTWH(size.x * .175, y, size.x * .65, rowH);
-      final rr = RRect.fromRectAndRadius(r, Radius.circular(rowH / 2));
-      canvas.drawRRect(rr.shift(const Offset(0, 3)), Paint()..color = const Color(0x33214D78));
-      canvas.drawRRect(rr, Paint()..color = isLeft ? const Color(0xFF176ED8) : const Color(0xFFFF3E74));
-      canvas.drawRRect(rr, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.3..color = const Color(0xFFFFB531));
-      final fs = (rowH * .48).clamp(14.0, 27.0);
-      V5ImageUI.text(
-        canvas,
-        isLeft ? '←  왼쪽' : '오른쪽  →',
-        r,
-        fs,
-        const Color(0xFFFFFFFF),
-        FontWeight.w900,
-      );
+      final row = i ~/ columns;
+      final col = i % columns;
+      final x = left + col * (cellW + gapX);
+      final y = listTop + row * (rowH + gapY);
+      final r = Rect.fromLTWH(x, y, cellW, rowH);
+      final fs = columns == 1
+          ? (rowH * .46).clamp(15.0, 27.0)
+          : (rowH * .39).clamp(12.5, 21.0);
+      _drawDirectionPill(canvas, r, isLeft: isLeft, fontSize: fs);
     }
 
-    final remain = memorySeconds == null ? 0.0 : (memorySeconds! - elapsed).clamp(0.0, memorySeconds!);
-    final timer = memorySeconds == null ? '기억 시간  준비' : '기억 시간  ${remain.toStringAsFixed(1)}초';
+    // Timer has its own fixed row, so it never competes with route length.
+    final remain = memorySeconds == null
+        ? 0.0
+        : (memorySeconds! - elapsed).clamp(0.0, memorySeconds!);
+    final timer = memorySeconds == null
+        ? '기억 시간  준비'
+        : '기억 시간  ${remain.toStringAsFixed(1)}초';
+
+    final timerRect = Rect.fromLTWH(
+      size.x * .20,
+      size.y * .750,
+      size.x * .60,
+      size.y * .060,
+    );
     V5ImageUI.text(
       canvas,
       timer,
-      Rect.fromLTWH(size.x * .22, size.y * .755, size.x * .56, size.y * .050),
-      20,
+      timerRect,
+      20.5,
       const Color(0xFF9C5700),
       FontWeight.w900,
     );
