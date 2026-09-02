@@ -7,6 +7,7 @@ import '../core/game_state.dart';
 import '../monster_door_game.dart';
 import '../ui/game_help_overlay.dart';
 import '../ui/v5_image_ui.dart';
+import '../ui/responsive_game_layout.dart';
 
 class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGame> {
   MemoryScene(this.session, this.memorySeconds);
@@ -58,7 +59,8 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
   void onGameResize(Vector2 size) {
     super.onGameResize(size);
     this.size = size;
-    _placeZone(_ready, Rect.fromLTWH(size.x * .14, size.y * .855, size.x * .72, size.y * .105), priority: 1000);
+    final ui = ResponsiveGameLayout(size.x, size.y);
+    _placeZone(_ready, ui.rect(.12, .855, .76, .105), priority: 1000);
     _placeZone(_settings, GameHelpOverlay.settingsButtonRect(size.x, size.y), priority: 2000);
     _syncSettingsZones();
   }
@@ -132,62 +134,65 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
   }
 
   void _drawLiveMemory(Canvas canvas) {
-    // V5.1: one fixed content window. It completely masks the sample
-    // STAGE / directions / timer baked into the concept image.
-    final liveArea = Rect.fromLTWH(
-      size.x * .135,
-      size.y * .245,
-      size.x * .73,
-      size.y * .600,
-    );
+    final ui = ResponsiveGameLayout(size.x, size.y);
+
+    // V5.2: mask the entire baked/sample content area, including the sample
+    // title. Everything inside this panel is now drawn once at runtime.
+    final panel = ui.rect(.075, .205, .85, .635);
     V5ImageUI.roundedCover(
       canvas,
-      liveArea,
+      panel,
       const Color(0xFFFFF7E7),
-      radius: 12,
+      border: const Color(0xFF2D6FB4),
+      radius: 24,
+      stroke: 2.0,
     );
 
-    // Dynamic STAGE line.
+    V5ImageUI.text(
+      canvas,
+      '문 순서를 기억하세요',
+      ui.rect(.13, .225, .74, .055),
+      27.0,
+      const Color(0xFF173F70),
+      FontWeight.w900,
+    );
+
     V5ImageUI.text(
       canvas,
       'STAGE ${session.stage} · ${session.route.length} DOORS',
-      Rect.fromLTWH(size.x * .18, size.y * .255, size.x * .64, size.y * .045),
-      16.5,
+      ui.rect(.18, .285, .64, .040),
+      16.2,
       const Color(0xFF173F70),
       FontWeight.w900,
     );
 
     final count = session.route.length;
-    final listTop = size.y * .318;
-    final listBottom = size.y * .710;
+    final listTop = ui.y(.338);
+    final listBottom = ui.y(.716);
     final availableH = listBottom - listTop;
 
-    // 3~5: large single-column cards.
-    // 6~14: compact two-column cards, read left-to-right then top-to-bottom.
-    final columns = count <= 5 ? 1 : 2;
-    final rows = (count / columns).ceil();
-    final gapY = count >= 12 ? 5.0 : 8.0;
-    final gapX = size.x * .025;
-    final totalGapY = gapY * (rows - 1);
-    final rowH = ((availableH - totalGapY) / rows).clamp(28.0, 72.0);
-    final totalW = size.x * .66;
-    final cellW = columns == 1 ? totalW : (totalW - gapX) / 2;
-    final left = size.x * .17;
+    // Always one vertical column. The order is unambiguous from top to bottom.
+    // The row height is calculated from the number of steps, so 3~14 steps
+    // remain inside one fixed route window on phones and foldables.
+    final gap = count <= 6 ? 8.0 : (count <= 10 ? 5.0 : 3.0);
+    final totalGap = gap * (count - 1);
+    final rawH = (availableH - totalGap) / count;
+    final rowH = rawH.clamp(22.0, 72.0).toDouble();
+    final usedH = rowH * count + totalGap;
+    final firstY = listTop + (availableH - usedH) / 2;
+    final rowLeft = ui.x(.155);
+    final rowWidth = ui.w(.69);
 
     for (var i = 0; i < count; i++) {
       final isLeft = session.route[i].name == 'left';
-      final row = i ~/ columns;
-      final col = i % columns;
-      final x = left + col * (cellW + gapX);
-      final y = listTop + row * (rowH + gapY);
-      final r = Rect.fromLTWH(x, y, cellW, rowH);
-      final fs = columns == 1
-          ? (rowH * .46).clamp(15.0, 27.0)
-          : (rowH * .39).clamp(12.5, 21.0);
+      final y = firstY + i * (rowH + gap);
+      final r = Rect.fromLTWH(rowLeft, y, rowWidth, rowH);
+      final fs = (rowH * .46).clamp(11.5, 25.0).toDouble();
       _drawDirectionPill(canvas, r, isLeft: isLeft, fontSize: fs);
     }
 
-    // Timer has its own fixed row, so it never competes with route length.
+    // The timer gets a dedicated fixed band. It never shares vertical space
+    // with the route list, regardless of route length.
     final remain = memorySeconds == null
         ? 0.0
         : (memorySeconds! - elapsed).clamp(0.0, memorySeconds!);
@@ -195,16 +200,10 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
         ? '기억 시간  준비'
         : '기억 시간  ${remain.toStringAsFixed(1)}초';
 
-    final timerRect = Rect.fromLTWH(
-      size.x * .20,
-      size.y * .750,
-      size.x * .60,
-      size.y * .060,
-    );
     V5ImageUI.text(
       canvas,
       timer,
-      timerRect,
+      ui.rect(.19, .748, .62, .060),
       20.5,
       const Color(0xFF9C5700),
       FontWeight.w900,

@@ -15,6 +15,7 @@ import '../monster_door_game.dart';
 import '../ui/game_help_overlay.dart';
 import '../ui/pixel_art_kit.dart';
 import '../ui/v5_image_ui.dart';
+import '../ui/responsive_game_layout.dart';
 
 class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame> {
   DoorScene(this.session);
@@ -75,18 +76,19 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
 
   void _layoutWorld() {
     if (size.x <= 0 || size.y <= 0) return;
+    final ui = ResponsiveGameLayout(size.x, size.y);
 
-    // Keep the playable world entirely below the HUD.
-    // The castle gets a dedicated band and is never clipped by the top card.
+    // World layout is bound to the centered portrait board. Wide foldables get
+    // side gutters instead of horizontally stretched doors/characters.
     leftDoor
-      ..size = Vector2(size.x * .36, size.y * .33)
-      ..position = Vector2(size.x * .055, size.y * .485);
+      ..size = Vector2(ui.w(.35), ui.h(.305))
+      ..position = Vector2(ui.x(.065), ui.y(.515));
     rightDoor
-      ..size = Vector2(size.x * .36, size.y * .33)
-      ..position = Vector2(size.x * .585, size.y * .485);
+      ..size = Vector2(ui.w(.35), ui.h(.305))
+      ..position = Vector2(ui.x(.585), ui.y(.515));
     progress
-      ..size = Vector2(size.x * .58, 24)
-      ..position = Vector2(size.x * .21, size.y * .286);
+      ..size = Vector2(ui.w(.58), 24)
+      ..position = Vector2(ui.x(.21), ui.y(.292));
   }
 
   void _hideWorldForSettings() {
@@ -225,16 +227,17 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     final shake = feedback.shakeActive ? sin(elapsed * 170) * 4 : 0.0;
     canvas.save();
     canvas.translate(shake, 0);
+    final ui = ResponsiveGameLayout(size.x, size.y);
 
     _pixelArt.renderBackground(canvas, size, showPath: true, rich: false);
     // V5.1: give the castle, doors and hero separate vertical bands.
-    _pixelArt.renderCastle(canvas, size, x: .285, y: .355, width: .43, height: .255);
-    _pixelArt.renderTrees(canvas, size, top: .60, leftScale: .19, rightScale: .19);
-    _pixelArt.renderHero(canvas, size, x: .345, y: .785, scale: .32);
+    _pixelArt.renderCastle(canvas, size, x: .255, y: .365, width: .49, height: .285);
+    _pixelArt.renderTrees(canvas, size, top: .61, leftScale: .18, rightScale: .18);
+    _pixelArt.renderHero(canvas, size, x: .34, y: .805, scale: .33);
 
     // Compact HUD. Timer and progress dots are separate rows.
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y * .350), Paint()..color = const Color(0xF4FFF8E8));
-    final cardRect = Rect.fromLTWH(size.x * .07, size.y * .082, size.x * .84, size.y * .252);
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y * .355), Paint()..color = const Color(0xF4FFF8E8));
+    final cardRect = ui.rect(.07, .095, .86, .245);
     final card = RRect.fromRectAndRadius(cardRect, const Radius.circular(25));
     canvas.drawRRect(card, Paint()..color = const Color(0xFFF9FFF2));
     canvas.drawRRect(card, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.2..color = const Color(0xFF4F86BF));

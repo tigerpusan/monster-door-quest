@@ -2,18 +2,33 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart' show FontWeight, TextAlign;
 import 'v5_image_ui.dart';
+import 'responsive_game_layout.dart';
 
 class GameHelpOverlay {
-  static Rect settingsButtonRect(double w, double h) =>
-      Rect.fromLTWH(w * .835, h * .020, w * .125, h * .070);
-  static Rect closeRect(double w, double h) =>
-      Rect.fromLTWH(w * .80, h * .055, w * .12, h * .070);
-  static Rect musicRect(double w, double h) =>
-      Rect.fromLTWH(w * .10, h * .205, w * .80, h * .075);
-  static Rect resetRect(double w, double h) =>
-      Rect.fromLTWH(w * .095, h * .845, w * .39, h * .085);
-  static Rect continueRect(double w, double h) =>
-      Rect.fromLTWH(w * .515, h * .845, w * .39, h * .085);
+  static Rect settingsButtonRect(double w, double h) {
+    final ui = ResponsiveGameLayout(w, h);
+    return ui.rect(.845, .018, .115, .068);
+  }
+
+  static Rect closeRect(double w, double h) {
+    final ui = ResponsiveGameLayout(w, h);
+    return ui.rect(.80, .055, .12, .070);
+  }
+
+  static Rect musicRect(double w, double h) {
+    final ui = ResponsiveGameLayout(w, h);
+    return ui.rect(.105, .270, .79, .068);
+  }
+
+  static Rect resetRect(double w, double h) {
+    final ui = ResponsiveGameLayout(w, h);
+    return ui.rect(.095, .845, .39, .085);
+  }
+
+  static Rect continueRect(double w, double h) {
+    final ui = ResponsiveGameLayout(w, h);
+    return ui.rect(.515, .845, .39, .085);
+  }
 
   static void drawSettingsButton(Canvas canvas, double w, double h) {
     final r = settingsButtonRect(w, h);
@@ -90,10 +105,31 @@ class GameHelpOverlay {
     required V5ImageUI v5,
   }) {
     final size = Vector2(w, h);
+    final ui = ResponsiveGameLayout(w, h);
     v5.drawFull(canvas, size, v5.settings);
 
-    // Record row: fully replace sample text.
-    final record = Rect.fromLTWH(w * .115, h * .142, w * .77, h * .070);
+    // V5.2: cover the complete dynamic body of the generated concept image.
+    // This removes all baked sample text/controls before runtime UI is drawn.
+    final body = ui.rect(.055, .118, .89, .710);
+    V5ImageUI.roundedCover(
+      canvas,
+      body,
+      const Color(0xFFFFFAEC),
+      border: const Color(0xFF2D6FB4),
+      radius: 26,
+      stroke: 2.0,
+    );
+
+    V5ImageUI.text(
+      canvas,
+      '⚙  게임 설정',
+      ui.rect(.20, .125, .60, .060),
+      26,
+      const Color(0xFF173F70),
+      FontWeight.w900,
+    );
+
+    final record = ui.rect(.105, .190, .79, .068);
     V5ImageUI.roundedCover(
       canvas,
       record,
@@ -111,93 +147,73 @@ class GameHelpOverlay {
       FontWeight.w900,
     );
 
-    // BGM row: replace the switch only; row art remains visible.
-    final sw = Rect.fromLTWH(w * .695, h * .225, w * .145, h * .047);
-    final rr = RRect.fromRectAndRadius(sw, Radius.circular(sw.height / 2));
-    canvas.drawRRect(
-      rr,
-      Paint()..color = bgmEnabled ? const Color(0xFF75E736) : const Color(0xFF9BA7B5),
-    );
-    canvas.drawRRect(
-      rr,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.6
-        ..color = const Color(0xFF315B84),
-    );
-    final knobRadius = sw.height * .38;
-    final knobX =
-        bgmEnabled ? sw.right - sw.height * .50 : sw.left + sw.height * .50;
-    canvas.drawCircle(
-      Offset(knobX, sw.center.dy),
-      knobRadius,
-      Paint()..color = const Color(0xFF154A7F),
-    );
-
-    // The generated settings image contained pre-rendered text that could
-    // collide on different aspect ratios. Replace those interiors with
-    // deterministic runtime panels while keeping the surrounding pixel art.
-    final how = Rect.fromLTWH(w * .10, h * .305, w * .80, h * .155);
-    _panel(
+    final musicRow = ui.rect(.105, .270, .79, .068);
+    V5ImageUI.roundedCover(
       canvas,
-      how,
-      fill: const Color(0xFFF1F8FF),
-      border: const Color(0xFF4F8CC9),
-      tabColor: const Color(0xFF347CCB),
-      title: '게임 방법',
-      icon: '🎮',
+      musicRow,
+      const Color(0xFFF7FCFF),
+      border: const Color(0xFF2D6FB4),
+      radius: 18,
+      stroke: 1.7,
     );
+    V5ImageUI.text(
+      canvas,
+      '♪  배경음악',
+      ui.rect(.145, .277, .37, .050),
+      17,
+      const Color(0xFF173F70),
+      FontWeight.w900,
+      align: TextAlign.left,
+    );
+    final sw = ui.rect(.695, .281, .145, .043);
+    final rr = RRect.fromRectAndRadius(sw, Radius.circular(sw.height / 2));
+    canvas.drawRRect(rr, Paint()..color = bgmEnabled ? const Color(0xFF75E736) : const Color(0xFF9BA7B5));
+    canvas.drawRRect(rr, Paint()..style = PaintingStyle.stroke..strokeWidth = 1.6..color = const Color(0xFF315B84));
+    final knobRadius = sw.height * .38;
+    final knobX = bgmEnabled ? sw.right - sw.height * .50 : sw.left + sw.height * .50;
+    canvas.drawCircle(Offset(knobX, sw.center.dy), knobRadius, Paint()..color = const Color(0xFF154A7F));
+
+    final how = ui.rect(.10, .355, .80, .150);
+    _panel(canvas, how, fill: const Color(0xFFF1F8FF), border: const Color(0xFF4F8CC9), tabColor: const Color(0xFF347CCB), title: '게임 방법', icon: '🎮');
     V5ImageUI.text(
       canvas,
       '1  문 순서를 기억합니다\n2  같은 순서로 선택합니다\n3  성공하면 다음 스테이지로 이동합니다',
-      Rect.fromLTWH(w * .145, h * .350, w * .70, h * .095),
-      12.8,
+      ui.rect(.145, .399, .70, .092),
+      12.3,
       const Color(0xFF173F70),
       FontWeight.w800,
       align: TextAlign.left,
-      height: 1.45,
+      height: 1.34,
     );
 
-    final stage = Rect.fromLTWH(w * .10, h * .475, w * .80, h * .190);
-    _panel(
-      canvas,
-      stage,
-      fill: const Color(0xFFFFFCE8),
-      border: const Color(0xFF6AAF4B),
-      tabColor: const Color(0xFF4CA83A),
-      title: '단계 안내',
-      icon: '🗺️',
-    );
+    final stage = ui.rect(.10, .520, .80, .180);
+    _panel(canvas, stage, fill: const Color(0xFFFFFCE8), border: const Color(0xFF6AAF4B), tabColor: const Color(0xFF4CA83A), title: '단계 안내', icon: '🗺️');
     V5ImageUI.text(
       canvas,
       '①  인간의 영역  I · II · III\n②  초인의 영역  I · II · III\n③  신의 영역',
-      Rect.fromLTWH(w * .145, h * .535, w * .68, h * .105),
-      13.4,
+      ui.rect(.145, .575, .68, .100),
+      13.0,
       const Color(0xFF285B3B),
       FontWeight.w900,
       align: TextAlign.left,
-      height: 1.55,
+      height: 1.46,
     );
 
-    final fail = Rect.fromLTWH(w * .10, h * .685, w * .80, h * .125);
-    _panel(
-      canvas,
-      fail,
-      fill: const Color(0xFFFFF2EF),
-      border: const Color(0xFFD5685B),
-      tabColor: const Color(0xFFE35B49),
-      title: '실패 규칙',
-      icon: '💥',
-    );
+    final fail = ui.rect(.10, .715, .80, .110);
+    _panel(canvas, fail, fill: const Color(0xFFFFF2EF), border: const Color(0xFFD5685B), tabColor: const Color(0xFFE35B49), title: '실패 규칙', icon: '💥');
     V5ImageUI.text(
       canvas,
-      '실패하면 두 단계 전으로 돌아가\n다시 도전합니다.',
-      Rect.fromLTWH(w * .145, h * .730, w * .58, h * .065),
-      13.2,
+      '실패하면 두 단계 전으로 돌아가 다시 도전합니다.',
+      ui.rect(.145, .755, .68, .052),
+      12.6,
       const Color(0xFF6E2E28),
       FontWeight.w900,
       align: TextAlign.left,
-      height: 1.35,
+      height: 1.30,
     );
+
+    // Bottom buttons are still provided by the concept image; only their hit
+    // zones are active. The body cover stops above them.
   }
+
 }
