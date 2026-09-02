@@ -102,19 +102,31 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
   void _drawLiveClearData(Canvas canvas) {
     final ui = ResponsiveGameLayout(size.x, size.y);
+
+    // One clean live-result card hides the sample text and the small overlapping box edge.
+    final card = ui.rect(.095, .721, .81, .137);
+    V5ImageUI.roundedCover(
+      canvas,
+      card,
+      const Color(0xFFFFF8EA),
+      border: const Color(0xFFE5B86C),
+      radius: 20,
+      stroke: 1.5,
+    );
+
     V5ImageUI.text(
       canvas,
       '완료 시간  ${elapsedSeconds.toStringAsFixed(1)}초',
-      ui.rect(.15, .748, .70, .055),
-      28,
+      ui.rect(.15, .744, .70, .052),
+      27.0,
       const Color(0xFFA45D00),
       FontWeight.w900,
     );
     V5ImageUI.text(
       canvas,
       '${stageRealmLabel(stage)}  ·  STAGE $stage 완료',
-      ui.rect(.16, .810, .68, .040),
-      16.3,
+      ui.rect(.16, .801, .68, .038),
+      16.0,
       const Color(0xFF174B87),
       FontWeight.w900,
     );

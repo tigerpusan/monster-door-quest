@@ -1,0 +1,15 @@
+문대작전 Pixel V5.3.2 VISUAL CLEANUP PATCH
+
+적용 방법
+1) 압축을 풉니다.
+2) 패치 폴더의 lib 폴더를 GitHub 저장소 최상위에 그대로 드래그합니다.
+3) 동일 경로 파일 덮어쓰기를 허용합니다.
+4) Commit directly to main branch로 커밋합니다.
+5) 커밋 메시지 예시: DoorMission Pixel V5.3.2 visual cleanup
+6) Actions 자동 실행이 안 되면 Run workflow를 1회 실행합니다.
+
+교체 파일
+- lib/game/scenes/intro_scene.dart
+- lib/game/scenes/memory_scene.dart
+- lib/game/scenes/result_scene.dart
+- lib/game/ui/game_help_overlay.dart

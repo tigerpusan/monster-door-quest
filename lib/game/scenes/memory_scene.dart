@@ -127,24 +127,30 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
   void _drawLiveMemory(Canvas canvas) {
     final ui = ResponsiveGameLayout(size.x, size.y);
+    const panelIvory = Color(0xFFFFF8EA);
 
-    // Only changing values are drawn at runtime. The template already owns the visual frame.
+    // V5.3.2: erase baked sample labels/rows/timer using the panel background color.
+    V5ImageUI.roundedCover(canvas, ui.rect(.145, .274, .71, .062), panelIvory, radius: 16);
+    V5ImageUI.roundedCover(canvas, ui.rect(.105, .335, .79, .445), panelIvory, radius: 20);
+    // Shorter timer cover keeps the decorative dotted line below fully visible.
+    V5ImageUI.roundedCover(canvas, ui.rect(.205, .790, .59, .043), panelIvory, radius: 13);
+
     V5ImageUI.text(
       canvas,
       'STAGE ${session.stage} · ${session.route.length} DOORS',
-      ui.rect(.17, .287, .66, .050),
+      ui.rect(.17, .283, .66, .050),
       17.0,
       const Color(0xFF173F70),
       FontWeight.w900,
     );
 
     final count = session.route.length;
-    final listTop = ui.y(.345);
-    final listBottom = ui.y(.780);
+    final listTop = ui.y(.348);
+    final listBottom = ui.y(.770);
     final availableH = listBottom - listTop;
-    final gap = count <= 5 ? 10.0 : count <= 8 ? 7.0 : count <= 11 ? 4.0 : 2.5;
+    final gap = count <= 5 ? 10.0 : count <= 8 ? 6.0 : count <= 11 ? 3.5 : 2.0;
     final totalGap = gap * (count - 1);
-    final rowH = ((availableH - totalGap) / count).clamp(19.0, 74.0).toDouble();
+    final rowH = ((availableH - totalGap) / count).clamp(19.0, 70.0).toDouble();
     final usedH = rowH * count + totalGap;
     final firstY = listTop + (availableH - usedH) / 2;
     final rowLeft = ui.x(.155);
@@ -162,8 +168,8 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     V5ImageUI.text(
       canvas,
       timer,
-      ui.rect(.20, .797, .60, .055),
-      20.5,
+      ui.rect(.22, .790, .56, .043),
+      18.5,
       const Color(0xFF9C5700),
       FontWeight.w900,
     );

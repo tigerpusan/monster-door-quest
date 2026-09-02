@@ -89,12 +89,18 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     final labels = ['인간 I', '인간 II', '인간 III', '초인 I', '초인 II', '초인 III', '신'];
     final active = currentRealmIndex(stage).clamp(0, labels.length - 1);
 
-    final cover = Rect.fromLTWH(size.x * .075, size.y * .279, size.x * .85, size.y * .130);
-    V5ImageUI.roundedCover(canvas, cover, const Color(0xFFFFF6E6), border: const Color(0xFF2B67A8), radius: 24, stroke: 1.8);
+    // Preserve the artwork's outer frame. Remove only the baked sample contents.
+    V5ImageUI.roundedCover(
+      canvas,
+      Rect.fromLTWH(size.x * .066, size.y * .286, size.x * .868, size.y * .120),
+      const Color(0xFFFFF7E8),
+      radius: 18,
+    );
+
     V5ImageUI.text(
       canvas,
       '현재 진행   ${stageRealmLabel(stage)}   ·   STAGE $stage   ·   최고 ${best == 0 ? '-' : best}',
-      Rect.fromLTWH(size.x * .11, size.y * .291, size.x * .78, size.y * .035),
+      Rect.fromLTWH(size.x * .11, size.y * .294, size.x * .78, size.y * .034),
       12.6,
       const Color(0xFF173F70),
       FontWeight.w900,
@@ -102,7 +108,7 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
 
     final x1 = size.x * .13;
     final x2 = size.x * .87;
-    final y = size.y * .350;
+    final y = size.y * .351;
     final step = (x2 - x1) / (labels.length - 1);
     canvas.drawLine(Offset(x1, y), Offset(x2, y), Paint()..color = const Color(0xFF9B95C7)..strokeWidth = 2.3);
     for (var i = 0; i < labels.length; i++) {

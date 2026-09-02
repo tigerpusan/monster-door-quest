@@ -51,20 +51,32 @@ class GameHelpOverlay {
     final size = Vector2(w, h);
     final ui = ResponsiveGameLayout(w, h);
 
-    // Full-screen opaque settings art. No gameplay layer remains visible underneath.
     v5.drawFull(canvas, size, v5.settings);
 
-    // Only dynamic record values are painted on the static template.
+    // Match the pale blue record panel and erase the baked sample values only.
+    V5ImageUI.roundedCover(
+      canvas,
+      ui.rect(.235, .158, .585, .050),
+      const Color(0xFFF2F8FE),
+      radius: 14,
+    );
     V5ImageUI.text(
       canvas,
       '현재 STAGE $currentStage   │   최고 ${bestStage == 0 ? '-' : bestStage}',
-      ui.rect(.255, .157, .57, .052),
+      ui.rect(.255, .158, .545, .050),
       15.4,
       const Color(0xFF123E73),
       FontWeight.w900,
     );
 
-    // BGM switch is the only dynamic setting control.
+    // Match the ivory music-row background, erase the static switch, then draw one live switch.
+    V5ImageUI.roundedCover(
+      canvas,
+      ui.rect(.635, .231, .205, .058),
+      const Color(0xFFFFF7E8),
+      radius: 18,
+    );
+
     final sw = ui.rect(.682, .239, .145, .043);
     final rr = RRect.fromRectAndRadius(sw, Radius.circular(sw.height / 2));
     canvas.drawRRect(rr, Paint()..color = bgmEnabled ? const Color(0xFF75E736) : const Color(0xFFB3BBC4));
@@ -73,4 +85,5 @@ class GameHelpOverlay {
     final knobX = bgmEnabled ? sw.right - sw.height * .50 : sw.left + sw.height * .50;
     canvas.drawCircle(Offset(knobX, sw.center.dy), knobRadius, Paint()..color = const Color(0xFF154A7F));
   }
+
 }
