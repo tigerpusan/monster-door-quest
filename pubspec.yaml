@@ -1,7 +1,7 @@
 name: monster_door_quest
-description: Door Mission Pixel V5 image-driven memory game
+description: Door Mission Pixel V5.3 template-layer memory game
 publish_to: "none"
-version: 7.3.0+730
+version: 7.3.3+733
 
 environment:
   sdk: ">=3.11.0 <4.0.0"

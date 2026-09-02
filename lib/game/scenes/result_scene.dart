@@ -7,6 +7,7 @@ import '../components/tap_zone.dart';
 import '../monster_door_game.dart';
 import '../ui/game_help_overlay.dart';
 import '../ui/v5_image_ui.dart';
+import '../ui/responsive_game_layout.dart';
 
 class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGame> {
   ResultScene({required this.clear, required this.stage, required this.elapsedSeconds});
@@ -50,7 +51,10 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
       _placeZone(_settingsReset, GameHelpOverlay.resetRect(size.x, size.y), priority: 2200);
       _placeZone(_settingsContinue, GameHelpOverlay.continueRect(size.x, size.y), priority: 2200);
     } else {
-      _hideZone(_settingsClose); _hideZone(_settingsMusic); _hideZone(_settingsReset); _hideZone(_settingsContinue);
+      _hideZone(_settingsClose);
+      _hideZone(_settingsMusic);
+      _hideZone(_settingsReset);
+      _hideZone(_settingsContinue);
     }
   }
 
@@ -58,14 +62,8 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
   void onGameResize(Vector2 size) {
     super.onGameResize(size);
     this.size = size;
-    _placeZone(
-      _primary,
-      clear
-          ? Rect.fromLTWH(size.x * .13, size.y * .875, size.x * .74, size.y * .105)
-          : Rect.fromLTWH(size.x * .14, size.y * .865, size.x * .72, size.y * .110),
-      priority: 1000,
-    );
-    // Clear/fail mockups do not display a gear. Keep the zone hidden unless overlay is already open.
+    final ui = ResponsiveGameLayout(size.x, size.y);
+    _placeZone(_primary, clear ? ui.rect(.12, .872, .76, .080) : ui.rect(.14, .865, .72, .110), priority: 1000);
     _hideZone(_settings);
     _syncSettingsZones();
   }
@@ -76,11 +74,7 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
   void _toggleBgm() {
     if (!_settingsOpen) return;
     game.audioManager.bgmEnabled = !game.audioManager.bgmEnabled;
-    if (game.audioManager.bgmEnabled) {
-      game.audioManager.startBgm();
-    } else {
-      game.audioManager.stopBgm();
-    }
+    if (game.audioManager.bgmEnabled) game.audioManager.startBgm(); else game.audioManager.stopBgm();
   }
 
   Future<void> _resetChallenge() async {
@@ -103,30 +97,24 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
   void _goNext() {
     if (_settingsOpen || _handled) return;
     _handled = true;
-    if (clear) {
-      unawaited(game.advanceAfterClear());
-    } else {
-      unawaited(_retryWithPenalty());
-    }
+    if (clear) unawaited(game.advanceAfterClear()); else unawaited(_retryWithPenalty());
   }
 
   void _drawLiveClearData(Canvas canvas) {
-    // Replace the baked sample completion data while keeping the generated card art.
-    final live = Rect.fromLTWH(size.x * .145, size.y * .740, size.x * .71, size.y * .115);
-    V5ImageUI.roundedCover(canvas, live, const Color(0xFFFFF4DD), radius: 18);
+    final ui = ResponsiveGameLayout(size.x, size.y);
     V5ImageUI.text(
       canvas,
       '완료 시간  ${elapsedSeconds.toStringAsFixed(1)}초',
-      Rect.fromLTWH(size.x * .17, size.y * .748, size.x * .66, size.y * .052),
-      27,
+      ui.rect(.15, .748, .70, .055),
+      28,
       const Color(0xFFA45D00),
       FontWeight.w900,
     );
     V5ImageUI.text(
       canvas,
       '${stageRealmLabel(stage)}  ·  STAGE $stage 완료',
-      Rect.fromLTWH(size.x * .16, size.y * .803, size.x * .68, size.y * .035),
-      16,
+      ui.rect(.16, .810, .68, .040),
+      16.3,
       const Color(0xFF174B87),
       FontWeight.w900,
     );
@@ -134,15 +122,7 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
   void _drawSettingsOverlay(Canvas canvas) {
     final p = game.progressStore.load();
-    GameHelpOverlay.draw(
-      canvas,
-      size.x,
-      size.y,
-      currentStage: game.currentStage,
-      bestStage: p.bestStage,
-      bgmEnabled: game.audioManager.bgmEnabled,
-      v5: _v5,
-    );
+    GameHelpOverlay.draw(canvas, size.x, size.y, currentStage: game.currentStage, bestStage: p.bestStage, bgmEnabled: game.audioManager.bgmEnabled, v5: _v5);
   }
 
   @override

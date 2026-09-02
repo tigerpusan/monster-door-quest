@@ -73,17 +73,29 @@ int currentRealmIndex(int stage) {
 }
 
 List<DoorSide> createRoute(int count, Random rng, {required int stage}) {
-  final out = <DoorSide>[];
-  final maxRun = stageConfig(stage).maxSameRun;
-  for (var i = 0; i < count; i++) {
-    var pick = rng.nextBool() ? DoorSide.left : DoorSide.right;
-    if (out.length >= maxRun) {
-      final recent = out.sublist(out.length - maxRun);
-      if (recent.every((v) => v == pick)) {
-        pick = pick == DoorSide.left ? DoorSide.right : DoorSide.left;
+  // Every route of 2+ doors must contain both directions. This prevents
+  // meaningless early stages such as RIGHT-RIGHT-RIGHT.
+  for (var attempt = 0; attempt < 32; attempt++) {
+    final out = <DoorSide>[];
+    final maxRun = stageConfig(stage).maxSameRun;
+    for (var i = 0; i < count; i++) {
+      var pick = rng.nextBool() ? DoorSide.left : DoorSide.right;
+      if (out.length >= maxRun) {
+        final recent = out.sublist(out.length - maxRun);
+        if (recent.every((v) => v == pick)) {
+          pick = pick == DoorSide.left ? DoorSide.right : DoorSide.left;
+        }
       }
+      out.add(pick);
     }
-    out.add(pick);
+    if (count < 2 || (out.contains(DoorSide.left) && out.contains(DoorSide.right))) {
+      return out;
+    }
   }
-  return out;
+
+  // Deterministic fallback: alternating route always contains both sides.
+  return List<DoorSide>.generate(
+    count,
+    (i) => i.isEven ? DoorSide.left : DoorSide.right,
+  );
 }

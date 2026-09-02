@@ -51,7 +51,10 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
       _placeZone(_settingsReset, GameHelpOverlay.resetRect(size.x, size.y), priority: 2200);
       _placeZone(_settingsContinue, GameHelpOverlay.continueRect(size.x, size.y), priority: 2200);
     } else {
-      _hideZone(_settingsClose); _hideZone(_settingsMusic); _hideZone(_settingsReset); _hideZone(_settingsContinue);
+      _hideZone(_settingsClose);
+      _hideZone(_settingsMusic);
+      _hideZone(_settingsReset);
+      _hideZone(_settingsContinue);
     }
   }
 
@@ -60,7 +63,7 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     super.onGameResize(size);
     this.size = size;
     final ui = ResponsiveGameLayout(size.x, size.y);
-    _placeZone(_ready, ui.rect(.12, .855, .76, .105), priority: 1000);
+    _placeZone(_ready, ui.rect(.13, .866, .74, .085), priority: 1000);
     _placeZone(_settings, GameHelpOverlay.settingsButtonRect(size.x, size.y), priority: 2000);
     _syncSettingsZones();
   }
@@ -101,83 +104,37 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     }
   }
 
-  void _drawDirectionPill(
-    Canvas canvas,
-    Rect r, {
-    required bool isLeft,
-    required double fontSize,
-  }) {
+  void _drawDirectionPill(Canvas canvas, Rect r, {required bool isLeft, required double fontSize}) {
     final rr = RRect.fromRectAndRadius(r, Radius.circular(r.height / 2));
-    canvas.drawRRect(
-      rr.shift(const Offset(0, 3)),
-      Paint()..color = const Color(0x33214D78),
-    );
+    canvas.drawRRect(rr.shift(const Offset(0, 3)), Paint()..color = const Color(0x33214D78));
+    canvas.drawRRect(rr, Paint()..color = isLeft ? const Color(0xFF176ED8) : const Color(0xFFFF3E74));
     canvas.drawRRect(
       rr,
-      Paint()..color = isLeft ? const Color(0xFF176ED8) : const Color(0xFFFF3E74),
+      Paint()..style = PaintingStyle.stroke..strokeWidth = 2.2..color = const Color(0xFFFFB531),
     );
-    canvas.drawRRect(
-      rr,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.2
-        ..color = const Color(0xFFFFB531),
-    );
-    V5ImageUI.text(
-      canvas,
-      isLeft ? '← 왼쪽' : '오른쪽 →',
-      r,
-      fontSize,
-      const Color(0xFFFFFFFF),
-      FontWeight.w900,
-    );
+    V5ImageUI.text(canvas, isLeft ? '← 왼쪽' : '오른쪽 →', r, fontSize, const Color(0xFFFFFFFF), FontWeight.w900);
   }
 
   void _drawLiveMemory(Canvas canvas) {
     final ui = ResponsiveGameLayout(size.x, size.y);
 
-    // V5.2: mask the entire baked/sample content area, including the sample
-    // title. Everything inside this panel is now drawn once at runtime.
-    final panel = ui.rect(.075, .205, .85, .635);
-    V5ImageUI.roundedCover(
-      canvas,
-      panel,
-      const Color(0xFFFFF7E7),
-      border: const Color(0xFF2D6FB4),
-      radius: 24,
-      stroke: 2.0,
-    );
-
-    V5ImageUI.text(
-      canvas,
-      '문 순서를 기억하세요',
-      ui.rect(.13, .225, .74, .055),
-      27.0,
-      const Color(0xFF173F70),
-      FontWeight.w900,
-    );
-
+    // Only changing values are drawn at runtime. The template already owns the visual frame.
     V5ImageUI.text(
       canvas,
       'STAGE ${session.stage} · ${session.route.length} DOORS',
-      ui.rect(.18, .285, .64, .040),
-      16.2,
+      ui.rect(.17, .287, .66, .050),
+      17.0,
       const Color(0xFF173F70),
       FontWeight.w900,
     );
 
     final count = session.route.length;
-    final listTop = ui.y(.338);
-    final listBottom = ui.y(.716);
+    final listTop = ui.y(.345);
+    final listBottom = ui.y(.780);
     final availableH = listBottom - listTop;
-
-    // Always one vertical column. The order is unambiguous from top to bottom.
-    // The row height is calculated from the number of steps, so 3~14 steps
-    // remain inside one fixed route window on phones and foldables.
-    final gap = count <= 6 ? 8.0 : (count <= 10 ? 5.0 : 3.0);
+    final gap = count <= 5 ? 10.0 : count <= 8 ? 7.0 : count <= 11 ? 4.0 : 2.5;
     final totalGap = gap * (count - 1);
-    final rawH = (availableH - totalGap) / count;
-    final rowH = rawH.clamp(22.0, 72.0).toDouble();
+    final rowH = ((availableH - totalGap) / count).clamp(19.0, 74.0).toDouble();
     final usedH = rowH * count + totalGap;
     final firstY = listTop + (availableH - usedH) / 2;
     final rowLeft = ui.x(.155);
@@ -185,25 +142,17 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
 
     for (var i = 0; i < count; i++) {
       final isLeft = session.route[i].name == 'left';
-      final y = firstY + i * (rowH + gap);
-      final r = Rect.fromLTWH(rowLeft, y, rowWidth, rowH);
-      final fs = (rowH * .46).clamp(11.5, 25.0).toDouble();
+      final r = Rect.fromLTWH(rowLeft, firstY + i * (rowH + gap), rowWidth, rowH);
+      final fs = (rowH * .45).clamp(11.0, 27.0).toDouble();
       _drawDirectionPill(canvas, r, isLeft: isLeft, fontSize: fs);
     }
 
-    // The timer gets a dedicated fixed band. It never shares vertical space
-    // with the route list, regardless of route length.
-    final remain = memorySeconds == null
-        ? 0.0
-        : (memorySeconds! - elapsed).clamp(0.0, memorySeconds!);
-    final timer = memorySeconds == null
-        ? '기억 시간  준비'
-        : '기억 시간  ${remain.toStringAsFixed(1)}초';
-
+    final remain = memorySeconds == null ? 0.0 : (memorySeconds! - elapsed).clamp(0.0, memorySeconds!);
+    final timer = memorySeconds == null ? '기억 시간  준비' : '기억 시간  ${remain.toStringAsFixed(1)}초';
     V5ImageUI.text(
       canvas,
       timer,
-      ui.rect(.19, .748, .62, .060),
+      ui.rect(.20, .797, .60, .055),
       20.5,
       const Color(0xFF9C5700),
       FontWeight.w900,
