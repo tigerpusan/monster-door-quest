@@ -1,0 +1,19 @@
+DoorMission Pixel V5.3.1 Direction Label Hotfix
+
+적용 파일:
+  lib/game/scenes/memory_scene.dart
+
+변경:
+- 왼쪽 버튼: "←  왼쪽"
+- 오른쪽 버튼: "오른쪽  →"
+- 화살표 단독 표시 금지
+- 글자+화살표를 하나의 중앙 정렬 라벨로 고정
+
+적용 방법:
+1. GitHub 저장소 루트에서 Add file > Upload files
+2. 이 패치의 lib 폴더를 드래그
+3. 기존 lib/game/scenes/memory_scene.dart 덮어쓰기
+4. Commit directly to main
+
+권장 커밋 메시지:
+DoorMission Pixel V5.3.1 direction label hotfix

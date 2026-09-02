@@ -112,7 +112,17 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
       rr,
       Paint()..style = PaintingStyle.stroke..strokeWidth = 2.2..color = const Color(0xFFFFB531),
     );
-    V5ImageUI.text(canvas, isLeft ? '← 왼쪽' : '오른쪽 →', r, fontSize, const Color(0xFFFFFFFF), FontWeight.w900);
+    // Direction is always shown as a single icon+label unit.
+    // Never render an arrow by itself: LEFT = "← 왼쪽", RIGHT = "오른쪽 →".
+    final label = isLeft ? '←  왼쪽' : '오른쪽  →';
+    V5ImageUI.text(
+      canvas,
+      label,
+      r,
+      fontSize,
+      const Color(0xFFFFFFFF),
+      FontWeight.w900,
+    );
   }
 
   void _drawLiveMemory(Canvas canvas) {
