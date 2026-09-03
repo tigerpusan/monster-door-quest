@@ -1,7 +1,7 @@
 name: monster_door_quest
-description: Door Mission Pixel V5.3 template-layer memory game
+description: Door Mission Pixel V6 fixed-art-layer memory game
 publish_to: "none"
-version: 7.3.3+733
+version: 7.4.0+740
 
 environment:
   sdk: ">=3.11.0 <4.0.0"
@@ -24,5 +24,6 @@ flutter:
     - assets/images/
     - assets/images/ui/
     - assets/images/ui/v5/
+    - assets/images/ui/v6/
     - assets/audio/bgm/
     - assets/audio/sfx/
