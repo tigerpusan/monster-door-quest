@@ -7,13 +7,18 @@ class GameHelpOverlay {
   static Rect settingsButtonRect(double w, double h) =>
       Rect.fromLTWH(w * .835, h * .020, w * .125, h * .070);
   static Rect closeRect(double w, double h) =>
-      Rect.fromLTWH(w * .80, h * .055, w * .12, h * .070);
+      Rect.fromLTWH(w * .80, h * .065, w * .12, h * .060);
+
+  // Hit regions follow the baked V6 artwork rather than generic screen
+  // percentages.  Keeping these regions on the actual pictured controls makes
+  // the invisible touch layer reliable on tall phones and prevents taps from
+  // landing above the buttons.
   static Rect musicRect(double w, double h) =>
-      Rect.fromLTWH(w * .10, h * .205, w * .80, h * .075);
+      Rect.fromLTWH(w * .60, h * .235, w * .30, h * .085);
   static Rect resetRect(double w, double h) =>
-      Rect.fromLTWH(w * .085, h * .835, w * .405, h * .105);
+      Rect.fromLTWH(w * .095, h * .895, w * .385, h * .075);
   static Rect continueRect(double w, double h) =>
-      Rect.fromLTWH(w * .505, h * .835, w * .405, h * .105);
+      Rect.fromLTWH(w * .520, h * .895, w * .385, h * .075);
 
   static void drawSettingsButton(Canvas canvas, double w, double h) {
     final r = settingsButtonRect(w, h);
@@ -50,7 +55,7 @@ class GameHelpOverlay {
     V5ImageUI.text(
       canvas,
       '현재 STAGE',
-      Rect.fromLTWH(w * .235, h * .148, w * .22, h * .027),
+      Rect.fromLTWH(w * .235, h * .176, w * .22, h * .026),
       10.5,
       const Color(0xFF173F70),
       FontWeight.w800,
@@ -58,7 +63,7 @@ class GameHelpOverlay {
     V5ImageUI.text(
       canvas,
       '$currentStage',
-      Rect.fromLTWH(w * .285, h * .172, w * .12, h * .040),
+      Rect.fromLTWH(w * .285, h * .202, w * .12, h * .038),
       19,
       const Color(0xFF173F70),
       FontWeight.w900,
@@ -66,7 +71,7 @@ class GameHelpOverlay {
     V5ImageUI.text(
       canvas,
       '최고',
-      Rect.fromLTWH(w * .615, h * .148, w * .16, h * .027),
+      Rect.fromLTWH(w * .615, h * .176, w * .16, h * .026),
       10.5,
       const Color(0xFF173F70),
       FontWeight.w800,
@@ -74,7 +79,7 @@ class GameHelpOverlay {
     V5ImageUI.text(
       canvas,
       bestStage == 0 ? '-' : '$bestStage',
-      Rect.fromLTWH(w * .635, h * .172, w * .12, h * .040),
+      Rect.fromLTWH(w * .635, h * .202, w * .12, h * .038),
       19,
       const Color(0xFF173F70),
       FontWeight.w900,

@@ -59,8 +59,22 @@ class IntroScene extends PositionComponent with HasGameReference<MonsterDoorGame
     final labels = ['인간 I', '인간 II', '인간 III', '초인 I', '초인 II', '초인 III', '신'];
     final active = currentRealmIndex(stage).clamp(0, labels.length - 1);
 
-    final cover = Rect.fromLTWH(size.x * .075, size.y * .279, size.x * .85, size.y * .130);
-    V5ImageUI.roundedCover(canvas, cover, const Color(0xFFFFF6E6), border: const Color(0xFF2B67A8), radius: 24, stroke: 1.8);
+    // The V5 intro artwork already contains the one and only outer progress box.
+    // Mask only its baked sample contents with a borderless cream layer, then
+    // draw the live stage/progress values.  Do NOT draw another rounded box: it
+    // creates the double-frame artifact reported on real devices.
+    final cover = Rect.fromLTWH(
+      size.x * .070,
+      size.y * .284,
+      size.x * .860,
+      size.y * .118,
+    );
+    V5ImageUI.roundedCover(
+      canvas,
+      cover,
+      const Color(0xFFFCF3DF),
+      radius: 18,
+    );
     V5ImageUI.text(
       canvas,
       '현재 진행   ${stageRealmLabel(stage)}   ·   STAGE $stage   ·   최고 ${best == 0 ? '-' : best}',
