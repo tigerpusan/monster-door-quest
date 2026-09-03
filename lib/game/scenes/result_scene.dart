@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show Canvas, Rect;
 import 'package:flame/components.dart';
 import '../core/game_rules.dart';
 import '../components/tap_zone.dart';
