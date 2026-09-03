@@ -15,9 +15,9 @@ class V5ImageUI {
   static Future<V5ImageUI> load() async {
     final ui = V5ImageUI._();
     ui.intro = await Sprite.load('ui/v5/intro_template.png');
-    ui.memory = await Sprite.load('ui/v5/memory_template.png');
-    ui.clear = await Sprite.load('ui/v5/clear_template.png');
-    ui.settings = await Sprite.load('ui/v5/settings_template.png');
+    ui.memory = await Sprite.load('ui/v6/memory_template.png');
+    ui.clear = await Sprite.load('ui/v6/clear_template.png');
+    ui.settings = await Sprite.load('ui/v6/settings_template.png');
     ui.fail = await Sprite.load('ui/v5/fail_template.png');
     return ui;
   }
@@ -51,9 +51,7 @@ class V5ImageUI {
       textAlign: align,
       maxLines: null,
     )..layout(maxWidth: rect.width);
-    final dx = align == TextAlign.center
-        ? rect.left + (rect.width - tp.width) / 2
-        : rect.left;
+    final dx = align == TextAlign.center ? rect.left + (rect.width - tp.width) / 2 : rect.left;
     final dy = rect.top + (rect.height - tp.height) / 2 + yOffset;
     tp.paint(canvas, Offset(dx, dy));
   }
