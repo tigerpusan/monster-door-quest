@@ -7,26 +7,19 @@ import 'package:flutter/material.dart'
 import 'package:flutter/services.dart';
 import '../components/door_component.dart';
 import '../components/route_progress.dart';
-import '../components/tap_zone.dart';
 import '../core/game_rules.dart';
 import '../core/game_state.dart';
 import '../effects/hit_effects.dart';
 import '../monster_door_game.dart';
-import '../ui/game_help_overlay.dart';
-import '../ui/settings_overlay_layer.dart';
 import '../ui/pixel_art_kit.dart';
-import '../ui/v5_image_ui.dart';
 
 class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame> {
   DoorScene(this.session);
 
   final GameSessionState session;
   late PixelArtKit _pixelArt;
-  late V5ImageUI _v5;
   late final DoorComponent leftDoor, rightDoor;
   late final RouteProgress progress;
-  late TapZone _settings;
-  late SettingsOverlayLayer _settingsLayer;
   final feedback = HitFeedbackController();
 
   double elapsed = 0;
@@ -39,29 +32,11 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
   @override
   Future<void> onLoad() async {
     _pixelArt = await PixelArtKit.load();
-    _v5 = await V5ImageUI.load();
     session.beginDoorRun();
     leftDoor = DoorComponent(side: DoorSide.left, onSelected: _choose);
     rightDoor = DoorComponent(side: DoorSide.right, onSelected: _choose);
     progress = RouteProgress(total: session.route.length);
-    _settings = TapZone(onTap: _toggleSettings, triggerOnDown: true);
-    _settingsLayer = SettingsOverlayLayer(v5: _v5)..priority = 10000;
-    addAll([leftDoor, rightDoor, progress, _settings, _settingsLayer]);
-  }
-
-  void _placeZone(TapZone z, Rect r, {int? priority}) {
-    z
-      ..size = Vector2(r.width, r.height)
-      ..position = Vector2(r.left, r.top);
-    if (priority != null) z.priority = priority;
-  }
-
-  void _toggleSettings() {
-    if (_settingsLayer.isOpen) {
-      _settingsLayer.close();
-    } else {
-      _settingsLayer.open();
-    }
+    addAll([leftDoor, rightDoor, progress]);
   }
 
   @override
@@ -80,12 +55,10 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
       ..size = Vector2(size.x * .56, 24)
       ..position = Vector2(size.x * .22, size.y * .302);
 
-    _placeZone(_settings, GameHelpOverlay.settingsButtonRect(size.x, size.y), priority: 2000);
-    _settingsLayer.resizeTo(size);
   }
 
   Future<void> _choose(DoorSide side) async {
-    if (_settingsLayer.isOpen || session.phase != SessionPhase.playing || _transitioning || _inputCooldown > 0) return;
+    if (session.phase != SessionPhase.playing || _transitioning || _inputCooldown > 0) return;
     _inputCooldown = .016;
     final result = session.choose(side);
     final door = side == DoorSide.left ? leftDoor : rightDoor;
@@ -110,7 +83,6 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
   @override
   void update(double dt) {
     super.update(dt);
-    if (_settingsLayer.isOpen) return;
     elapsed += dt;
     feedback.update(dt);
     if (_inputCooldown > 0) _inputCooldown = (_inputCooldown - dt).clamp(0,1).toDouble();
@@ -154,8 +126,8 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     _pixelArt.renderHero(canvas, size, x: .355, y: .755, scale: .30);
 
     // Compact top panel; progress dots live inside it and no longer overlap the timer.
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y * .345), Paint()..color = const Color(0xF4FFF8E8));
-    final cardRect = Rect.fromLTWH(size.x * .07, size.y * .082, size.x * .84, size.y * .248);
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y * .335), Paint()..color = const Color(0xF4FFF8E8));
+    final cardRect = Rect.fromLTWH(size.x * .09, size.y * .082, size.x * .82, size.y * .198);
     final card = RRect.fromRectAndRadius(cardRect, const Radius.circular(25));
     canvas.drawRRect(card, Paint()..color = const Color(0xFFF9FFF2));
     canvas.drawRRect(card, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.2..color = const Color(0xFF4F86BF));
@@ -163,7 +135,6 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     _center(canvas, '기억의 문을 여세요!', size.y * .108, 25.5, const Color(0xFF174B87), FontWeight.w900);
     _center(canvas, stageRealmLabel(session.stage), size.y * .158, 13.8, const Color(0xFF52779A), FontWeight.w800);
     _center(canvas, 'STAGE ${session.stage}   ${min(session.step + 1, session.route.length)} / ${session.route.length}', size.y * .190, 14.5, const Color(0xFF1C456D), FontWeight.w800);
-    GameHelpOverlay.drawSettingsButton(canvas, size.x, size.y);
 
     final remain = (GameRules.playSeconds - elapsed).clamp(0.0, GameRules.playSeconds);
     _center(

@@ -1,7 +1,7 @@
 name: monster_door_quest
-description: Door Mission Pixel V6 fixed-art-layer memory game
+description: Door Mission Pixel V6.3 micro layout fix
 publish_to: "none"
-version: 7.5.0+750
+version: 7.5.1+751
 
 environment:
   sdk: ">=3.11.0 <4.0.0"

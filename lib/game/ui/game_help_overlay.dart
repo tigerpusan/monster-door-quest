@@ -55,7 +55,7 @@ class GameHelpOverlay {
     V5ImageUI.text(
       canvas,
       '현재 STAGE',
-      Rect.fromLTWH(w * .235, h * .176, w * .22, h * .026),
+      Rect.fromLTWH(w * .235, h * .166, w * .22, h * .026),
       10.5,
       const Color(0xFF173F70),
       FontWeight.w800,
@@ -63,7 +63,7 @@ class GameHelpOverlay {
     V5ImageUI.text(
       canvas,
       '$currentStage',
-      Rect.fromLTWH(w * .285, h * .202, w * .12, h * .038),
+      Rect.fromLTWH(w * .285, h * .190, w * .12, h * .038),
       19,
       const Color(0xFF173F70),
       FontWeight.w900,
@@ -71,7 +71,7 @@ class GameHelpOverlay {
     V5ImageUI.text(
       canvas,
       '최고',
-      Rect.fromLTWH(w * .615, h * .176, w * .16, h * .026),
+      Rect.fromLTWH(w * .615, h * .166, w * .16, h * .026),
       10.5,
       const Color(0xFF173F70),
       FontWeight.w800,
@@ -79,7 +79,7 @@ class GameHelpOverlay {
     V5ImageUI.text(
       canvas,
       bestStage == 0 ? '-' : '$bestStage',
-      Rect.fromLTWH(w * .635, h * .202, w * .12, h * .038),
+      Rect.fromLTWH(w * .635, h * .190, w * .12, h * .038),
       19,
       const Color(0xFF173F70),
       FontWeight.w900,
