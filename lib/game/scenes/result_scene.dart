@@ -1,13 +1,10 @@
 import 'dart:async';
-import 'dart:ui';
 import 'package:flame/components.dart';
-import 'package:flutter/material.dart' show FontWeight;
 import '../core/game_rules.dart';
 import '../components/tap_zone.dart';
 import '../monster_door_game.dart';
 import '../ui/game_help_overlay.dart';
 import '../ui/v5_image_ui.dart';
-import '../ui/responsive_game_layout.dart';
 
 class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGame> {
   ResultScene({required this.clear, required this.stage, required this.elapsedSeconds});
@@ -62,19 +59,35 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
   void onGameResize(Vector2 size) {
     super.onGameResize(size);
     this.size = size;
-    final ui = ResponsiveGameLayout(size.x, size.y);
-    _placeZone(_primary, clear ? ui.rect(.12, .872, .76, .080) : ui.rect(.14, .865, .72, .110), priority: 1000);
+    _placeZone(
+      _primary,
+      clear
+          ? Rect.fromLTWH(size.x * .12, size.y * .875, size.x * .76, size.y * .105)
+          : Rect.fromLTWH(size.x * .14, size.y * .865, size.x * .72, size.y * .110),
+      priority: 1000,
+    );
     _hideZone(_settings);
     _syncSettingsZones();
   }
 
-  void _toggleSettings() { _settingsOpen = !_settingsOpen; _syncSettingsZones(); }
-  void _closeSettings() { _settingsOpen = false; _syncSettingsZones(); }
+  void _toggleSettings() {
+    _settingsOpen = !_settingsOpen;
+    _syncSettingsZones();
+  }
+
+  void _closeSettings() {
+    _settingsOpen = false;
+    _syncSettingsZones();
+  }
 
   void _toggleBgm() {
     if (!_settingsOpen) return;
     game.audioManager.bgmEnabled = !game.audioManager.bgmEnabled;
-    if (game.audioManager.bgmEnabled) game.audioManager.startBgm(); else game.audioManager.stopBgm();
+    if (game.audioManager.bgmEnabled) {
+      game.audioManager.startBgm();
+    } else {
+      game.audioManager.stopBgm();
+    }
   }
 
   Future<void> _resetChallenge() async {
@@ -88,60 +101,49 @@ class ResultScene extends PositionComponent with HasGameReference<MonsterDoorGam
   Future<void> _retryWithPenalty() async {
     final dynamic g = game;
     final targetStage = stage <= 2 ? 1 : stage - 2;
-    try { await g.retryWithPenalty(targetStage: targetStage, penaltySteps: 2); return; } catch (_) {}
-    try { await g.retryFromStage(targetStage); return; } catch (_) {}
-    try { g.currentStage = targetStage; await g.startCurrentStage(); return; } catch (_) {}
+    try {
+      await g.retryWithPenalty(targetStage: targetStage, penaltySteps: 2);
+      return;
+    } catch (_) {}
+    try {
+      await g.retryFromStage(targetStage);
+      return;
+    } catch (_) {}
+    try {
+      g.currentStage = targetStage;
+      await g.startCurrentStage();
+      return;
+    } catch (_) {}
     await game.retryCurrentStage();
   }
 
   void _goNext() {
     if (_settingsOpen || _handled) return;
     _handled = true;
-    if (clear) unawaited(game.advanceAfterClear()); else unawaited(_retryWithPenalty());
-  }
-
-  void _drawLiveClearData(Canvas canvas) {
-    final ui = ResponsiveGameLayout(size.x, size.y);
-
-    // One clean live-result card hides the sample text and the small overlapping box edge.
-    final card = ui.rect(.095, .721, .81, .137);
-    V5ImageUI.roundedCover(
-      canvas,
-      card,
-      const Color(0xFFFFF8EA),
-      border: const Color(0xFFE5B86C),
-      radius: 20,
-      stroke: 1.5,
-    );
-
-    V5ImageUI.text(
-      canvas,
-      '완료 시간  ${elapsedSeconds.toStringAsFixed(1)}초',
-      ui.rect(.15, .744, .70, .052),
-      27.0,
-      const Color(0xFFA45D00),
-      FontWeight.w900,
-    );
-    V5ImageUI.text(
-      canvas,
-      '${stageRealmLabel(stage)}  ·  STAGE $stage 완료',
-      ui.rect(.16, .801, .68, .038),
-      16.0,
-      const Color(0xFF174B87),
-      FontWeight.w900,
-    );
+    if (clear) {
+      unawaited(game.advanceAfterClear());
+    } else {
+      unawaited(_retryWithPenalty());
+    }
   }
 
   void _drawSettingsOverlay(Canvas canvas) {
     final p = game.progressStore.load();
-    GameHelpOverlay.draw(canvas, size.x, size.y, currentStage: game.currentStage, bestStage: p.bestStage, bgmEnabled: game.audioManager.bgmEnabled, v5: _v5);
+    GameHelpOverlay.draw(
+      canvas,
+      size.x,
+      size.y,
+      currentStage: game.currentStage,
+      bestStage: p.bestStage,
+      bgmEnabled: game.audioManager.bgmEnabled,
+      v5: _v5,
+    );
   }
 
   @override
   void render(Canvas canvas) {
     if (clear) {
       _v5.drawFull(canvas, size, _v5.clear);
-      _drawLiveClearData(canvas);
     } else {
       _v5.drawFull(canvas, size, _v5.fail);
     }

@@ -7,7 +7,6 @@ import '../core/game_state.dart';
 import '../monster_door_game.dart';
 import '../ui/game_help_overlay.dart';
 import '../ui/v5_image_ui.dart';
-import '../ui/responsive_game_layout.dart';
 
 class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGame> {
   MemoryScene(this.session, this.memorySeconds);
@@ -62,14 +61,20 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
   void onGameResize(Vector2 size) {
     super.onGameResize(size);
     this.size = size;
-    final ui = ResponsiveGameLayout(size.x, size.y);
-    _placeZone(_ready, ui.rect(.13, .866, .74, .085), priority: 1000);
+    _placeZone(_ready, Rect.fromLTWH(size.x * .14, size.y * .862, size.x * .72, size.y * .104), priority: 1000);
     _placeZone(_settings, GameHelpOverlay.settingsButtonRect(size.x, size.y), priority: 2000);
     _syncSettingsZones();
   }
 
-  void _toggleSettings() { _settingsOpen = !_settingsOpen; _syncSettingsZones(); }
-  void _closeSettings() { _settingsOpen = false; _syncSettingsZones(); }
+  void _toggleSettings() {
+    _settingsOpen = !_settingsOpen;
+    _syncSettingsZones();
+  }
+
+  void _closeSettings() {
+    _settingsOpen = false;
+    _syncSettingsZones();
+  }
 
   void _toggleBgm() {
     if (!_settingsOpen) return;
@@ -104,72 +109,55 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     }
   }
 
-  void _drawDirectionPill(Canvas canvas, Rect r, {required bool isLeft, required double fontSize}) {
-    final rr = RRect.fromRectAndRadius(r, Radius.circular(r.height / 2));
-    canvas.drawRRect(rr.shift(const Offset(0, 3)), Paint()..color = const Color(0x33214D78));
-    canvas.drawRRect(rr, Paint()..color = isLeft ? const Color(0xFF176ED8) : const Color(0xFFFF3E74));
-    canvas.drawRRect(
-      rr,
-      Paint()..style = PaintingStyle.stroke..strokeWidth = 2.2..color = const Color(0xFFFFB531),
-    );
-    // Direction is always shown as a single icon+label unit.
-    // Never render an arrow by itself: LEFT = "← 왼쪽", RIGHT = "오른쪽 →".
-    final label = isLeft ? '←  왼쪽' : '오른쪽  →';
-    V5ImageUI.text(
-      canvas,
-      label,
-      r,
-      fontSize,
-      const Color(0xFFFFFFFF),
-      FontWeight.w900,
-    );
-  }
-
   void _drawLiveMemory(Canvas canvas) {
-    final ui = ResponsiveGameLayout(size.x, size.y);
-    const panelIvory = Color(0xFFFFF8EA);
-
-    // V5.3.2: erase baked sample labels/rows/timer using the panel background color.
-    V5ImageUI.roundedCover(canvas, ui.rect(.145, .274, .71, .062), panelIvory, radius: 16);
-    V5ImageUI.roundedCover(canvas, ui.rect(.105, .335, .79, .445), panelIvory, radius: 20);
-    // Shorter timer cover keeps the decorative dotted line below fully visible.
-    V5ImageUI.roundedCover(canvas, ui.rect(.205, .790, .59, .043), panelIvory, radius: 13);
-
     V5ImageUI.text(
       canvas,
       'STAGE ${session.stage} · ${session.route.length} DOORS',
-      ui.rect(.17, .283, .66, .050),
-      17.0,
+      Rect.fromLTWH(size.x * .18, size.y * .265, size.x * .64, size.y * .045),
+      19,
       const Color(0xFF173F70),
       FontWeight.w900,
     );
 
     final count = session.route.length;
-    final listTop = ui.y(.348);
-    final listBottom = ui.y(.770);
-    final availableH = listBottom - listTop;
-    final gap = count <= 5 ? 10.0 : count <= 8 ? 6.0 : count <= 11 ? 3.5 : 2.0;
-    final totalGap = gap * (count - 1);
-    final rowH = ((availableH - totalGap) / count).clamp(19.0, 70.0).toDouble();
-    final usedH = rowH * count + totalGap;
-    final firstY = listTop + (availableH - usedH) / 2;
-    final rowLeft = ui.x(.155);
-    final rowWidth = ui.w(.69);
+    final listTop = size.y * .340;
+    final listBottom = size.y * .735;
+    final totalH = listBottom - listTop;
+    final gap = count >= 12 ? 4.0 : count >= 9 ? 6.0 : 10.0;
+    final rowH = ((totalH - gap * (count - 1)) / count).clamp(25.0, 72.0);
 
     for (var i = 0; i < count; i++) {
       final isLeft = session.route[i].name == 'left';
-      final r = Rect.fromLTWH(rowLeft, firstY + i * (rowH + gap), rowWidth, rowH);
-      final fs = (rowH * .45).clamp(11.0, 27.0).toDouble();
-      _drawDirectionPill(canvas, r, isLeft: isLeft, fontSize: fs);
+      final y = listTop + i * (rowH + gap);
+      final r = Rect.fromLTWH(size.x * .145, y, size.x * .71, rowH);
+      final rr = RRect.fromRectAndRadius(r, Radius.circular(rowH / 2));
+      canvas.drawRRect(rr.shift(const Offset(0, 3)), Paint()..color = const Color(0x33214D78));
+      canvas.drawRRect(rr, Paint()..color = isLeft ? const Color(0xFF176ED8) : const Color(0xFFFF3E74));
+      canvas.drawRRect(
+        rr,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.4
+          ..color = const Color(0xFFFFB531),
+      );
+      final fs = (rowH * .48).clamp(14.0, 27.0);
+      V5ImageUI.text(
+        canvas,
+        isLeft ? '←  왼쪽' : '오른쪽  →',
+        r,
+        fs,
+        const Color(0xFFFFFFFF),
+        FontWeight.w900,
+      );
     }
 
     final remain = memorySeconds == null ? 0.0 : (memorySeconds! - elapsed).clamp(0.0, memorySeconds!);
-    final timer = memorySeconds == null ? '기억 시간  준비' : '기억 시간  ${remain.toStringAsFixed(1)}초';
+    final timer = memorySeconds == null ? '기억 시간 준비' : '기억 시간 ${remain.toStringAsFixed(1)}초';
     V5ImageUI.text(
       canvas,
       timer,
-      ui.rect(.22, .790, .56, .043),
-      18.5,
+      Rect.fromLTWH(size.x * .27, size.y * .777, size.x * .46, size.y * .040),
+      18,
       const Color(0xFF9C5700),
       FontWeight.w900,
     );
