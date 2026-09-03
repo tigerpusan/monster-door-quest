@@ -1,4 +1,4 @@
-name: Build & Release Door Mission Pixel V5
+name: Build & Release Door Mission Pixel V6.1
 
 on:
   workflow_dispatch:
@@ -64,21 +64,23 @@ jobs:
       - name: Dependencies
         run: flutter pub get
 
-      - name: Verify V5 image-driven sources
+      - name: Verify V6.1 fixed-art sources
         shell: bash
         run: |
           set -e
           test -f assets/images/ui/v5/intro_template.png
-          test -f assets/images/ui/v5/memory_template.png
-          test -f assets/images/ui/v5/clear_template.png
-          test -f assets/images/ui/v5/settings_template.png
           test -f assets/images/ui/v5/fail_template.png
+          test -f assets/images/ui/v6/memory_template.png
+          test -f assets/images/ui/v6/clear_template.png
+          test -f assets/images/ui/v6/settings_template.png
+          test -f assets/images/ui/v6/settings_template_off.png
           test -f lib/game/ui/v5_image_ui.dart
-          grep -q "V5ImageUI" lib/game/scenes/intro_scene.dart
-          grep -q "V5ImageUI" lib/game/scenes/memory_scene.dart
-          grep -q "V5ImageUI" lib/game/scenes/result_scene.dart
-          grep -q "bgmEnabled" lib/game/ui/game_help_overlay.dart
-          echo "V5 image-driven UI and BGM toggle wiring verified."
+          test -f lib/game/ui/settings_overlay_layer.dart
+          grep -q "SettingsOverlayLayer" lib/game/scenes/intro_scene.dart
+          grep -q "SettingsOverlayLayer" lib/game/scenes/memory_scene.dart
+          grep -q "SettingsOverlayLayer" lib/game/scenes/door_scene.dart
+          grep -q "settings_template_off" lib/game/ui/v5_image_ui.dart
+          echo "V6.1 fixed-art settings overlay, image BGM states, and touch layer verified."
 
       - name: Analyze
         run: flutter analyze --no-fatal-infos --no-fatal-warnings
@@ -90,25 +92,25 @@ jobs:
         run: flutter build apk --release
 
       - name: Prepare named APK
-        run: cp build/app/outputs/flutter-apk/app-release.apk DoorMission-Pixel-V5.apk
+        run: cp build/app/outputs/flutter-apk/app-release.apk DoorMission-Pixel-V6.1.apk
 
       - name: Upload APK backup
         uses: actions/upload-artifact@v4
         with:
-          name: DoorMission-Pixel-V5-apk
-          path: DoorMission-Pixel-V5.apk
+          name: DoorMission-Pixel-V6.1-apk
+          path: DoorMission-Pixel-V6.1.apk
           if-no-files-found: error
 
-      - name: Replace previous V5 release
+      - name: Replace previous V6.1 release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release delete door-mission-pixel-v5 --yes --cleanup-tag || true
+        run: gh release delete door-mission-pixel-v6-1 --yes --cleanup-tag || true
 
       - name: Create direct APK Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create door-mission-pixel-v5 DoorMission-Pixel-V5.apk \
-            --title "문대작전 Pixel V5" \
-            --notes "V5 image-driven UI: final concept-art screens used as live templates, dynamic stage/time overlays, fixed door scene spacing, responsive memory rows, active BGM toggle." \
+          gh release create door-mission-pixel-v6-1 DoorMission-Pixel-V6.1.apk \
+            --title "문대작전 Pixel V6.1 · 1차 완성본" \
+            --notes "V6.1 first complete build: fixed-art screen system, image-based BGM ON/OFF states, full-screen settings touch layer, working restart/continue controls, and cleaned overlay stacking." \
             --prerelease
