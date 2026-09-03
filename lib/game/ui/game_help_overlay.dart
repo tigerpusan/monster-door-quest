@@ -11,9 +11,9 @@ class GameHelpOverlay {
   static Rect musicRect(double w, double h) =>
       Rect.fromLTWH(w * .10, h * .205, w * .80, h * .075);
   static Rect resetRect(double w, double h) =>
-      Rect.fromLTWH(w * .095, h * .845, w * .39, h * .085);
+      Rect.fromLTWH(w * .085, h * .835, w * .405, h * .105);
   static Rect continueRect(double w, double h) =>
-      Rect.fromLTWH(w * .515, h * .845, w * .39, h * .085);
+      Rect.fromLTWH(w * .505, h * .835, w * .405, h * .105);
 
   static void drawSettingsButton(Canvas canvas, double w, double h) {
     final r = settingsButtonRect(w, h);
@@ -40,47 +40,44 @@ class GameHelpOverlay {
     required V5ImageUI v5,
   }) {
     final size = Vector2(w, h);
-    v5.drawFull(canvas, size, v5.settings);
 
-    // V6 fixed-art-layer mode: the stage row is a blank slot in the base art.
-    // Draw only the changing values with a transparent text overlay.
+    // Fixed-art layer: use one complete picture for each BGM state.
+    // No Flutter switch is drawn on top, so the art never overlaps.
+    v5.drawFull(canvas, size, bgmEnabled ? v5.settingsOn : v5.settingsOff);
+
+    // The trophy row is intentionally blank in the base picture.
+    // Only tiny labels and changing values are rendered transparently.
+    V5ImageUI.text(
+      canvas,
+      '현재 STAGE',
+      Rect.fromLTWH(w * .235, h * .148, w * .22, h * .027),
+      10.5,
+      const Color(0xFF173F70),
+      FontWeight.w800,
+    );
     V5ImageUI.text(
       canvas,
       '$currentStage',
-      Rect.fromLTWH(w * .29, h * .148, w * .11, h * .045),
-      18,
-      const Color(0xFF123E73),
+      Rect.fromLTWH(w * .285, h * .172, w * .12, h * .040),
+      19,
+      const Color(0xFF173F70),
       FontWeight.w900,
+    );
+    V5ImageUI.text(
+      canvas,
+      '최고',
+      Rect.fromLTWH(w * .615, h * .148, w * .16, h * .027),
+      10.5,
+      const Color(0xFF173F70),
+      FontWeight.w800,
     );
     V5ImageUI.text(
       canvas,
       bestStage == 0 ? '-' : '$bestStage',
-      Rect.fromLTWH(w * .69, h * .148, w * .11, h * .045),
-      18,
-      const Color(0xFF123E73),
+      Rect.fromLTWH(w * .635, h * .172, w * .12, h * .040),
+      19,
+      const Color(0xFF173F70),
       FontWeight.w900,
-    );
-
-    // Live BGM switch. The entire row remains tappable.
-    final sw = Rect.fromLTWH(w * .695, h * .222, w * .145, h * .047);
-    final rr = RRect.fromRectAndRadius(sw, Radius.circular(sw.height / 2));
-    canvas.drawRRect(
-      rr,
-      Paint()..color = bgmEnabled ? const Color(0xFF75E736) : const Color(0xFF9BA7B5),
-    );
-    canvas.drawRRect(
-      rr,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.6
-        ..color = const Color(0xFF315B84),
-    );
-    final knobRadius = sw.height * .38;
-    final knobX = bgmEnabled ? sw.right - sw.height * .50 : sw.left + sw.height * .50;
-    canvas.drawCircle(
-      Offset(knobX, sw.center.dy),
-      knobRadius,
-      Paint()..color = const Color(0xFF154A7F),
     );
   }
 }

@@ -1,0 +1,20 @@
+문대작전 Pixel V6.1 · 1차 완성본 패치
+
+적용 방법
+1. 이 ZIP 압축을 풉니다.
+2. 압축을 푼 폴더 안의 항목(.github, assets, lib, pubspec.yaml)을 GitHub 저장소 루트에 그대로 업로드합니다.
+3. 같은 경로의 기존 파일은 덮어씁니다.
+4. Commit message 권장: DoorMission Pixel V6.1 first complete
+5. Actions에서 "Build & Release Door Mission Pixel V6.1"이 실행되는지 확인합니다.
+
+이번 패치 핵심
+- 설정 화면을 Fixed Art Layer + 투명 터치 레이어 구조로 변경
+- Flutter로 그리던 중복 BGM 스위치 제거
+- 설정 ON/OFF를 그림 2장(settings_template / settings_template_off)으로 교체
+- BGM 영역은 그림 위 투명 터치만 사용
+- 처음부터 / 계속하기 / 닫기 버튼도 그림 위 투명 터치만 사용
+- 설정창 전체를 최상위 child overlay로 올려 Door/진행점이 위에 겹치는 문제 제거
+- 트로피 행에는 현재 STAGE / 최고를 작은 라벨 + 숫자만 투명 표시
+- 기존 ResultScene Rect/Canvas analyze hotfix 포함
+- 버전 7.5.0+750
+- GitHub Actions/Release 이름 V6.1로 정리

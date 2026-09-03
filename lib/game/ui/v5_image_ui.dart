@@ -9,7 +9,8 @@ class V5ImageUI {
   late Sprite intro;
   late Sprite memory;
   late Sprite clear;
-  late Sprite settings;
+  late Sprite settingsOn;
+  late Sprite settingsOff;
   late Sprite fail;
 
   static Future<V5ImageUI> load() async {
@@ -17,7 +18,8 @@ class V5ImageUI {
     ui.intro = await Sprite.load('ui/v5/intro_template.png');
     ui.memory = await Sprite.load('ui/v6/memory_template.png');
     ui.clear = await Sprite.load('ui/v6/clear_template.png');
-    ui.settings = await Sprite.load('ui/v6/settings_template.png');
+    ui.settingsOn = await Sprite.load('ui/v6/settings_template.png');
+    ui.settingsOff = await Sprite.load('ui/v6/settings_template_off.png');
     ui.fail = await Sprite.load('ui/v5/fail_template.png');
     return ui;
   }

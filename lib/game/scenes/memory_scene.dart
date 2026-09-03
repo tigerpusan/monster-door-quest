@@ -6,6 +6,7 @@ import '../core/game_rules.dart';
 import '../core/game_state.dart';
 import '../monster_door_game.dart';
 import '../ui/game_help_overlay.dart';
+import '../ui/settings_overlay_layer.dart';
 import '../ui/v5_image_ui.dart';
 
 class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGame> {
@@ -16,45 +17,24 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
   late V5ImageUI _v5;
   late TapZone _ready;
   late TapZone _settings;
-  late TapZone _settingsClose;
-  late TapZone _settingsContinue;
-  late TapZone _settingsMusic;
-  late TapZone _settingsReset;
+  late SettingsOverlayLayer _settingsLayer;
   double elapsed = 0;
   bool _transitioned = false;
-  bool _settingsOpen = false;
 
   @override
   Future<void> onLoad() async {
     _v5 = await V5ImageUI.load();
     _ready = TapZone(onTap: _goDoor, triggerOnDown: true);
     _settings = TapZone(onTap: _toggleSettings, triggerOnDown: true);
-    _settingsClose = TapZone(onTap: _closeSettings, triggerOnDown: true);
-    _settingsContinue = TapZone(onTap: _closeSettings, triggerOnDown: true);
-    _settingsMusic = TapZone(onTap: _toggleBgm, triggerOnDown: true);
-    _settingsReset = TapZone(onTap: _resetChallenge, triggerOnDown: true);
-    addAll([_ready, _settings, _settingsClose, _settingsContinue, _settingsMusic, _settingsReset]);
+    _settingsLayer = SettingsOverlayLayer(v5: _v5)..priority = 10000;
+    addAll([_ready, _settings, _settingsLayer]);
   }
 
-  void _hideZone(TapZone z) => z..size = Vector2.zero()..position = Vector2.zero();
   void _placeZone(TapZone z, Rect r, {int? priority}) {
-    z..size = Vector2(r.width, r.height)..position = Vector2(r.left, r.top);
+    z
+      ..size = Vector2(r.width, r.height)
+      ..position = Vector2(r.left, r.top);
     if (priority != null) z.priority = priority;
-  }
-
-  void _syncSettingsZones() {
-    if (size.x <= 0 || size.y <= 0) return;
-    if (_settingsOpen) {
-      _placeZone(_settingsClose, GameHelpOverlay.closeRect(size.x, size.y), priority: 2200);
-      _placeZone(_settingsMusic, GameHelpOverlay.musicRect(size.x, size.y), priority: 2200);
-      _placeZone(_settingsReset, GameHelpOverlay.resetRect(size.x, size.y), priority: 2200);
-      _placeZone(_settingsContinue, GameHelpOverlay.continueRect(size.x, size.y), priority: 2200);
-    } else {
-      _hideZone(_settingsClose);
-      _hideZone(_settingsMusic);
-      _hideZone(_settingsReset);
-      _hideZone(_settingsContinue);
-    }
   }
 
   @override
@@ -63,39 +43,19 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     this.size = size;
     _placeZone(_ready, Rect.fromLTWH(size.x * .14, size.y * .862, size.x * .72, size.y * .104), priority: 1000);
     _placeZone(_settings, GameHelpOverlay.settingsButtonRect(size.x, size.y), priority: 2000);
-    _syncSettingsZones();
+    _settingsLayer.resizeTo(size);
   }
 
   void _toggleSettings() {
-    _settingsOpen = !_settingsOpen;
-    _syncSettingsZones();
-  }
-
-  void _closeSettings() {
-    _settingsOpen = false;
-    _syncSettingsZones();
-  }
-
-  void _toggleBgm() {
-    if (!_settingsOpen) return;
-    game.audioManager.bgmEnabled = !game.audioManager.bgmEnabled;
-    if (game.audioManager.bgmEnabled) {
-      game.audioManager.startBgm();
+    if (_settingsLayer.isOpen) {
+      _settingsLayer.close();
     } else {
-      game.audioManager.stopBgm();
+      _settingsLayer.open();
     }
   }
 
-  Future<void> _resetChallenge() async {
-    if (!_settingsOpen) return;
-    await game.progressStore.saveCurrentStage(GameRules.initialStage);
-    game.currentStage = GameRules.initialStage;
-    _settingsOpen = false;
-    game.goHome();
-  }
-
   void _goDoor() {
-    if (_settingsOpen || _transitioned) return;
+    if (_settingsLayer.isOpen || _transitioned) return;
     _transitioned = true;
     game.showDoorScene(session);
   }
@@ -103,7 +63,7 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
   @override
   void update(double dt) {
     super.update(dt);
-    if (memorySeconds != null && !_transitioned && !_settingsOpen) {
+    if (memorySeconds != null && !_transitioned && !_settingsLayer.isOpen) {
       elapsed += dt;
       if (elapsed >= memorySeconds! && isMounted) _goDoor();
     }
@@ -163,23 +123,9 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     );
   }
 
-  void _drawSettingsOverlay(Canvas canvas) {
-    final p = game.progressStore.load();
-    GameHelpOverlay.draw(
-      canvas,
-      size.x,
-      size.y,
-      currentStage: game.currentStage,
-      bestStage: p.bestStage,
-      bgmEnabled: game.audioManager.bgmEnabled,
-      v5: _v5,
-    );
-  }
-
   @override
   void render(Canvas canvas) {
     _v5.drawFull(canvas, size, _v5.memory);
     _drawLiveMemory(canvas);
-    if (_settingsOpen) _drawSettingsOverlay(canvas);
   }
 }

@@ -13,9 +13,9 @@ import '../core/game_state.dart';
 import '../effects/hit_effects.dart';
 import '../monster_door_game.dart';
 import '../ui/game_help_overlay.dart';
+import '../ui/settings_overlay_layer.dart';
 import '../ui/pixel_art_kit.dart';
 import '../ui/v5_image_ui.dart';
-import '../ui/responsive_game_layout.dart';
 
 class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame> {
   DoorScene(this.session);
@@ -26,16 +26,12 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
   late final DoorComponent leftDoor, rightDoor;
   late final RouteProgress progress;
   late TapZone _settings;
-  late TapZone _settingsClose;
-  late TapZone _settingsContinue;
-  late TapZone _settingsMusic;
-  late TapZone _settingsReset;
+  late SettingsOverlayLayer _settingsLayer;
   final feedback = HitFeedbackController();
 
   double elapsed = 0;
   double transitionDelay = -1;
   bool _transitioning = false;
-  bool _settingsOpen = false;
   double _inputCooldown = 0;
   String _feedbackText = '';
   double _feedbackTimer = 0;
@@ -49,111 +45,47 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     rightDoor = DoorComponent(side: DoorSide.right, onSelected: _choose);
     progress = RouteProgress(total: session.route.length);
     _settings = TapZone(onTap: _toggleSettings, triggerOnDown: true);
-    _settingsClose = TapZone(onTap: _closeSettings, triggerOnDown: true);
-    _settingsContinue = TapZone(onTap: _closeSettings, triggerOnDown: true);
-    _settingsMusic = TapZone(onTap: _toggleBgm, triggerOnDown: true);
-    _settingsReset = TapZone(onTap: _resetChallenge, triggerOnDown: true);
-    addAll([leftDoor, rightDoor, progress, _settings, _settingsClose, _settingsContinue, _settingsMusic, _settingsReset]);
+    _settingsLayer = SettingsOverlayLayer(v5: _v5)..priority = 10000;
+    addAll([leftDoor, rightDoor, progress, _settings, _settingsLayer]);
   }
 
-  void _hideZone(TapZone z) => z..size = Vector2.zero()..position = Vector2.zero();
   void _placeZone(TapZone z, Rect r, {int? priority}) {
-    z..size = Vector2(r.width, r.height)..position = Vector2(r.left, r.top);
+    z
+      ..size = Vector2(r.width, r.height)
+      ..position = Vector2(r.left, r.top);
     if (priority != null) z.priority = priority;
   }
 
-  void _syncSettingsZones() {
-    if (size.x <= 0 || size.y <= 0) return;
-    if (_settingsOpen) {
-      _placeZone(_settingsClose, GameHelpOverlay.closeRect(size.x, size.y), priority: 2200);
-      _placeZone(_settingsMusic, GameHelpOverlay.musicRect(size.x, size.y), priority: 2200);
-      _placeZone(_settingsReset, GameHelpOverlay.resetRect(size.x, size.y), priority: 2200);
-      _placeZone(_settingsContinue, GameHelpOverlay.continueRect(size.x, size.y), priority: 2200);
-    } else {
-      _hideZone(_settingsClose); _hideZone(_settingsMusic); _hideZone(_settingsReset); _hideZone(_settingsContinue);
-    }
-  }
-
-  void _layoutWorld() {
-    if (size.x <= 0 || size.y <= 0) return;
-    final ui = ResponsiveGameLayout(size.x, size.y);
-
-    // World layout is bound to the centered portrait board. Wide foldables get
-    // side gutters instead of horizontally stretched doors/characters.
-    leftDoor
-      ..size = Vector2(ui.w(.35), ui.h(.305))
-      ..position = Vector2(ui.x(.065), ui.y(.515));
-    rightDoor
-      ..size = Vector2(ui.w(.35), ui.h(.305))
-      ..position = Vector2(ui.x(.585), ui.y(.515));
-    progress
-      ..size = Vector2(ui.w(.58), 24)
-      ..position = Vector2(ui.x(.21), ui.y(.292));
-  }
-
-  void _hideWorldForSettings() {
-    // Settings must be a true full-screen layer. Removing the visual footprint
-    // of gameplay children prevents doors/progress dots from rendering above it.
-    leftDoor
-      ..size = Vector2.zero()
-      ..position = Vector2.zero();
-    rightDoor
-      ..size = Vector2.zero()
-      ..position = Vector2.zero();
-    progress
-      ..size = Vector2.zero()
-      ..position = Vector2.zero();
-  }
-
   void _toggleSettings() {
-    _settingsOpen = !_settingsOpen;
-    if (_settingsOpen) {
-      _hideWorldForSettings();
+    if (_settingsLayer.isOpen) {
+      _settingsLayer.close();
     } else {
-      _layoutWorld();
+      _settingsLayer.open();
     }
-    _syncSettingsZones();
-  }
-
-  void _closeSettings() {
-    _settingsOpen = false;
-    _layoutWorld();
-    _syncSettingsZones();
-  }
-
-  void _toggleBgm() {
-    if (!_settingsOpen) return;
-    game.audioManager.bgmEnabled = !game.audioManager.bgmEnabled;
-    if (game.audioManager.bgmEnabled) {
-      game.audioManager.startBgm();
-    } else {
-      game.audioManager.stopBgm();
-    }
-  }
-
-  Future<void> _resetChallenge() async {
-    if (!_settingsOpen) return;
-    await game.progressStore.saveCurrentStage(GameRules.initialStage);
-    game.currentStage = GameRules.initialStage;
-    _settingsOpen = false;
-    game.goHome();
   }
 
   @override
   void onGameResize(Vector2 size) {
     super.onGameResize(size);
     this.size = size;
-    if (_settingsOpen) {
-      _hideWorldForSettings();
-    } else {
-      _layoutWorld();
-    }
+
+    // V5: move the interactive world lower and give the castle its own visible band.
+    leftDoor
+      ..size = Vector2(size.x * .35, size.y * .34)
+      ..position = Vector2(size.x * .075, size.y * .455);
+    rightDoor
+      ..size = Vector2(size.x * .35, size.y * .34)
+      ..position = Vector2(size.x * .575, size.y * .455);
+    progress
+      ..size = Vector2(size.x * .56, 24)
+      ..position = Vector2(size.x * .22, size.y * .302);
+
     _placeZone(_settings, GameHelpOverlay.settingsButtonRect(size.x, size.y), priority: 2000);
-    _syncSettingsZones();
+    _settingsLayer.resizeTo(size);
   }
 
   Future<void> _choose(DoorSide side) async {
-    if (_settingsOpen || session.phase != SessionPhase.playing || _transitioning || _inputCooldown > 0) return;
+    if (_settingsLayer.isOpen || session.phase != SessionPhase.playing || _transitioning || _inputCooldown > 0) return;
     _inputCooldown = .016;
     final result = session.choose(side);
     final door = side == DoorSide.left ? leftDoor : rightDoor;
@@ -178,7 +110,7 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
   @override
   void update(double dt) {
     super.update(dt);
-    if (_settingsOpen) return;
+    if (_settingsLayer.isOpen) return;
     elapsed += dt;
     feedback.update(dt);
     if (_inputCooldown > 0) _inputCooldown = (_inputCooldown - dt).clamp(0,1).toDouble();
@@ -209,35 +141,21 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     tp.paint(canvas, Offset((size.x - tp.width) / 2, y));
   }
 
-  void _drawSettingsOverlay(Canvas canvas) {
-    final p = game.progressStore.load();
-    GameHelpOverlay.draw(
-      canvas,
-      size.x,
-      size.y,
-      currentStage: game.currentStage,
-      bestStage: p.bestStage,
-      bgmEnabled: game.audioManager.bgmEnabled,
-      v5: _v5,
-    );
-  }
-
   @override
   void render(Canvas canvas) {
     final shake = feedback.shakeActive ? sin(elapsed * 170) * 4 : 0.0;
     canvas.save();
     canvas.translate(shake, 0);
-    final ui = ResponsiveGameLayout(size.x, size.y);
 
     _pixelArt.renderBackground(canvas, size, showPath: true, rich: false);
-    // V5.1: give the castle, doors and hero separate vertical bands.
-    _pixelArt.renderCastle(canvas, size, x: .255, y: .365, width: .49, height: .285);
-    _pixelArt.renderTrees(canvas, size, top: .61, leftScale: .18, rightScale: .18);
-    _pixelArt.renderHero(canvas, size, x: .34, y: .805, scale: .33);
+    // Larger, fully visible castle below the top panel.
+    _pixelArt.renderCastle(canvas, size, x: .335, y: .355, width: .33, height: .245);
+    _pixelArt.renderTrees(canvas, size, top: .58, leftScale: .20, rightScale: .20);
+    _pixelArt.renderHero(canvas, size, x: .355, y: .755, scale: .30);
 
-    // Compact HUD. Timer and progress dots are separate rows.
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y * .355), Paint()..color = const Color(0xF4FFF8E8));
-    final cardRect = ui.rect(.07, .095, .86, .245);
+    // Compact top panel; progress dots live inside it and no longer overlap the timer.
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.x, size.y * .345), Paint()..color = const Color(0xF4FFF8E8));
+    final cardRect = Rect.fromLTWH(size.x * .07, size.y * .082, size.x * .84, size.y * .248);
     final card = RRect.fromRectAndRadius(cardRect, const Radius.circular(25));
     canvas.drawRRect(card, Paint()..color = const Color(0xFFF9FFF2));
     canvas.drawRRect(card, Paint()..style = PaintingStyle.stroke..strokeWidth = 2.2..color = const Color(0xFF4F86BF));
@@ -251,7 +169,7 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     _center(
       canvas,
       '${remain.toStringAsFixed(1)}초',
-      size.y * .218,
+      size.y * .226,
       28,
       remain < 2.5 ? const Color(0xFFE65353) : const Color(0xFFB66A00),
       FontWeight.w900,
@@ -269,6 +187,5 @@ class DoorScene extends PositionComponent with HasGameReference<MonsterDoorGame>
     }
     canvas.restore();
     super.render(canvas);
-    if (_settingsOpen) _drawSettingsOverlay(canvas);
   }
 }
