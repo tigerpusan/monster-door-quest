@@ -36,13 +36,13 @@ int stageInRealm(int stage) {
 
 int _doorCountForStage(int stage) {
   final s = max(GameRules.initialStage, stage);
-  if (s <= 12) return s.clamp(3, 12);
+  if (s <= 12) return s.clamp(3, 12).toInt();
 
   // New realms restart visually at a readable amount, then grow to 12.
   // This prevents the memory list from overflowing while preserving the
   // existing vertical single-column layout.
   final local = stageInRealm(s);
-  return (local + 2).clamp(3, 12);
+  return (local + 2).clamp(3, 12).toInt();
 }
 
 double _memorySecondsForDoorCount(int count) {
@@ -54,7 +54,9 @@ double _memorySecondsForDoorCount(int count) {
 }
 
 StageConfig stageConfig(int stage) {
-  final s = max(GameRules.initialStage, stage).clamp(GameRules.initialStage, GameRules.finalStage);
+  final s = max(GameRules.initialStage, stage)
+      .clamp(GameRules.initialStage, GameRules.finalStage)
+      .toInt();
   final count = _doorCountForStage(s);
   return StageConfig(
     stage: s,
@@ -149,7 +151,8 @@ List<DoorSide> createRoute(int count, Random rng, {required int stage}) {
       }
       out.add(pick);
     }
-    if (count < 2 || (out.contains(DoorSide.left) && out.contains(DoorSide.right))) {
+    if (count < 2 ||
+        (out.contains(DoorSide.left) && out.contains(DoorSide.right))) {
       return out;
     }
   }
