@@ -53,6 +53,15 @@ double _memorySecondsForDoorCount(int count) {
   return 3.0;
 }
 
+double _memorySecondsForStage(int stage, int count) {
+  // Human realm stays readable through its final three stages.
+  // Stages 10, 11 and 12 all use 3.5 seconds.
+  if (stage <= 12 && stage >= 10) return 3.5;
+
+  // Superhuman and god realms keep the existing approved timing curve.
+  return _memorySecondsForDoorCount(count);
+}
+
 StageConfig stageConfig(int stage) {
   final s = max(GameRules.initialStage, stage)
       .clamp(GameRules.initialStage, GameRules.finalStage)
@@ -61,7 +70,7 @@ StageConfig stageConfig(int stage) {
   return StageConfig(
     stage: s,
     doorCount: count,
-    memorySeconds: _memorySecondsForDoorCount(count),
+    memorySeconds: _memorySecondsForStage(s, count),
     playSeconds: GameRules.playSeconds,
     maxSameRun: s <= 4 ? 3 : 2,
   );
