@@ -16,12 +16,18 @@ void main() {
     expect(stageConfig(36).doorCount, 12);
   });
 
-  test('memory timing never drops below the readable 3 second floor', () {
+  test('human stages 10 to 12 stay at 3.5 seconds while later realms keep the existing curve', () {
     expect(stageConfig(3).memorySeconds, 5.0);
     expect(stageConfig(5).memorySeconds, 4.5);
     expect(stageConfig(8).memorySeconds, 4.0);
+    expect(stageConfig(9).memorySeconds, 3.5);
+    expect(stageConfig(10).memorySeconds, 3.5);
     expect(stageConfig(11).memorySeconds, 3.5);
-    expect(stageConfig(12).memorySeconds, 3.0);
+    expect(stageConfig(12).memorySeconds, 3.5);
+
+    // Superhuman and god realms retain the currently approved timing curve.
+    expect(stageConfig(13).memorySeconds, 5.0);
+    expect(stageConfig(20).memorySeconds, 3.5);
     expect(stageConfig(24).memorySeconds, 3.0);
     expect(stageConfig(36).memorySeconds, 3.0);
   });
