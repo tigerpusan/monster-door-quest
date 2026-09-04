@@ -10,6 +10,7 @@ import 'scenes/intro_scene.dart';
 import 'scenes/memory_scene.dart';
 import 'scenes/door_scene.dart';
 import 'scenes/result_scene.dart';
+import 'scenes/ending_scene.dart';
 
 class MonsterDoorGame extends FlameGame {
   MonsterDoorGame({required this.progressStore, required this.audioManager}) : currentStage = progressStore.load().currentStage;
@@ -35,6 +36,7 @@ class MonsterDoorGame extends FlameGame {
 
   Future<void> startCurrentStage() async {
     final cfg = stageConfig(currentStage);
+    currentStage = cfg.stage;
     final route = createRoute(cfg.doorCount, Random(), stage: currentStage);
     final session = GameSessionState(stage: currentStage, route: route);
     await _setScene(MemoryScene(session, cfg.memorySeconds));
@@ -47,6 +49,15 @@ class MonsterDoorGame extends FlameGame {
 
   Future<void> advanceAfterClear() async {
     await progressStore.saveClear(currentStage);
+
+    if (currentStage >= GameRules.finalStage) {
+      // Keep the completed stage as the resume point while preserving best=36.
+      await progressStore.saveCurrentStage(GameRules.finalStage);
+      currentStage = GameRules.finalStage;
+      await _setScene(EndingScene());
+      return;
+    }
+
     currentStage += 1;
     await startCurrentStage();
   }
