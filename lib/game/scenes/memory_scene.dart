@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart' show FontWeight;
@@ -18,6 +19,7 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
   late TapZone _ready;
   late TapZone _settings;
   late SettingsOverlayLayer _settingsLayer;
+  late List<String> _memoryLabels;
   double elapsed = 0;
   bool _transitioned = false;
 
@@ -27,6 +29,15 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     _ready = TapZone(onTap: _goDoor, triggerOnDown: true);
     _settings = TapZone(onTap: _toggleSettings, triggerOnDown: true);
     _settingsLayer = SettingsOverlayLayer(v5: _v5)..priority = 10000;
+
+    // Build cue wording once per stage. The underlying LEFT/RIGHT route is
+    // untouched; only what the player sees changes by realm.
+    _memoryLabels = createMemoryLabels(
+      session.route,
+      session.stage,
+      Random(session.stage * 997 + session.route.length * 31),
+    );
+
     addAll([_ready, _settings, _settingsLayer]);
   }
 
@@ -72,9 +83,9 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
   void _drawLiveMemory(Canvas canvas) {
     V5ImageUI.text(
       canvas,
-      'STAGE ${session.stage} · ${session.route.length} DOORS',
-      Rect.fromLTWH(size.x * .18, size.y * .265, size.x * .64, size.y * .045),
-      19,
+      '${stageRealmLabel(session.stage)} · STAGE ${stageInRealm(session.stage)} · ${session.route.length} DOORS',
+      Rect.fromLTWH(size.x * .14, size.y * .265, size.x * .72, size.y * .045),
+      18,
       const Color(0xFF173F70),
       FontWeight.w900,
     );
@@ -87,7 +98,7 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
     final rowH = ((totalH - gap * (count - 1)) / count).clamp(25.0, 72.0);
 
     for (var i = 0; i < count; i++) {
-      final isLeft = session.route[i].name == 'left';
+      final isLeft = session.route[i] == DoorSide.left;
       final y = listTop + i * (rowH + gap);
       final r = Rect.fromLTWH(size.x * .145, y, size.x * .71, rowH);
       final rr = RRect.fromRectAndRadius(r, Radius.circular(rowH / 2));
@@ -103,7 +114,7 @@ class MemoryScene extends PositionComponent with HasGameReference<MonsterDoorGam
       final fs = (rowH * .48).clamp(14.0, 27.0);
       V5ImageUI.text(
         canvas,
-        isLeft ? '←  왼쪽' : '오른쪽  →',
+        _memoryLabels[i],
         r,
         fs,
         const Color(0xFFFFFFFF),
