@@ -10,7 +10,12 @@ class EndingScene extends PositionComponent with HasGameReference<MonsterDoorGam
   @override
   Future<void> onLoad() async {
     _ending = await Sprite.load('ui/v6/princess_rescued.webp');
-    _home = TapZone(onTap: game.goHome, triggerOnDown: true);
+    _home = TapZone(
+      onTap: () {
+        game.goHome();
+      },
+      triggerOnDown: true,
+    );
     add(_home);
   }
 
